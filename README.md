@@ -1,7 +1,79 @@
 # 2ndDesktop
 
-Work in progress: a living scene on your desktop (Windows and macOS).
+Your desktop, alive, and quiet about it.
 
-License: MIT.
+2ndDesktop puts one living scene on the desktop of a Windows or macOS computer: behind the icons like a living wallpaper, or in a small window. A scene is a picture with its own rules and its own saved progress. The app does everything that is the same for every scene (attaching to the desktop, the tray menu, pausing, saving, settings), so that a scene is just a folder anyone can write.
 
-The art is original: it was drawn by an AI tool (SVG written by Claude Code) and the sounds are synthesized in code. The code started in the Fish Tank project by the same author; see `NOTICE`.
+> **Work in progress.** There is no release to download yet. The first public release is planned as version 0.3. Today the repository holds the platform and one scene, the fish tank.
+
+## Scenes
+
+| Scene | State |
+| --- | --- |
+| Fish tank (`scenes/fishtank/`) | Built. A small tank you feed once a day; the fish grow and lay eggs. Calm and quiet by design. |
+| Farm house | Planned for 0.2: a house under a forested mountain that shows the real season and weather. |
+
+More scenes are ideas for later; see [`docs/scenes/`](docs/scenes/) and the roadmap in [`docs/platform/03-distribution-and-roadmap.md`](docs/platform/03-distribution-and-roadmap.md).
+
+## What it does
+
+- **Desktop mode** shows the scene behind your icons and takes no clicks. **Window mode** is a small window you can move and resize. Everything you can do also lives in the tray menu.
+- **Polite by default:** it pauses when the desktop is covered or hidden, runs at no more than 30 frames per second on the desktop, and stays within a memory budget.
+- **Private:** no account, no telemetry, no server. Your saved progress stays on your computer. The only data the app sends is a bug report you choose to send.
+- **Offline first.** A scene that wants the network must ask through the app, with your consent.
+
+## Run it from source
+
+You need Node 24 (`.nvmrc`) and npm.
+
+```
+npm ci
+npm run dev
+```
+
+`npm run dev` opens the app in window mode with live reload. To run a build instead: `npm run build && npm start`.
+
+If `npm ci` finishes but the app says Electron is missing, run `node node_modules/electron/install.js` once.
+
+Other commands:
+
+| Command | What it does |
+| --- | --- |
+| `npm test` | Unit tests (Vitest) |
+| `npm run test:e2e` | Builds, then runs the end-to-end tests (Playwright for Electron) |
+| `npm run lint`, `npm run format:check` | ESLint and Prettier |
+| `npm run shot -- <name> <WxH> <window or desktop> <seconds>` | A reproducible picture of the scene, written to `docs/screenshots/` |
+| `npm run dist` | Builds an installer (Windows) or a dmg (macOS, Apple silicon) into `release/` |
+
+Development runs use their own data folder (`2ndDesktop (dev)`), so they never touch a real save.
+
+## How it is built
+
+Electron and PixiJS 8, plain JavaScript (ES modules), no framework.
+
+```
+app/main/    Electron main process: desktop attach, tray, power, saving, settings, diagnostics
+app/page/    the page the app shows: the PixiJS app, the loop, art and sound loading
+scenes/      one folder per scene (scene.json + index.js), with its own tests
+shared/      what every scene may import
+scripts/     build, picture, icon and measurement scripts
+tests/       host unit tests (tests/host) and end-to-end tests (tests/e2e)
+docs/        the design documents
+```
+
+The main process is the security boundary, and a scene is never trusted. A scene never reads the clock or uses unseeded random numbers itself, so that tests and pictures give the same result every time.
+
+## Documents
+
+- [`docs/00-2nddesktop-specs.md`](docs/00-2nddesktop-specs.md): the product on one page.
+- [`docs/README.md`](docs/README.md): the index of the design set; [`docs/STATUS.md`](docs/STATUS.md): where the work is now; [`docs/DECISIONS.md`](docs/DECISIONS.md): why things are as they are.
+- [`docs/platform/`](docs/platform/): architecture and the scene contract, security, data and network, releases and roadmap.
+- [`SECURITY.md`](SECURITY.md): how to report a vulnerability (privately).
+
+## Contributing
+
+Contributions of code are not open yet: the platform and the contract are still changing (open contributions are planned for 0.5). Bug reports and scene ideas are welcome as issues.
+
+## License
+
+MIT, see [`LICENSE`](LICENSE). The art is original: it was drawn by an AI tool (SVG written by Claude Code), the sounds are synthesized in code, and the font is OFL. The code started in the Fish Tank project by the same author; see [`NOTICE`](NOTICE).
