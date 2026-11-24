@@ -9,7 +9,7 @@ Facts come from the fish-tank checkout at `main`, commit `9d18c90`.
 1. **The scene id `fishtank` and the record file `records/fishtank.json` with `schema` 1**, so the owner's saved tank still loads (the data-folder question is in the platform document, section 5).
 2. **The game numbers** in `config.js` and the visual numbers in `visualConfig.js`: the pacing was checked by a simulator (`npm run sim`) and the look by hand.
 3. **The layer order** of the scene (`fishtank.md`, section 5).
-4. **The golden state hash** (`tests/e2e/golden.spec.js`): the hash of `serialize()` plus the scene graph after a scripted session must be the same before and after every step of the move. If it changes, something moved that should not have; the answer is never to record a new hash.
+4. **The golden state hash** (`scenes/fishtank/tests/golden.spec.js`): the hash of `serialize()` plus the scene graph after a scripted session must be the same before and after every step of the move. If it changes, something moved that should not have; the answer is never to record a new hash.
 5. **The reproducible screenshot** (`npm run shot`): the same picture before and after.
 
 ## 2. What is in the folder today
@@ -43,7 +43,7 @@ scenes/fishtank/
   DESIGN.md             = docs/scenes/fishtank.md
   LICENSES.md           the license of the art and the sounds (all original, MIT)
   menu.js               tray status line and items (pure)
-  sounds.js             the three sound recipes: splash, pop, chime (from renderer/SoundPlayer.js)
+  sounds.js             the three sound recipes: splash, pop, chime (from app/page/SoundPlayer.js)
   game/                 PURE: no Pixi, no DOM, no Node. A later server could run it
     rules.js
     config.js
@@ -85,14 +85,14 @@ scenes/fishtank/
 
 ## 4. What the scene must change to meet the new contract
 
-The contract of `docs/platform/01`, section 8.3 differs from the one in `renderer/host.js`. Differences the tank has to follow, and how each is handled so that the golden hash does not move:
+The contract of `docs/platform/01`, section 8.3 differs from the one in `app/page/host.js`. Differences the tank has to follow, and how each is handled so that the golden hash does not move:
 
 | # | Old (today) | New (document 1, section 8) | What to do in the tank |
 | --- | --- | --- | --- |
 | 1 | `status()` returns `{ line, diagnostics }` | `status()` returns one line | Keep the tray line. The diagnostics line ("Fish: 2, pellets fed in total: 4") needs a home: proposal, an optional `diagnostics()` on the scene, or the scene logs it through `host.log` when the host asks for diagnostics. **To decide in document 1** |
 | 2 | `resize(width, height)` | `resize(width, height, unit)` | The tank computes its own unit in `computeLayout` (relative to its height). Accept and ignore the third argument; check that the host's `unit` equals the tank's, so no number moves |
 | 3 | `host.rng` (a seeded generator object, made by the host) | `host.seed` and the shared `makeRng` | In `index.js`: `makeRng(host.seed)`. **Risk to the golden hash:** the host must hand out a seed that produces the same sequence as today's `host.rng` for the same test seed. Test it before anything else |
-| 4 | `host.art.textures`, the atlas loaded by the host from `scene.json` `"atlas": "fishtank"` | `host.assets.load(path)` for files in the scene's own folder | The atlas should stay **host-loaded** (the host uploads it to the graphics card and closes the decoded image: `renderer/art.js`; this is a memory fix worth 10 MB and every scene needs it). The documents have a gap: the manifest has no `atlas` field and `host` has no `art`. **Proposal for document 1:** keep `"atlas": "assets/art/atlas.json"` in the manifest and `host.art = { textures, scale }`. The tank then changes nothing here |
+| 4 | `host.art.textures`, the atlas loaded by the host from `scene.json` `"atlas": "fishtank"` | `host.assets.load(path)` for files in the scene's own folder | The atlas should stay **host-loaded** (the host uploads it to the graphics card and closes the decoded image: `app/page/art.js`; this is a memory fix worth 10 MB and every scene needs it). The documents have a gap: the manifest has no `atlas` field and `host` has no `art`. **Proposal for document 1:** keep `"atlas": "assets/art/atlas.json"` in the manifest and `host.art = { textures, scale }`. The tank then changes nothing here |
 | 5 | `textures.js` imports `../../assets/spritesheets/fishtank.json` to read `meta.artScale` | a scene reads only its own folder and `host` | `host.art.scale` replaces the import; `ART_SCALE` is set in `create()` and passed on (it is used by `Fish`, `Food`, `Egg`, `Bubbles`, `Pellet`). The pack tool writes `artScale` into the atlas file as it does today |
 | 6 | `host.sound.play('splash'\|'pop'\|'chime')`; the recipes live in the host | the scene brings its own sounds | `sounds.js` holds the three recipes; `host.sound.define(name, recipe)` registers them, `host.sound.play(name)` plays. The recipes use the engine's helpers (`partial`, `bubble`, `touch`, `route`), which the engine passes in. **Proposal; document 2's sound capability may want another shape** |
 | 7 | `host.options = { fish, dev }` (named, from the URL) | `options` are the manifest's player options; development switches are a free bag | `DESKTOP2_SCENE_OPTIONS` JSON (platform document, leak 2). The tank reads `fish` and `dev` from it |
@@ -145,22 +145,24 @@ Proposed for the new contract (fields of document 1, section 8.2; the `atlas` ro
 ## 6. The art pipeline
 
 - **Sources stay SVG** (`assets/art-src/`): original, drawn in this project. `scripts/build-assets.mjs` already renders each SVG at 3x with `resvg`, packs one atlas per scene and writes a contact sheet. It changes in three small ways: it reads `assets/art-src/` instead of `art/`, it writes `assets/art/atlas.png` and `atlas.json` inside the scene instead of `assets/spritesheets/`, and the contact sheet goes to a build folder.
-- **The atlas stays PNG.** `renderer/art.js` closes the decoded image after the upload and its comment warns that this works only for an `ImageBitmap`, which PixiJS makes for PNG; a smoke test checks it. Do not change the format in the move; a WebP atlas needs its own check.
+- **The atlas stays PNG.** `app/page/art.js` closes the decoded image after the upload and its comment warns that this works only for an `ImageBitmap`, which PixiJS makes for PNG; a smoke test checks it. Do not change the format in the move; a WebP atlas needs its own check.
 - **The generator stays on the author's computer.** `gen-decor-art.mjs` draws rocks, corals and weeds from a seed and writes SVG; its **output is committed**. This already matches the catalog rule that CI never runs a scene's own scripts (document 1, section 5.4, point 2).
-- **The style guide** `assets/art/STYLE.md` belongs to every scene, so it moves to `docs/art-style.md` of the platform; the farm house and the desk follow it.
+- **The style guide** `docs/art-style.md` (it was `assets/art/STYLE.md`; moved in the documents step) belongs to every scene; the farm house and the desk follow it.
 - **The thumbnail** is new. `npm run shot` already makes reproducible pictures (fixed seed, manual clock) and can make the 640 x 360 image; converting it to WebP and keeping it under 150 KB needs an encoder that is not in the dependencies today (`resvg` writes PNG only). Open point: add one dev dependency, or let the pack tool do it.
 - **The contact sheet** (`assets/contact-sheet-fishtank.png`) is generated and git-ignored; keep it so.
 
 ## 7. Tests
 
-| Today | Goes to | Why |
+Step 4 of the bootstrap (the move) already put the nine unit files and four end-to-end files of the tank flat into `scenes/fishtank/tests/`, and left the rest in `tests/host/` and `tests/e2e/`. The table says where each goes in the regrouping of the tank (`unit/` and `e2e/` inside the scene), and what to check on the way.
+
+| Now | Goes to | Why |
 | --- | --- | --- |
-| `tests/unit/rules.test.js`, `repository.test.js`, `species.test.js`, `pacing.test.js` | `scenes/fishtank/tests/unit/` | the game |
-| `tests/unit/steering.test.js`, `layout.test.js`, `palette.test.js`, `backdrop.test.js`, `pointer.test.js` | `scenes/fishtank/tests/unit/` | the drawing support |
-| `tests/unit/menu.test.js` | check first | it may test the **host's** menu (`electron/menu.js`) and not the tank's `menu.js`; split if it tests both |
-| `tests/unit/sound.test.js` | split | the engine part stays in the host tests, the recipe part moves with `sounds.js` |
-| `tests/e2e/golden.spec.js`, `feeding.spec.js`, `game.spec.js`, `step6.spec.js` | `scenes/fishtank/tests/e2e/` | they drive the tank through `window.__tank` (renamed) |
-| `tests/e2e/smoke.spec.js` | stays in the host tests | it checks the atlas upload and the host; it also uses `__tank` |
+| `scenes/fishtank/tests/rules.test.js`, `repository.test.js`, `species.test.js`, `pacing.test.js` | `scenes/fishtank/tests/unit/` | the game |
+| `scenes/fishtank/tests/steering.test.js`, `layout.test.js`, `palette.test.js`, `backdrop.test.js`, `pointer.test.js` | `scenes/fishtank/tests/unit/` | the drawing support |
+| `tests/host/menu.test.js` | check first | it may test the **host's** menu (`app/main/menu.js`) and not the tank's `menu.js`; split if it tests both |
+| `tests/host/sound.test.js` | split | the engine part stays in the host tests, the recipe part moves with `sounds.js` |
+| `scenes/fishtank/tests/golden.spec.js`, `feeding.spec.js`, `game.spec.js`, `step6.spec.js` | `scenes/fishtank/tests/e2e/` | they drive the tank through `window.__scene` (renamed in the rename step) |
+| `tests/e2e/smoke.spec.js` | stays in the host tests | it checks the atlas upload and the host; it also uses `window.__scene` |
 
 New tests the scene gets from the platform: the **contract test** (every scene object has the functions the contract names; `resume(gapMs)` after a long gap; `dispose()` frees what it made) and the **capability test** (a scene without capabilities runs with `host.net`, `host.data` and `host.place` absent). The tank is the first scene to pass them, and must pass them unchanged in behaviour.
 

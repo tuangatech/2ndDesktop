@@ -6,7 +6,7 @@ Kept current at every merge. A new session reads this right after `CLAUDE.md`.
 
 - Version being worked on: **0.1** (the tank in the new repository, nothing changed), then 0.2.
 - Last step done: BOOTSTRAP 7.2 steps 1 to 3. The first commit is on `main`; the import (PR 1) is merged as `1e2edf3` and tagged `v0.0.0-import`; the rename (PR 2) is merged as `902c508`. The ruleset of BOOTSTRAP section 3 and the repository settings are applied.
-- Step 4 (the move into the new layout, PR 3) is merged as `ee7cb5b`. Next: step 5 (documents; it also fixes the old `electron/` and `renderer/` paths in the design docs). The Mac reports on W-1 (the import), W-2 (the rename) and W-3 (the move, with `dist:test`) in parallel.
+- Step 4 (the move into the new layout, PR 3) is merged as `ee7cb5b`. In review: step 5 (the documents), PR `docs`. Next: step 6 (the hand checks on both machines). The Mac reports on W-1 (the import), W-2 (the rename) and W-3 (the move, with `dist:test`) in parallel.
 
 ## Baseline before any change (Windows, 2026-11-24, source fish-tank at `458922d`)
 
@@ -40,6 +40,12 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 - Paths fixed: `package.json` `main`, `electron-builder.yml` `files:`, Vite root and out dir (the build still goes to `dist/renderer/`), the glob paths of `art.js` and `scenes.js`, the ESLint globs (the tests of a scene are outside the scene clock rule), the Vitest include and the Playwright `testMatch`.
 - `npm run dist:test` built the Windows installer; the unpacked app starts in window mode, saves its records and settings, and its asar holds `app/main/`, the page and the tray images. The installer itself was not run (a hand check). The Mac has not built anything yet.
 
+## The documents PR (BOOTSTRAP 7.2 step 5)
+
+- New: `SECURITY.md`, `.github/PULL_REQUEST_TEMPLATE.md` (the proofs of 7.3 as checkboxes), `.github/ISSUE_TEMPLATE/` (bug report, scene idea), `.github/CODEOWNERS` (`app/main/`, `electron-builder.yml`, `platform/02`, `.github/`, `SECURITY.md`: the owner), `docs/reference/README.md`. `docs/README.md` is the current index; `assets/art/STYLE.md` moved to `docs/art-style.md`.
+- The design set: the live path references (`platform/01`, `02`, `05`, `scenes/fishtank-migration.md`) now name the new paths. `platform/03` section 7.2 and `platform/04` are plans written against the fish-tank tree, so each got a note saying which old path is which new one instead of a rewrite; the `docs/03`, `05`, `06` row of `platform/03` now says "copied" (Q5).
+- Not in this PR: `CHANGELOG.md` and `CONTRIBUTING.md` (0.5), the labels, the `.claude/settings.json` allow list and `npm run verify` (recommendations 4 and 6 of BOOTSTRAP section 9).
+
 ## Open hand checks
 
 None yet. Step 6 of BOOTSTRAP 7.2 lists them (desktop mode, Win+D, display change, installed build, launch at login; the Mac: menu bar, Dock, first open of an unsigned build).
@@ -47,5 +53,5 @@ None yet. Step 6 of BOOTSTRAP 7.2 lists them (desktop mode, Win+D, display chang
 ## Waiting for the owner
 
 - The Mac session: W-1 in `TODO-Mac.md` (baseline, pictures and 7.3 proofs on the Mac, review of PR 1).
-- Not done yet: `SECURITY.md`, the PR and issue templates, `CODEOWNERS` (step 5); labels (later).
+- Labels (later). Private vulnerability reporting is on (BOOTSTRAP section 3); `SECURITY.md` names it.
 - Decision for the owner: squash and rebase merging are still enabled on the repository (BOOTSTRAP section 3 says they may stay off); the ruleset requires a PR with both checks and zero approving reviews, with the repository admin role allowed to bypass.

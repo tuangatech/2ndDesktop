@@ -113,7 +113,7 @@ Chromium on W1 used the Intel UHD adapter (vendor 0x8086), not the NVIDIA card, 
 
 | System | What reports "covered" |
 | --- | --- |
-| Windows | The foreground check in `electron/desktop-win.js` (`decideCovered`, unit-tested); pauses when a window is maximized over the desktop. Minimizing the window itself: `visibilityState` becomes hidden |
+| Windows | The foreground check in `app/main/desktop-win.js` (`decideCovered`, unit-tested); pauses when a window is maximized over the desktop. Minimizing the window itself: `visibilityState` becomes hidden |
 | macOS, a **full-screen** window in its own Space | **Chromium reports the desktop window hidden** by itself (about 0.1% CPU while paused). This is not a "full-screen detector" of ours |
 | macOS, a window that only **fills the screen** (Finder, a maximized editor) | **Chromium does not report it**: the tank kept drawing at 30 fps and 1.3% CPU. Our own check reads the CoreGraphics window list and pauses when other apps' windows hide **96% of the work area**, every 2 seconds; with a maximized editor it paused within 2 seconds (0.3 to 0.5% CPU) and Show Desktop resumed it within 2 seconds |
 
@@ -162,7 +162,7 @@ Question: a window that takes clicks over the attached scene, without a flash or
 
 ## 8. Tests that prove "nothing changed" (Passed, reuse as they are)
 
-- **Golden hash** (`tests/e2e/golden.spec.js`): a state hash and a scene-graph hash after 900 steps with a fixed seed and a manual clock. The **same hashes on Windows, Mac and CI**. The graph hash must use a stable node type (`renderPipeId`), not `constructor.name` (the minifier renames classes); the 900 steps should include scripted player actions (collect, drop pellets, feed until full, hatch an egg) so the rules that move are covered; time-stamp keys are a list, not "ends with `At`".
+- **Golden hash** (`scenes/fishtank/tests/golden.spec.js`): a state hash and a scene-graph hash after 900 steps with a fixed seed and a manual clock. The **same hashes on Windows, Mac and CI**. The graph hash must use a stable node type (`renderPipeId`), not `constructor.name` (the minifier renames classes); the 900 steps should include scripted player actions (collect, drop pellets, feed until full, hatch an egg) so the rules that move are covered; time-stamp keys are a list, not "ends with `At`".
 - **`npm run shot`** is reproducible with the seed and the manual clock. **Desktop-mode shots are byte-identical** run to run on both systems. **Window-mode shots on the Mac are not**: the first picture of a series is coloured differently (average red 91 against 111, positions identical; `force-color-profile=srgb` did not remove it). **On the Mac compare the graph hash, not window PNG bytes.**
 - **The art pipeline is deterministic:** `npm run assets` gives a byte-identical atlas (18 images, 2048 x 1228) before and after the move; `gen-decor-art.mjs` rewrites the decor SVGs with no change.
 - **Counts at the last Mac run:** 341 unit tests (25 files) and 38 end-to-end tests pass, plus lint and format. `app-menu.spec.js` runs on macOS only and expects the scene's name from `scene.json`.
@@ -174,7 +174,7 @@ Question: a window that takes clicks over the attached scene, without a flash or
 - Some editors set `ELECTRON_RUN_AS_NODE=1`, which fails with "does not provide an export named BrowserWindow"; `npm start` and `npm run dev` clear it (`scripts/run-electron.mjs`). Use them, not bare `electron`. **The packaged app fails silently with it** (measured on the Mac): it exits at once with code 0, no window and no message, so the symptom is "the app does nothing". `env -u ELECTRON_RUN_AS_NODE` fixes it.
 - Env vars set in PowerShell do nothing in zsh and give no error (the app silently starts in window mode).
 - Playwright cannot launch the x64 half of a universal build through `arch -x86_64`; start it by hand.
-- PixiJS needs `pixi.js/unsafe-eval` under a CSP without `unsafe-eval`; it is imported first in `renderer/main.js` and the end-to-end suite runs it on both systems (**confirmed**). The stricter `style-src 'self'` of the new design is not tried.
+- PixiJS needs `pixi.js/unsafe-eval` under a CSP without `unsafe-eval`; it is imported first in `app/page/main.js` and the end-to-end suite runs it on both systems (**confirmed**). The stricter `style-src 'self'` of the new design is not tried.
 - A desktop-mode run started from an editor that fills the screen is paused at once by the cover check; measure desktop minutes with the desktop uncovered.
 
 ## 10. Not verified: carry as risks, and what is still open
