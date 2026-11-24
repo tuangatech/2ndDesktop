@@ -5,8 +5,8 @@ Kept current at every merge. A new session reads this right after `CLAUDE.md`.
 ## Where we are
 
 - Version being worked on: **0.1** (the tank in the new repository, nothing changed), then 0.2.
-- Last step done: BOOTSTRAP 7.2 steps 1 and 2. The first commit is on `main`; the import (PR 1, nothing renamed except two fixture names, see below) is merged as `1e2edf3` and tagged `v0.0.0-import`. The ruleset of BOOTSTRAP section 3 and the repository settings are applied.
-- In review: step 3 (the rename), PR `rename`, by hand, with the table of BOOTSTRAP 7.2. Next: step 4 (the move). The Mac reports on W-1 (the import) in parallel.
+- Last step done: BOOTSTRAP 7.2 steps 1 to 3. The first commit is on `main`; the import (PR 1) is merged as `1e2edf3` and tagged `v0.0.0-import`; the rename (PR 2) is merged as `902c508`. The ruleset of BOOTSTRAP section 3 and the repository settings are applied.
+- Next: step 4 (the move into the new layout). The Mac reports on W-1 (the import) and W-2 (the rename) in parallel.
 
 ## Baseline before any change (Windows, 2026-11-24, source fish-tank at `458922d`)
 
