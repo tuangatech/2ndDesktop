@@ -3,7 +3,7 @@
 // Only a fixed list of functions is exposed. The renderer never gets ipcRenderer itself.
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('fishtank', {
+contextBridge.exposeInMainWorld('desktop2', {
   getAppInfo: () => ipcRenderer.invoke('app:info'),
   windowMinimize: () => ipcRenderer.send('window:minimize'),
   windowClose: () => ipcRenderer.send('window:close'),

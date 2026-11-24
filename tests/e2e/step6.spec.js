@@ -4,7 +4,7 @@ import { launch, makeDataDir } from './helpers.js';
 
 // Steps the scene by simulated time, so a test does not have to wait for the real clock.
 const stepScene = `(seconds) => {
-  const { fishtank } = window.__tank;
+  const { fishtank } = window.__scene;
   for (let t = 0; t < seconds; t += 1 / 30) fishtank.update(1 / 30);
 }`;
 
@@ -19,9 +19,9 @@ test.describe('the first-launch hint (spec section 8)', () => {
       await expect(hint).toContainText('Launch at login');
 
       // Collecting alone does not end it; the first successful feed does.
-      await first.page.evaluate(() => window.__tank.scene.collectAll());
+      await first.page.evaluate(() => window.__scene.scene.collectAll());
       await expect(hint).toHaveClass(/show/);
-      await first.page.evaluate(() => window.__tank.scene.feedOne());
+      await first.page.evaluate(() => window.__scene.scene.feedOne());
       await expect(hint).not.toHaveClass(/show/);
       await first.close(); // the save is written on quit
       expect(JSON.parse(fs.readFileSync(first.recordFile, 'utf8')).state.tank.hintShown).toBe(true);
@@ -43,8 +43,8 @@ test.describe('the first-launch hint (spec section 8)', () => {
     try {
       await expect(page.locator('#hint')).toHaveClass(/show/);
       await page.evaluate(() => {
-        window.__tank.fishtank.onMenu('collect');
-        window.__tank.fishtank.onMenu('feed');
+        window.__scene.fishtank.onMenu('collect');
+        window.__scene.fishtank.onMenu('feed');
       });
       await expect(page.locator('#hint')).not.toHaveClass(/show/);
     } finally {
@@ -71,7 +71,7 @@ test.describe('sounds (FR-38)', () => {
     try {
       const result = await page.evaluate(`(async () => {
         const step = ${stepScene};
-        const { scene, repository } = window.__tank;
+        const { scene, repository } = window.__scene;
         const plays = [];
         scene.sound = { play: (name) => plays.push(name) };
 
@@ -111,7 +111,7 @@ test.describe('sounds (FR-38)', () => {
     const { page, app, close } = await launch();
     try {
       const silent = await page.evaluate(() => {
-        const { scene } = window.__tank;
+        const { scene } = window.__scene;
         const plays = [];
         scene.sound = { play: (name) => plays.push(name) };
         scene.setVisible(false); // covered: the economy is applied at once, without animation
@@ -126,7 +126,7 @@ test.describe('sounds (FR-38)', () => {
       await app.evaluate(({ BrowserWindow }) => {
         BrowserWindow.getAllWindows()[0].webContents.send('settings:changed', { sound: false });
       });
-      await expect.poll(() => page.evaluate(() => window.__tank.sound.enabled)).toBe(false);
+      await expect.poll(() => page.evaluate(() => window.__scene.sound.enabled)).toBe(false);
     } finally {
       await close();
     }

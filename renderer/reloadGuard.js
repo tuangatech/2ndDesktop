@@ -5,7 +5,7 @@
 
 export const RELOAD_LIMIT = 3;
 export const RELOAD_WINDOW_MS = 60_000;
-const KEY = 'fishtank.reloads';
+const KEY = 'desktop2.reloads';
 
 /**
  * Decides whether to reload now. Pure: `times` are the earlier reloads (ms), the answer carries the list to keep.

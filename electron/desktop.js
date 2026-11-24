@@ -146,7 +146,7 @@ export function createDesktopController({
   // Window rules (FR-19, D22): 3:2, between 360 x 240 and 1200 x 800 and never larger than the display it is on.
   // Placement is decided once, at launch, by the pure fitWindowToDisplays (electron/placement.js).
   function windowOptions(testSize) {
-    // Screenshots and tests can ask for any size (FISHTANK_TEST=1 only); the normal rules do not apply.
+    // Screenshots and tests can ask for any size (DESKTOP2_TEST=1 only); the normal rules do not apply.
     if (testSize) {
       const [width, height] = testSize.split('x').map(Number);
       return {
@@ -222,7 +222,7 @@ export function createDesktopController({
       dockTimer = null;
       app.dock?.show();
     }
-    const testSize = process.env.FISHTANK_TEST === '1' ? process.env.FISHTANK_WINDOW_SIZE : null;
+    const testSize = process.env.DESKTOP2_TEST === '1' ? process.env.DESKTOP2_WINDOW_SIZE : null;
     const options = windowOptions(testSize);
     win = new BrowserWindow({
       ...options,

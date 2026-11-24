@@ -18,7 +18,7 @@
  * @property {ReturnType<typeof import('../shared/rng.js').makeRng>} rng
  * @property {Record<string, unknown>|null} tuning  numbers a test build may change (tuning.json); the scene checks them
  * @property {{root: HTMLElement|null}} ui  the element for the scene's own HTML in window mode; null in desktop mode (D31)
- * @property {{fish?: number, dev?: boolean}} options  development switches from the URL (FISHTANK_FISH, FISHTANK_DEV); `fish`
+ * @property {{fish?: number, dev?: boolean}} options  development switches (DESKTOP2_SCENE_OPTIONS, a JSON object; DESKTOP2_DEV); `fish`
  *           is the tank's, a named exception until `options` becomes a free bag
  * @property {'window'|'desktop'} mode
  * @property {(message: string) => void} log  a line in the app's log (no personal data)
@@ -44,7 +44,7 @@
  * @property {(id: string) => void} onMenu  an item of `menuItems()` was chosen
  * @property {() => object} serialize  the state that is saved
  * @property {() => void} dispose
- * @property {object} [debug]  objects for tests and measurements, exposed on `window.__tank` with `?debug=1`
+ * @property {object} [debug]  objects for tests and measurements, exposed on `window.__scene` with `?debug=1`
  */
 
 export {};

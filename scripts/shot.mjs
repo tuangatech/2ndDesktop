@@ -7,7 +7,7 @@
 // Usage: npm run shot -- <name> [WIDTHxHEIGHT] [window|desktop] [seconds]
 //   npm run shot -- tank 480x320
 //   npm run shot -- tank-1080p 1920x1080 desktop 6
-//   npm run shot -- fry 480x320 window 4 "__tank.repository.getState().fish.forEach((f) => __tank.repository.dev.setPoints(f.id, 0))"
+//   npm run shot -- fry 480x320 window 4 "__scene.repository.getState().fish.forEach((f) => __scene.repository.dev.setPoints(f.id, 0))"
 import { _electron as electron } from '@playwright/test';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -29,18 +29,18 @@ const app = await electron.launch({
   args: [root],
   env: {
     ...env,
-    FISHTANK_USER_DATA: dataDir,
-    FISHTANK_MODE: 'window',
-    FISHTANK_TEST: '1',
-    FISHTANK_WINDOW_SIZE: size,
-    FISHTANK_TEST_RENDER_MODE: renderMode,
-    FISHTANK_DEBUG: '1',
-    ...(live ? {} : { FISHTANK_SEED: '20261121', FISHTANK_MANUAL_TIME: '1' }),
+    DESKTOP2_USER_DATA: dataDir,
+    DESKTOP2_MODE: 'window',
+    DESKTOP2_TEST: '1',
+    DESKTOP2_WINDOW_SIZE: size,
+    DESKTOP2_TEST_RENDER_MODE: renderMode,
+    DESKTOP2_DEBUG: '1',
+    ...(live ? {} : { DESKTOP2_SEED: '20261121', DESKTOP2_MANUAL_TIME: '1' }),
     // The first window of a run was coloured differently from the later ones on the Mac (colour management of the
     // display); a fixed colour profile makes the pictures comparable.
-    ...(live || process.env.FISHTANK_CHROMIUM_FLAGS
+    ...(live || process.env.DESKTOP2_CHROMIUM_FLAGS
       ? {}
-      : { FISHTANK_CHROMIUM_FLAGS: 'force-color-profile=srgb' }),
+      : { DESKTOP2_CHROMIUM_FLAGS: 'force-color-profile=srgb' }),
   },
 });
 try {
@@ -57,7 +57,7 @@ try {
     await page.reload();
     await page.waitForFunction(() => window.__ready === true, null, { timeout: 30_000 });
   }
-  // An optional script runs in the page first, for example: "__tank.repository.getState().fish.forEach((f) => __tank.repository.dev.setPoints(f.id, 0))"
+  // An optional script runs in the page first, for example: "__scene.repository.getState().fish.forEach((f) => __scene.repository.dev.setPoints(f.id, 0))"
   if (script) {
     const result = await page.evaluate(script);
     if (result !== undefined) console.log(result);
@@ -67,9 +67,9 @@ try {
   } else {
     const steps = Math.round(Number(seconds) * 30);
     await page.evaluate((n) => {
-      for (let i = 0; i < n; i++) window.__tank.fishtank.update(1 / 30);
+      for (let i = 0; i < n; i++) window.__scene.fishtank.update(1 / 30);
       // The debug label (the only Text on the stage) shows the frame rate, which differs from run to run.
-      for (const child of window.__tank.app.stage.children) {
+      for (const child of window.__scene.app.stage.children) {
         if ('text' in child) child.visible = false;
       }
     }, steps);

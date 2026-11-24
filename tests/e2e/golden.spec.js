@@ -24,7 +24,7 @@ const GOLDEN = {
 };
 
 const snapshot = `(steps) => {
-  const { fishtank, scene, repository, clock } = window.__tank;
+  const { fishtank, scene, repository, clock } = window.__scene;
   const step = (seconds) => {
     for (let t = 0; t < seconds; t += 1 / 30) fishtank.update(1 / 30);
   };

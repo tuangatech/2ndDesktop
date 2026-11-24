@@ -1,6 +1,6 @@
 // The development panel (plan Steps 3 and 5): points slider, spawn buttons, stash, and time travel by moving the
 // dev clock, so the pacing and the thresholds can be tested without waiting. Shown only in window mode with
-// FISHTANK_DEV=1. It is a tool and is not part of the product.
+// DESKTOP2_DEV=1. It is a tool and is not part of the product.
 
 const HOUR = 60 * 60 * 1000;
 

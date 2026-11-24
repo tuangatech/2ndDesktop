@@ -9,7 +9,7 @@ test.describe('the diagnostics log (NFR-7)', () => {
   test('counts the open, the minutes drawn, activity, samples and the start time', async () => {
     const dataDir = makeDataDir();
     try {
-      const app = await launch({ dataDir, env: { FISHTANK_DIAG_MS: '300' } });
+      const app = await launch({ dataDir, env: { DESKTOP2_DIAG_MS: '300' } });
       // A click counts as activity; mouse movement alone does not.
       await app.page.mouse.move(100, 100);
       await app.page.mouse.move(150, 120);

@@ -20,11 +20,11 @@ describe('sanitize', () => {
   });
 
   it('removes a macOS home folder', () => {
-    const text = sanitize('/Users/jane/Library/Application Support/Fish Tank/log', {
+    const text = sanitize('/Users/jane/Library/Application Support/2ndDesktop/log', {
       home: '/Users/jane',
       userName: 'jane',
     });
-    expect(text).toBe('~/Library/Application Support/Fish Tank/log');
+    expect(text).toBe('~/Library/Application Support/2ndDesktop/log');
   });
 
   it('removes a user folder even when the real home is not given', () => {
@@ -119,14 +119,14 @@ describe('displayPath', () => {
   };
 
   it('shows %APPDATA% on Windows and ~ on macOS, never the user name', () => {
-    const win = displayPath('C:\\Users\\Jane\\AppData\\Roaming\\Fish Tank\\records', winWhere);
-    expect(win).toBe('%APPDATA%\\Fish Tank\\records');
-    const mac = displayPath('/Users/jane/Library/Application Support/Fish Tank/records', {
+    const win = displayPath('C:\\Users\\Jane\\AppData\\Roaming\\2ndDesktop\\records', winWhere);
+    expect(win).toBe('%APPDATA%\\2ndDesktop\\records');
+    const mac = displayPath('/Users/jane/Library/Application Support/2ndDesktop/records', {
       platform: 'darwin',
       home: '/Users/jane',
       appData: '/Users/jane/Library/Application Support',
     });
-    expect(mac).toBe('~/Library/Application Support/Fish Tank/records');
+    expect(mac).toBe('~/Library/Application Support/2ndDesktop/records');
   });
 
   it('falls back to a sanitized path for a folder outside the usual place', () => {

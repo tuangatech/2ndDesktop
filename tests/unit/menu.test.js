@@ -50,7 +50,7 @@ describe('the tray template with the items of the tank', () => {
       'Launch at login',
       'Sound',
       'Copy diagnostics',
-      'About Fish Tank',
+      'About 2ndDesktop',
       'Quit',
     ]);
   });
@@ -128,7 +128,7 @@ describe('the tray template with the items of the tank', () => {
     expect(labels(items)).toContain('Show on desktop');
     expect(labels(items)).toContain('Quit');
     expect(find(items, 'Collect pellets')).toBeUndefined(); // nothing from the scene: the host's items only
-    expect(labels(items)[0]).toBe('Fish Tank');
+    expect(labels(items)[0]).toBe('2ndDesktop');
   });
 });
 
@@ -154,12 +154,12 @@ describe('the settings items (FR-36)', () => {
       'Launch at login',
       'Sound',
       'Copy diagnostics',
-      'About Fish Tank',
+      'About 2ndDesktop',
     ]) {
       expect(names).toContain(name);
     }
     expect(names.indexOf('Show on desktop')).toBeLessThan(names.indexOf('Always on top'));
-    expect(names.indexOf('About Fish Tank')).toBeLessThan(names.indexOf('Quit'));
+    expect(names.indexOf('About 2ndDesktop')).toBeLessThan(names.indexOf('Quit'));
   });
 
   it('has no Always on top in desktop mode (FR-20)', () => {
@@ -223,7 +223,7 @@ describe('the settings items (FR-36)', () => {
       { copyDiagnostics: () => calls.push('copy'), about: () => calls.push('about') },
     );
     find(items, 'Copy diagnostics').click();
-    find(items, 'About Fish Tank').click();
+    find(items, 'About 2ndDesktop').click();
     expect(calls).toEqual(['copy', 'about']);
   });
 });
@@ -234,18 +234,18 @@ describe('buildAppMenuTemplate (the macOS menu bar)', () => {
   const menu = (template, name) => template.find((m) => m.label === name).submenu;
 
   it('has the application, scene and Window menus, and nothing else', () => {
-    expect(app().map((m) => m.label)).toEqual(['Fish Tank', 'Scene', 'Window']);
+    expect(app().map((m) => m.label)).toEqual(['2ndDesktop', 'Scene', 'Window']);
     expect(app(undefined, {}, { sceneName: 'Tank' }).map((m) => m.label)).toEqual([
-      'Fish Tank',
+      '2ndDesktop',
       'Tank',
       'Window',
     ]);
   });
 
   it('gives the application menu About, Hide and Quit (Cmd+Q comes from the quit role)', () => {
-    const items = menu(app(), 'Fish Tank');
+    const items = menu(app(), '2ndDesktop');
     expect(items.map((i) => i.role ?? i.label).filter(Boolean)).toEqual([
-      'About Fish Tank',
+      'About 2ndDesktop',
       'hide',
       'hideOthers',
       'unhide',
@@ -280,7 +280,7 @@ describe('buildAppMenuTemplate (the macOS menu bar)', () => {
         copyDiagnostics: () => calls.push('copy'),
       },
     );
-    find(menu(template, 'Fish Tank'), 'About Fish Tank').click();
+    find(menu(template, '2ndDesktop'), 'About 2ndDesktop').click();
     find(menu(template, 'Scene'), 'Show on desktop').click();
     find(menu(template, 'Scene'), 'Copy diagnostics').click();
     expect(calls).toEqual(['about', 'desktop', 'copy']);

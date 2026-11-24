@@ -33,7 +33,7 @@ export default async function create(host) {
   const scene = new TankScene(art, repository, config);
   if (host.sound) scene.sound = host.sound;
 
-  // Measurements only (FISHTANK_FISH=8): a tank of mixed species and stages that is never saved.
+  // Measurements only (DESKTOP2_SCENE_OPTIONS='{"fish":8}'): a tank of mixed species and stages that is never saved.
   const fishCount = host.options?.fish ?? 0;
   if (fishCount) {
     repository.dev.freeze();
@@ -111,7 +111,7 @@ export default async function create(host) {
     onMenu: (id) => actions[id]?.(),
     serialize: () => repository.getState(),
     dispose: () => scene.destroy(),
-    // For tests and measurements (`window.__tank` with `?debug=1`): the tank's own objects.
+    // For tests and measurements (`window.__scene` with `?debug=1`): the tank's own objects.
     debug: { scene, repository },
   };
 }

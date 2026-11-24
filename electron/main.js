@@ -29,23 +29,38 @@ import { createRecordStore, readJson } from './store.js';
 import { createTray } from './tray.js';
 import { createUsageLog, usageLines } from './usage-log.js';
 import { startSampler } from './sampler.js';
+import { migrateOldData } from './migrate-data.js';
+import {
+  APP_ID,
+  DEV_DATA_FOLDER,
+  OLD_DATA_FOLDER,
+  OLD_DEV_DATA_FOLDER,
+  PRODUCT_NAME,
+} from './product.js';
 
 const root = path.join(import.meta.dirname, '..');
 const devUrl = process.env.VITE_DEV_SERVER_URL;
 const isDev = Boolean(devUrl) || !app.isPackaged;
 
 // Development runs use their own data folder, so they never touch a real save (tech design 14.4).
-if (process.env.FISHTANK_USER_DATA) {
-  app.setPath('userData', process.env.FISHTANK_USER_DATA);
-} else if (isDev) {
-  app.setPath('userData', path.join(app.getPath('appData'), 'Fish Tank (dev)'));
+if (process.env.DESKTOP2_USER_DATA) {
+  app.setPath('userData', process.env.DESKTOP2_USER_DATA);
+} else {
+  if (isDev) app.setPath('userData', path.join(app.getPath('appData'), DEV_DATA_FOLDER));
+  // The first start after the rename copies the saved tank and the settings from the old product's folder (a copy,
+  // never a move). A run with its own data folder (tests, screenshots) never does.
+  migrateOldData({
+    oldDir: path.join(app.getPath('appData'), isDev ? OLD_DEV_DATA_FOLDER : OLD_DATA_FOLDER),
+    newDir: app.getPath('userData'),
+    log: (message) => log(message),
+  });
 }
-app.setAppUserModelId('com.weekend.fishtank');
+app.setAppUserModelId(APP_ID);
 
 // The channel ("release" or "test") comes from package.json; only development and test builds read tuning.json (D25).
 const channel = (() => {
   try {
-    return JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).fishtank?.channel;
+    return JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).desktop2?.channel;
   } catch {
     return 'release';
   }
@@ -73,8 +88,8 @@ function readTuning() {
   return read.status === 'ok' && read.data && typeof read.data === 'object' ? read.data : null;
 }
 
-// Attach test only: extra Chromium switches, for example FISHTANK_CHROMIUM_FLAGS=disable-gpu-compositing.
-for (const flag of (process.env.FISHTANK_CHROMIUM_FLAGS ?? '').split(',').filter(Boolean)) {
+// Attach test only: extra Chromium switches, for example DESKTOP2_CHROMIUM_FLAGS=disable-gpu-compositing.
+for (const flag of (process.env.DESKTOP2_CHROMIUM_FLAGS ?? '').split(',').filter(Boolean)) {
   // `name` or `name=value` (for example force-color-profile=srgb).
   const [name, ...value] = flag.split('=');
   if (value.length) app.commandLine.appendSwitch(name, value.join('='));
@@ -82,10 +97,10 @@ for (const flag of (process.env.FISHTANK_CHROMIUM_FLAGS ?? '').split(',').filter
 }
 
 // Test runs open real windows; the sounds still run (a test can check them) but nothing reaches the speakers.
-if (process.env.FISHTANK_TEST === '1') app.commandLine.appendSwitch('mute-audio');
+if (process.env.DESKTOP2_TEST === '1') app.commandLine.appendSwitch('mute-audio');
 
 // Attach test only: software drawing instead of the GPU, to see whether GPU compositing is the problem.
-if (process.env.FISHTANK_NO_GPU === '1') app.disableHardwareAcceleration();
+if (process.env.DESKTOP2_NO_GPU === '1') app.disableHardwareAcceleration();
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
@@ -93,7 +108,7 @@ if (!gotLock) app.quit();
 // A small log that testers can send back (Step 1 desktop attach test). Never contains file paths of the user.
 function log(message) {
   const line = `${new Date().toISOString()} ${message}`;
-  console.log(`[fishtank] ${line}`);
+  console.log(`[2nddesktop] ${line}`);
   try {
     fs.mkdirSync(app.getPath('userData'), { recursive: true });
     fs.appendFileSync(path.join(app.getPath('userData'), 'desktop-spike.log'), `${line}\n`);
@@ -149,15 +164,16 @@ app.on('child-process-gone', (_event, details) =>
 );
 
 async function loadRenderer(win, mode, extra = {}) {
-  if (process.env.FISHTANK_DEBUG === '1') {
+  if (process.env.DESKTOP2_DEBUG === '1') {
     win.webContents.on('console-message', (event) => log('renderer console: ' + event.message));
   }
-  // Test and screenshot runs can draw the desktop scene in an ordinary window (FISHTANK_TEST=1 only).
-  const testMode = process.env.FISHTANK_TEST === '1' ? process.env.FISHTANK_TEST_RENDER_MODE : null;
+  // Test and screenshot runs can draw the desktop scene in an ordinary window (DESKTOP2_TEST=1 only).
+  const testMode = process.env.DESKTOP2_TEST === '1' ? process.env.DESKTOP2_TEST_RENDER_MODE : null;
   const query = { mode: testMode || mode, ...extra };
-  if (process.env.FISHTANK_DEBUG === '1') query.debug = '1';
-  if (process.env.FISHTANK_DEV === '1') query.dev = '1';
-  if (process.env.FISHTANK_FISH) query.fish = process.env.FISHTANK_FISH;
+  if (process.env.DESKTOP2_DEBUG === '1') query.debug = '1';
+  if (process.env.DESKTOP2_DEV === '1') query.dev = '1';
+  // Development switches for the scene, a JSON object (renderer/sceneOptions.js).
+  if (process.env.DESKTOP2_SCENE_OPTIONS) query.options = process.env.DESKTOP2_SCENE_OPTIONS;
   if (devUrl) {
     await win.loadURL(`${devUrl}?${new URLSearchParams(query)}`);
   } else {
@@ -178,7 +194,7 @@ const crashRestart = createCrashRestart({
 
 let controller = null;
 let fallbackNote = null;
-// False when the mode was forced by FISHTANK_MODE: such a run must not change the player's saved choice.
+// False when the mode was forced by DESKTOP2_MODE: such a run must not change the player's saved choice.
 let rememberMode = true;
 
 // The tray menu is built from what the scene reports every time it opens (FR-61, D38): the main process asks the
@@ -362,8 +378,8 @@ function showAbout() {
     // 'none', not 'info': on Windows a standard type shows its own symbol (a blue "i") instead of the app icon.
     type: 'none',
     icon: nativeImage.createFromPath(appIconPath),
-    title: 'About Fish Tank',
-    message: 'Fish Tank',
+    title: `About ${PRODUCT_NAME}`,
+    message: PRODUCT_NAME,
     detail,
     buttons: ['OK'],
     noLink: true,
@@ -476,12 +492,12 @@ app.whenReady().then(async () => {
     mode: controller.getMode(),
     activeScene: readSettings().activeScene,
     tuning: readTuning(),
-    // Test runs only (FISHTANK_TEST=1): a fixed random seed, and time that moves only when a test steps the scene.
+    // Test runs only (DESKTOP2_TEST=1): a fixed random seed, and time that moves only when a test steps the scene.
     test:
-      process.env.FISHTANK_TEST === '1'
+      process.env.DESKTOP2_TEST === '1'
         ? {
-            seed: process.env.FISHTANK_SEED ? Number(process.env.FISHTANK_SEED) >>> 0 : null,
-            manualTime: process.env.FISHTANK_MANUAL_TIME === '1',
+            seed: process.env.DESKTOP2_SEED ? Number(process.env.DESKTOP2_SEED) >>> 0 : null,
+            manualTime: process.env.DESKTOP2_MANUAL_TIME === '1',
           }
         : null,
   }));
@@ -537,31 +553,31 @@ app.whenReady().then(async () => {
   });
   ipcMain.on('diag:note', (_event, text) => log(`renderer: ${String(text).slice(0, 2000)}`));
 
-  if (process.env.FISHTANK_ATTACH_LAB === '1') {
-    const names = process.env.FISHTANK_LAB_VARIANTS?.split(',').filter(Boolean);
+  if (process.env.DESKTOP2_ATTACH_LAB === '1') {
+    const names = process.env.DESKTOP2_LAB_VARIANTS?.split(',').filter(Boolean);
     await controller.runLab(
       names?.length ? names : undefined,
-      Number(process.env.FISHTANK_LAB_SECONDS) || 15,
-      process.env.FISHTANK_CHROMIUM_FLAGS || (process.env.FISHTANK_NO_GPU === '1' ? 'no gpu' : ''),
+      Number(process.env.DESKTOP2_LAB_SECONDS) || 15,
+      process.env.DESKTOP2_CHROMIUM_FLAGS || (process.env.DESKTOP2_NO_GPU === '1' ? 'no gpu' : ''),
     );
     app.quit();
     return;
   }
-  if (process.env.FISHTANK_SAMPLE === '1') startSampler(log, 10_000);
-  // Measurement runs only: minimize the window after N seconds and restore it after N + 30 (FISHTANK_TEST=1).
-  const minimizeAt = Number(process.env.FISHTANK_TEST_MINIMIZE_AT);
-  if (process.env.FISHTANK_TEST === '1' && minimizeAt > 0) {
+  if (process.env.DESKTOP2_SAMPLE === '1') startSampler(log, 10_000);
+  // Measurement runs only: minimize the window after N seconds and restore it after N + 30 (DESKTOP2_TEST=1).
+  const minimizeAt = Number(process.env.DESKTOP2_TEST_MINIMIZE_AT);
+  if (process.env.DESKTOP2_TEST === '1' && minimizeAt > 0) {
     setTimeout(() => controller.getWindow()?.minimize(), minimizeAt * 1000);
     setTimeout(() => controller.getWindow()?.restore(), (minimizeAt + 30) * 1000);
   }
   usage.open();
-  // Tests can ask for a short interval (FISHTANK_TEST=1 only); a normal run samples once a minute.
+  // Tests can ask for a short interval (DESKTOP2_TEST=1 only); a normal run samples once a minute.
   usage.start(
-    process.env.FISHTANK_TEST === '1'
-      ? Number(process.env.FISHTANK_DIAG_MS) || undefined
+    process.env.DESKTOP2_TEST === '1'
+      ? Number(process.env.DESKTOP2_DIAG_MS) || undefined
       : undefined,
   );
-  const start = chooseStartMode(readSettings(), process.env.FISHTANK_MODE);
+  const start = chooseStartMode(readSettings(), process.env.DESKTOP2_MODE);
   rememberMode = start.remember;
   if (start.reason) log(`starting in a window: ${start.reason}`);
   await controller.start(start.mode, start.reason ?? undefined);
