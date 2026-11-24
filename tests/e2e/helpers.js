@@ -20,14 +20,14 @@ export async function launch({ dataDir, env = {} } = {}) {
     args: ['.'],
     env: {
       ...cleanEnv,
-      FISHTANK_USER_DATA: dir,
-      FISHTANK_MODE: 'window',
-      FISHTANK_DEBUG: '1',
-      FISHTANK_TEST: '1',
+      DESKTOP2_USER_DATA: dir,
+      DESKTOP2_MODE: 'window',
+      DESKTOP2_DEBUG: '1',
+      DESKTOP2_TEST: '1',
       // The same fish, decorations and swimming on every run, and a scene that moves only when a test steps it, so
-      // no test depends on where a fish happens to swim. A test that needs real time passes FISHTANK_MANUAL_TIME: '0'.
-      FISHTANK_SEED: '20261121',
-      FISHTANK_MANUAL_TIME: '1',
+      // no test depends on where a fish happens to swim. A test that needs real time passes DESKTOP2_MANUAL_TIME: '0'.
+      DESKTOP2_SEED: '20261121',
+      DESKTOP2_MANUAL_TIME: '1',
       ...env,
     },
   });

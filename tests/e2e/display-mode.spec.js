@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { launch, makeDataDir } from './helpers.js';
 
-// FISHTANK_MODE is left empty so the app chooses its own mode from the settings, as a normal launch does.
-const own = { FISHTANK_MODE: '' };
+// DESKTOP2_MODE is left empty so the app chooses its own mode from the settings, as a normal launch does.
+const own = { DESKTOP2_MODE: '' };
 const readSettings = (dir) => JSON.parse(fs.readFileSync(path.join(dir, 'settings.json'), 'utf8'));
 const remove = (dir) => {
   try {
@@ -58,7 +58,7 @@ test.describe('the safe start (FR-64)', () => {
         path.join(dataDir, 'settings.json'),
         JSON.stringify({ displayMode: 'desktop', desktopAttempt: 'ok' }),
       );
-      const app = await launch({ dataDir }); // FISHTANK_MODE=window, as in all other tests
+      const app = await launch({ dataDir }); // DESKTOP2_MODE=window, as in all other tests
       await app.close();
       expect(readSettings(dataDir)).toMatchObject({ displayMode: 'desktop', desktopAttempt: 'ok' });
     } finally {

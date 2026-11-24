@@ -5,7 +5,7 @@ test('first launch: the window opens with 2 fry of different species, 4 floating
   const { page, close } = await launch();
   try {
     await page.waitForSelector('canvas');
-    const info = await page.evaluate(() => window.fishtank.getAppInfo());
+    const info = await page.evaluate(() => window.desktop2.getAppInfo());
     expect(info.version).toMatch(/^\d+\.\d+\.\d+/);
     expect(info.mode).toBe('window');
 
@@ -14,7 +14,7 @@ test('first launch: the window opens with 2 fry of different species, 4 floating
     expect(await page.evaluate(() => document.documentElement.dataset.mode)).toBe('window');
 
     const result = await page.evaluate(() => {
-      const { scene, repository } = window.__tank;
+      const { scene, repository } = window.__scene;
       const { fish, tank } = repository.getState();
       return {
         species: fish.map((f) => f.species),
@@ -41,7 +41,7 @@ test('resizing many times keeps the number of textures on the graphics card the 
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(() => {
-      const { fishtank, app } = window.__tank;
+      const { fishtank, app } = window.__scene;
       const textures = () => app.renderer.texture.managedTextures.length;
       const draw = () => app.renderer.render(app.stage);
       const { width, height } = app.screen;
@@ -74,19 +74,19 @@ test('a lost graphics context reloads the page, and the tank draws again', async
     expect(
       await page.evaluate(
         () =>
-          window.__tank.app.renderer.texture.managedTextures.find((t) =>
+          window.__scene.app.renderer.texture.managedTextures.find((t) =>
             /fishtank-.*png/.test(t.label),
           ).resource?.width,
       ),
     ).toBe(0); // the atlas image was closed after the upload
     await page.evaluate(() => {
       window.__beforeReload = true;
-      window.__tank.app.renderer.gl.getExtension('WEBGL_lose_context').loseContext();
+      window.__scene.app.renderer.gl.getExtension('WEBGL_lose_context').loseContext();
     });
     await page.waitForFunction(
       () => window.__ready === true && window.__beforeReload === undefined,
     );
-    expect(await page.evaluate(() => window.__tank.scene.fishes.size)).toBe(2);
+    expect(await page.evaluate(() => window.__scene.scene.fishes.size)).toBe(2);
   } finally {
     await close();
   }

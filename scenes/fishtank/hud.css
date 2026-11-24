@@ -127,7 +127,7 @@
   color: #12324f;
 }
 
-/* The slice's development panel (FISHTANK_DEV=1, window mode only). */
+/* The slice's development panel (DESKTOP2_DEV=1, window mode only). */
 #dev {
   position: fixed;
   left: 6px;

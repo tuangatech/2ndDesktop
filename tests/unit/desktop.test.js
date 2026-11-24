@@ -412,8 +412,8 @@ describe('desktop mode controller', () => {
     });
 
     it('does not remember or limit a window made for a screenshot or a test', async () => {
-      process.env.FISHTANK_TEST = '1';
-      process.env.FISHTANK_WINDOW_SIZE = '900x600';
+      process.env.DESKTOP2_TEST = '1';
+      process.env.DESKTOP2_WINDOW_SIZE = '900x600';
       try {
         const saved = [];
         const controller = makeController({ saveWindowBounds: (bounds) => saved.push(bounds) });
@@ -423,8 +423,8 @@ describe('desktop mode controller', () => {
         expect(created[0].options).toMatchObject({ width: 900, height: 600 });
         expect(created[0].aspectRatio).toBeUndefined();
       } finally {
-        delete process.env.FISHTANK_TEST;
-        delete process.env.FISHTANK_WINDOW_SIZE;
+        delete process.env.DESKTOP2_TEST;
+        delete process.env.DESKTOP2_WINDOW_SIZE;
       }
     });
   });

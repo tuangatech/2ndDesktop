@@ -1,6 +1,8 @@
 // "Copy diagnostics" (FR-36, NFR-7): a text the player can paste into a message. It must never contain the home
 // folder or the user name, so everything goes through `sanitize`. Plain Node (no Electron), so it is unit-tested.
 
+import { PRODUCT_NAME } from './product.js';
+
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
@@ -111,7 +113,7 @@ export function buildText(data, who) {
   } = data;
   const size = (d) => `${d.width} x ${d.height} at ${Math.round(d.scale * 100)}%`;
   const lines = [
-    'Fish Tank diagnostics',
+    `${PRODUCT_NAME} diagnostics`,
     `Version: ${appInfo.version}`,
     `System: ${appInfo.platform} ${appInfo.arch ?? ''}`.trim(),
     `Electron ${appInfo.electron}, Chromium ${appInfo.chrome}`,

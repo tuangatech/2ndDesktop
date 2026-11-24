@@ -22,11 +22,11 @@ const app = await electron.launch({
   args: [root],
   env: {
     ...env,
-    FISHTANK_USER_DATA: dataDir,
-    FISHTANK_MODE: 'window',
-    FISHTANK_TEST: '1',
-    FISHTANK_DEBUG: '1',
-    FISHTANK_FISH: String(fish),
+    DESKTOP2_USER_DATA: dataDir,
+    DESKTOP2_MODE: 'window',
+    DESKTOP2_TEST: '1',
+    DESKTOP2_DEBUG: '1',
+    DESKTOP2_SCENE_OPTIONS: JSON.stringify({ fish }),
   },
 });
 try {
@@ -39,7 +39,7 @@ try {
   const run = (feeding) =>
     page.evaluate(
       ({ frames, feeding }) => {
-        const { fishtank, scene, app, repository } = window.__tank;
+        const { fishtank, scene, app, repository } = window.__scene;
         app.ticker.stop();
         for (let i = 0; i < frames; i++) {
           if (feeding && i % 60 === 0) {

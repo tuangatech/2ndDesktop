@@ -3,6 +3,8 @@
 // list of settings items (FR-36) shared by the tray menu and the gear menu of the window; Phase 2 adds Reduced
 // effects and Day/night lighting there.
 
+import { PRODUCT_NAME } from './product.js';
+
 const MAX_LABEL = 60;
 const MAX_ITEMS = 12;
 const ID_PATTERN = /^[A-Za-z][A-Za-z0-9_-]{0,39}$/;
@@ -82,7 +84,7 @@ export function settingsItems(settings, handlers, { withAbout = true } = {}) {
       click: () => handlers.copyDiagnostics?.(),
     },
   );
-  if (withAbout) items.push({ label: 'About Fish Tank', click: () => handlers.about?.() });
+  if (withAbout) items.push({ label: `About ${PRODUCT_NAME}`, click: () => handlers.about?.() });
   return items;
 }
 
@@ -94,7 +96,7 @@ export function settingsItems(settings, handlers, { withAbout = true } = {}) {
  *          quit: () => void}} handlers
  */
 export function buildTrayTemplate(sceneMenu, settings, note, handlers) {
-  const items = [{ label: sceneMenu?.line ?? 'Fish Tank', enabled: false }];
+  const items = [{ label: sceneMenu?.line ?? PRODUCT_NAME, enabled: false }];
   if (note) items.push({ label: note, enabled: false });
   items.push({ type: 'separator' });
   for (const item of sceneMenu?.items ?? []) {
@@ -130,15 +132,15 @@ export function buildTrayTemplate(sceneMenu, settings, note, handlers) {
 export function buildAppMenuTemplate(settings, handlers, { dev = false, sceneName = null } = {}) {
   const template = [
     {
-      label: 'Fish Tank',
+      label: PRODUCT_NAME,
       submenu: [
-        { label: 'About Fish Tank', click: () => handlers.about?.() },
+        { label: `About ${PRODUCT_NAME}`, click: () => handlers.about?.() },
         { type: 'separator' },
-        { role: 'hide', label: 'Hide Fish Tank' },
+        { role: 'hide', label: `Hide ${PRODUCT_NAME}` },
         { role: 'hideOthers' },
         { role: 'unhide' },
         { type: 'separator' },
-        { role: 'quit', label: 'Quit Fish Tank' },
+        { role: 'quit', label: `Quit ${PRODUCT_NAME}` },
       ],
     },
     {

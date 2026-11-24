@@ -8,21 +8,24 @@ import { makeRng } from '../shared/rng.js';
 import { loadAtlas, releaseAtlasImage } from './art.js';
 import { resolveScene } from './scenes.js';
 import { reloadAllowed } from './reloadGuard.js';
+import { parseSceneOptions } from './sceneOptions.js';
 import { SoundPlayer } from './SoundPlayer.js';
 
 const params = new URLSearchParams(location.search);
 const mode = params.get('mode') === 'desktop' ? 'desktop' : 'window';
 const debug = params.get('debug') === '1';
 const dev = params.get('dev') === '1';
-// Measurements only (FISHTANK_FISH=8): the number of fish at the start, species and stages mixed. The scene reads it.
-const fishCount = Number(params.get('fish')) || 0;
+// Development switches for the scene (DESKTOP2_SCENE_OPTIONS, a JSON object). `fish` is the tank's, a named exception
+// until `options` is a free bag: the number of fish at the start, species and stages mixed (measurements only).
+const sceneOptions = parseSceneOptions(params.get('options'));
+const fishCount = Number(sceneOptions.fish) || 0;
 // Attach test (docs/desktop-spike.md): a big label and a magenta page background, so what is painted can be told apart.
 const lab = params.get('lab') === '1';
 const variant = params.get('variant') ?? '';
 const tag = params.get('tag') ?? '';
 document.documentElement.dataset.mode = mode;
 
-const api = window.fishtank;
+const api = window.desktop2;
 
 async function boot() {
   const info = (await api?.getAppInfo?.()) ?? {};
@@ -97,7 +100,7 @@ async function boot() {
     rng: makeRng(info.test?.seed ?? (Date.now() ^ Math.floor(Math.random() * 2 ** 32)) >>> 0),
     tuning: info.tuning ?? null,
     ui: { root: mode === 'window' ? document.getElementById('hud') : null },
-    options: { fish: fishCount, dev: dev && mode === 'window' },
+    options: { ...sceneOptions, fish: fishCount, dev: dev && mode === 'window' },
     mode,
     log: (message) => {
       console.log(message);
@@ -146,7 +149,7 @@ async function boot() {
   });
   api?.onAction((id) => scene.onMenu(id));
   // For screenshots and measurements (scripts/shot.mjs).
-  if (debug || dev) window.__tank = { ...scene.debug, clock, fishtank: scene, app, sound };
+  if (debug || dev) window.__scene = { ...scene.debug, clock, fishtank: scene, app, sound };
 
   let label = null;
   if (debug) {

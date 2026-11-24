@@ -1,7 +1,7 @@
 {
-  "name": "fish-tank",
+  "name": "2nddesktop",
   "version": "0.0.1",
-  "description": "A calm desktop aquarium for macOS and Windows",
+  "description": "A living scene on your desktop, for Windows and macOS",
   "private": true,
   "type": "module",
   "main": "electron/main.js",
@@ -10,7 +10,7 @@
   "engines": {
     "node": ">=24 <25"
   },
-  "fishtank": {
+  "desktop2": {
     "channel": "release"
   },
   "scripts": {
@@ -23,10 +23,10 @@
     "test": "vitest run",
     "test:e2e": "npm run build && playwright test",
     "dist": "npm run build && node scripts/koffi-universal.mjs && electron-builder",
-    "dist:test": "npm run build && node scripts/koffi-universal.mjs && electron-builder -c.extraMetadata.fishtank.channel=test",
-    "attach:lab": "npm run build && cross-env FISHTANK_ATTACH_LAB=1 FISHTANK_DEBUG=1 FISHTANK_LAB_SECONDS=10 FISHTANK_LAB_VARIANTS=base+show,layered+show,opaque+show,in-workerw+show node scripts/run-electron.mjs .",
-    "attach:lab:nogpu": "npm run build && cross-env FISHTANK_ATTACH_LAB=1 FISHTANK_DEBUG=1 FISHTANK_LAB_SECONDS=10 FISHTANK_NO_GPU=1 FISHTANK_LAB_VARIANTS=base,layered,opaque,base+show,layered+show,opaque+show node scripts/run-electron.mjs .",
-    "attach:lab:swcomp": "npm run build && cross-env FISHTANK_ATTACH_LAB=1 FISHTANK_DEBUG=1 FISHTANK_LAB_SECONDS=10 FISHTANK_CHROMIUM_FLAGS=disable-gpu-compositing FISHTANK_LAB_VARIANTS=base,layered,opaque,base+show,layered+show,opaque+show node scripts/run-electron.mjs .",
+    "dist:test": "npm run build && node scripts/koffi-universal.mjs && electron-builder -c.extraMetadata.desktop2.channel=test",
+    "attach:lab": "npm run build && cross-env DESKTOP2_ATTACH_LAB=1 DESKTOP2_DEBUG=1 DESKTOP2_LAB_SECONDS=10 DESKTOP2_LAB_VARIANTS=base+show,layered+show,opaque+show,in-workerw+show node scripts/run-electron.mjs .",
+    "attach:lab:nogpu": "npm run build && cross-env DESKTOP2_ATTACH_LAB=1 DESKTOP2_DEBUG=1 DESKTOP2_LAB_SECONDS=10 DESKTOP2_NO_GPU=1 DESKTOP2_LAB_VARIANTS=base,layered,opaque,base+show,layered+show,opaque+show node scripts/run-electron.mjs .",
+    "attach:lab:swcomp": "npm run build && cross-env DESKTOP2_ATTACH_LAB=1 DESKTOP2_DEBUG=1 DESKTOP2_LAB_SECONDS=10 DESKTOP2_CHROMIUM_FLAGS=disable-gpu-compositing DESKTOP2_LAB_VARIANTS=base,layered,opaque,base+show,layered+show,opaque+show node scripts/run-electron.mjs .",
     "assets": "node scripts/make-icons.mjs && node scripts/build-assets.mjs",
     "shot": "node scripts/shot.mjs",
     "measure:alloc": "node scripts/measure-alloc.mjs",

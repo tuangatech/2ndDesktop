@@ -27,11 +27,11 @@ A living scene on the desktop of Windows and macOS (Electron + PixiJS v8, plain 
 
 ## Commands
 
-`npm ci`, `npm run dev`, `npm run build && npm start`, `npm test`, `npm run lint`, `npm run format:check`, `npm run test:e2e` (builds first), `npm run shot -- <name> <WxH> <window|desktop> <seconds>`, `npm run assets`. Use `npm start` and `npm run dev`, never bare `electron`. Environment variables start with `FISHTANK_` until the rename PR, then `DESKTOP2_`. If `node_modules/electron/dist` is missing after `npm ci`, run `node node_modules/electron/install.js` once.
+`npm ci`, `npm run dev`, `npm run build && npm start`, `npm test`, `npm run lint`, `npm run format:check`, `npm run test:e2e` (builds first), `npm run shot -- <name> <WxH> <window|desktop> <seconds>`, `npm run assets`. Use `npm start` and `npm run dev`, never bare `electron`. Environment variables start with `DESKTOP2_`; `DESKTOP2_SCENE_OPTIONS` holds JSON for the scene, for example `{"fish":8}`. The page bridge is `window.desktop2`, and the debug and test global is `window.__scene` (`?debug=1`). If `node_modules/electron/dist` is missing after `npm ci`, run `node node_modules/electron/install.js` once.
 
 ## Proofs after every PR (BOOTSTRAP 7.3)
 
-Unit tests 341 and e2e tests 38, all green; the golden hash of `tests/e2e/golden.spec.js` unchanged (never update the snapshot); the two baseline pictures give the same hashes on the same machine (hashes in `docs/STATUS.md`); lint and format clean; `Check (macos-latest)` and `Check (windows-latest)` green. If a proof fails, stop and find what moved; do not widen the step.
+Unit tests 356 (the 341 of the import plus the 15 of the rename PR) and e2e tests 38, all green; the golden hash of `tests/e2e/golden.spec.js` unchanged (never update the snapshot); the two baseline pictures give the same hashes on the same machine (hashes in `docs/STATUS.md`); lint and format clean; `Check (macos-latest)` and `Check (windows-latest)` green. If a proof fails, stop and find what moved; do not widen the step.
 
 ## Rules to keep
 

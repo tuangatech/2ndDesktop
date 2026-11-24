@@ -5,7 +5,7 @@ import { HOUR, launch, makeDataDir } from './helpers.js';
 
 // Steps the scene by simulated time, so a test does not have to wait for the real clock.
 const stepScene = `(seconds) => {
-  const { fishtank } = window.__tank;
+  const { fishtank } = window.__scene;
   for (let t = 0; t < seconds; t += 1 / 30) fishtank.update(1 / 30);
 }`;
 
@@ -14,7 +14,7 @@ test('a new player collects, feeds both fish fully and is told that everyone is 
   try {
     const result = await page.evaluate(`(async () => {
       const step = ${stepScene};
-      const { scene, repository } = window.__tank;
+      const { scene, repository } = window.__scene;
       // Click the four floating pellets (FR-4).
       for (const e of [...scene.floating.active]) {
         const p = scene.floating.position(e);
@@ -59,7 +59,7 @@ test('feed until full stops when the stash runs out and never overfeeds', async 
   try {
     const result = await page.evaluate(`(async () => {
       const step = ${stepScene};
-      const { scene, repository, fishtank } = window.__tank;
+      const { scene, repository, fishtank } = window.__scene;
       repository.dev.addStash(3); // three pellets for two fish that could take four
       fishtank.onMenu('feedUntilFull');
       const running = scene.getSummary().feeding;
@@ -85,7 +85,7 @@ test('a paused tank ends a tray feed with the same numbers as a visible one', as
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(`(async () => {
-      const { scene, repository, fishtank } = window.__tank;
+      const { scene, repository, fishtank } = window.__scene;
       scene.setVisible(false);
       fishtank.onMenu('collect');
       fishtank.onMenu('feedUntilFull');
@@ -130,7 +130,7 @@ test('the tray protocol: the scene menu on request and an action from the menu',
     await app.evaluate(({ BrowserWindow }) =>
       BrowserWindow.getAllWindows()[0].webContents.send('scene:action', 'collect'),
     );
-    await page.waitForFunction(() => window.__tank.repository.getStash() === 4);
+    await page.waitForFunction(() => window.__scene.repository.getStash() === 4);
     expect(await ask()).toMatchObject({ line: '4 in the stash · 2 hungry' });
   } finally {
     await close();
@@ -142,7 +142,7 @@ test('once a day: juvenile on day 3, adult on day 10, the first egg on day 3', a
   try {
     const days = await page.evaluate(
       ({ HOUR }) => {
-        const { scene, repository, clock, fishtank } = window.__tank;
+        const { scene, repository, clock, fishtank } = window.__scene;
         const original = repository.getState().fish.map((f) => f.id);
         const rows = [];
         scene.setVisible(false); // apply every meal at once
@@ -179,7 +179,7 @@ test('a click goes to a pellet first, then a fish, then the water, and the sand 
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(() => {
-      const { scene, repository } = window.__tank;
+      const { scene, repository } = window.__scene;
       const fish = [...scene.fishes.values()];
       let touched = 0;
       scene.onFishTouched = () => touched++;
@@ -247,7 +247,7 @@ test('a full stash refuses a pellet and says so', async () => {
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(() => {
-      const { scene, repository } = window.__tank;
+      const { scene, repository } = window.__scene;
       repository.dev.addStash(30);
       const e = scene.floating.active[0];
       const p = scene.floating.position(e);
@@ -271,7 +271,7 @@ test('an egg hatches into a new fish; a full tank keeps the egg', async () => {
   try {
     const result = await page.evaluate(`(async () => {
       const step = ${stepScene};
-      const { scene, repository } = window.__tank;
+      const { scene, repository } = window.__scene;
       repository.dev.addFed(12);
       const egg = scene.eggs.resting[0];
       const eggsBefore = scene.eggs.resting.length;
@@ -305,7 +305,7 @@ test('touching a fish shows its label, and a fish can be renamed', async () => {
   const { page, close } = await launch();
   try {
     await page.evaluate(() => {
-      const { scene } = window.__tank;
+      const { scene } = window.__scene;
       // A click goes to an egg first, then a floating pellet, then a fish (FR-46). The pellets float at random
       // places, so one can lie under the fish and take the click: park them far to the left first.
       scene.floating.active.forEach((pellet, i) => {
@@ -325,7 +325,7 @@ test('touching a fish shows its label, and a fish can be renamed', async () => {
     await input.press('Enter');
     await expect(label.locator('.title')).toHaveText('Bubbles');
     const names = await page.evaluate(() =>
-      window.__tank.repository.getState().fish.map((f) => f.name),
+      window.__scene.repository.getState().fish.map((f) => f.name),
     );
     expect(names).toContain('Bubbles');
 
@@ -344,7 +344,7 @@ test('a curious fish comes over to a moving pointer and a shy fish swims away', 
   try {
     const result = await page.evaluate(`(async () => {
       const step = ${stepScene};
-      const { scene, repository } = window.__tank;
+      const { scene, repository } = window.__scene;
       // Find one seed of each personality.
       const seeds = { curious: null, shy: null };
       for (let seed = 1; seed < 60 && (!seeds.curious || !seeds.shy); seed++) {
@@ -362,7 +362,7 @@ test('a curious fish comes over to a moving pointer and a shy fish swims away', 
         for (let t = 0; t < 2.5; t += 1 / 30) {
           // The pointer wiggles a little, so it counts as moving.
           scene.setPointer(pointer.x + Math.sin(t * 6) * 3, pointer.y);
-          window.__tank.fishtank.update(1 / 30);
+          window.__scene.fishtank.update(1 / 30);
         }
         const after = Math.hypot(pointer.x - fish.pos.x, pointer.y - fish.pos.y);
         const state = fish.reaction.state;
@@ -393,7 +393,7 @@ test.describe('the saved record', () => {
       try {
         saved = await first.page.evaluate(`(async () => {
           const step = ${stepScene};
-          const { scene, repository, fishtank } = window.__tank;
+          const { scene, repository, fishtank } = window.__scene;
           fishtank.onMenu('collect');
           fishtank.onMenu('feed');
           fishtank.onMenu('feed');
@@ -408,10 +408,10 @@ test.describe('the saved record', () => {
       const second = await launch({ dataDir });
       try {
         const loaded = await second.page.evaluate(() => ({
-          state: window.__tank.repository.getState(),
-          status: window.__tank.repository.status,
-          eggs: window.__tank.scene.eggs.resting.length,
-          shown: [...window.__tank.scene.fishes.values()].map((f) => f.points),
+          state: window.__scene.repository.getState(),
+          status: window.__scene.repository.status,
+          eggs: window.__scene.scene.eggs.resting.length,
+          shown: [...window.__scene.scene.fishes.values()].map((f) => f.points),
         }));
         expect(loaded.status).toMatchObject({ source: 'saved', problem: null });
         expect(loaded.state.fish).toEqual(saved.fish);
@@ -434,7 +434,7 @@ test.describe('the saved record', () => {
     try {
       const first = await launch({ dataDir });
       const file = first.recordFile;
-      await first.page.evaluate(() => window.__tank.fishtank.onMenu('collect')); // timer runs from now
+      await first.page.evaluate(() => window.__scene.fishtank.onMenu('collect')); // timer runs from now
       await first.close();
 
       const record = readRecord(file);
@@ -442,7 +442,7 @@ test.describe('the saved record', () => {
       fs.writeFileSync(file, JSON.stringify(record));
       const second = await launch({ dataDir });
       const three = await second.page.evaluate(
-        () => window.__tank.repository.getState().tank.floatingPellets,
+        () => window.__scene.repository.getState().tank.floatingPellets,
       );
       await second.close();
       expect(three).toBe(3);
@@ -452,8 +452,8 @@ test.describe('the saved record', () => {
       fs.writeFileSync(file, JSON.stringify(again));
       const third = await launch({ dataDir });
       const sprites = await third.page.evaluate(() => ({
-        floating: window.__tank.repository.getState().tank.floatingPellets,
-        sprites: window.__tank.scene.floating.active.length,
+        floating: window.__scene.repository.getState().tank.floatingPellets,
+        sprites: window.__scene.scene.floating.active.length,
       }));
       await third.close();
       expect(sprites).toEqual({ floating: 16, sprites: 16 });
@@ -468,21 +468,21 @@ test.describe('the saved record', () => {
     try {
       // A different seed for the second run, so a new tank is told apart from the old one by its fish ids.
       const run = async (action, seed = '20261121') => {
-        const app = await launch({ dataDir, env: { FISHTANK_SEED: seed } });
+        const app = await launch({ dataDir, env: { DESKTOP2_SEED: seed } });
         try {
           return await app.page.evaluate(action);
         } finally {
           await app.close();
         }
       };
-      const ids = await run(() => window.__tank.repository.getState().fish.map((f) => f.id));
+      const ids = await run(() => window.__scene.repository.getState().fish.map((f) => f.id));
       const recordFile = path.join(dataDir, 'records', 'fishtank.json');
       fs.writeFileSync(recordFile, 'garbage');
       fs.writeFileSync(path.join(dataDir, 'records', 'fishtank.backup.json'), 'garbage too');
       const fresh = await run(
         () => ({
-          ids: window.__tank.repository.getState().fish.map((f) => f.id),
-          problem: window.__tank.repository.status.problem,
+          ids: window.__scene.repository.getState().fish.map((f) => f.id),
+          problem: window.__scene.repository.status.problem,
           toast: document.getElementById('toast').textContent,
         }),
         '777',
@@ -504,23 +504,23 @@ test.describe('the saved record', () => {
     try {
       // A different seed for the second run, so a new tank is told apart from the old one by its fish ids.
       const run = async (action, seed = '20261121') => {
-        const app = await launch({ dataDir, env: { FISHTANK_SEED: seed } });
+        const app = await launch({ dataDir, env: { DESKTOP2_SEED: seed } });
         try {
           return await app.page.evaluate(action);
         } finally {
           await app.close();
         }
       };
-      const ids = await run(() => window.__tank.repository.getState().fish.map((f) => f.id));
+      const ids = await run(() => window.__scene.repository.getState().fish.map((f) => f.id));
       const records = path.join(dataDir, 'records');
       const file = path.join(records, 'fishtank.json');
       const record = JSON.parse(fs.readFileSync(file, 'utf8'));
       record.state.tank.stash = 99; // more than the stash holds
       fs.writeFileSync(file, JSON.stringify(record));
       const loaded = await run(() => ({
-        ids: window.__tank.repository.getState().fish.map((f) => f.id),
-        status: window.__tank.repository.status,
-        stash: window.__tank.repository.getStash(),
+        ids: window.__scene.repository.getState().fish.map((f) => f.id),
+        status: window.__scene.repository.status,
+        stash: window.__scene.repository.getStash(),
       }));
       expect(loaded.ids).toEqual(ids);
       expect(loaded.status).toMatchObject({ source: 'saved', problem: 'repaired' });
@@ -544,8 +544,8 @@ test.describe('the saved record', () => {
       const app = await launch({ dataDir });
       try {
         const result = await app.page.evaluate(() => {
-          window.__tank.fishtank.onMenu('collect');
-          return window.__tank.repository.status.problem;
+          window.__scene.fishtank.onMenu('collect');
+          return window.__scene.repository.status.problem;
         });
         expect(result).toBe('newer');
       } finally {

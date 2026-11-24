@@ -11,7 +11,7 @@ import {
 describe('quoteArg', () => {
   it('leaves a plain argument alone and quotes one with spaces', () => {
     expect(quoteArg('--login')).toBe('--login');
-    expect(quoteArg('C:\\Fish Tank\\app')).toBe('"C:\\Fish Tank\\app"');
+    expect(quoteArg('C:\\Some App\\app')).toBe('"C:\\Some App\\app"');
     expect(quoteArg('')).toBe('""');
   });
 

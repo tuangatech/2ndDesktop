@@ -18,7 +18,7 @@ export const FALLBACK_NOTE = "Couldn't show on the desktop, showing in a window"
 /**
  * The mode to start in.
  * @param {{displayMode?: string, desktopAttempt?: string}} settings
- * @param {string} [forced]  FISHTANK_MODE, for development and tests: used as is and nothing is remembered
+ * @param {string} [forced]  DESKTOP2_MODE, for development and tests: used as is and nothing is remembered
  * @returns {{mode: 'window' | 'desktop', reason: string | null, remember: boolean}}
  *   `reason` is set when the desktop was skipped because the last attempt did not finish.
  */

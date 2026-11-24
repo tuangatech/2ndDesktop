@@ -7,7 +7,7 @@ test('three pellets dropped quickly are all eaten before they reach the sand, ro
     // Simulated time and fixed drop places and fish, so every run and every system sees the same thing.
     const result = await page.evaluate(
       ({ HOUR }) => {
-        const { scene, repository, clock, fishtank } = window.__tank;
+        const { scene, repository, clock, fishtank } = window.__scene;
         // Four grown fish of mixed species, so each round of three pellets finds hungry fish (a fish holds two).
         const species = Object.keys(scene.art.species);
         repository.dev.setFish(
@@ -67,7 +67,7 @@ test('fish never leave the tank and swim up and down over a minute of simulated 
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(() => {
-      const { scene, repository } = window.__tank;
+      const { scene, repository } = window.__scene;
       // Six fish of mixed species and stages instead of the start fish.
       const ids = Object.keys(scene.art.species);
       // Fixed seeds, so every run and every system sees the same fish.
@@ -152,7 +152,7 @@ test('a fish never shrinks back when it eats its pellets in another order than t
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(() => {
-      const { scene, repository, fishtank } = window.__tank;
+      const { scene, repository, fishtank } = window.__scene;
       const species = Object.keys(scene.art.species)[0];
       // One fry 40 points short of a juvenile: two pellets make it one.
       repository.dev.setFish([{ species, seed: 6200, points: 60 }]);
@@ -183,7 +183,7 @@ test('the tray feeds the hungriest fish first, so a fish that swims deep is not 
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(() => {
-      const { scene, repository } = window.__tank;
+      const { scene, repository } = window.__scene;
       const species = Object.keys(scene.art.species);
       repository.dev.setFish(
         Array.from({ length: 3 }, (_, i) => ({
@@ -210,7 +210,7 @@ test('hungry fish chasing food keep a little apart', async () => {
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(() => {
-      const { scene, repository, fishtank, clock } = window.__tank;
+      const { scene, repository, fishtank, clock } = window.__scene;
       const species = Object.keys(scene.art.species);
       const layout = scene.layout;
       // The pellet sway uses Math.random: a seeded stand-in makes every run the same.
