@@ -46,12 +46,19 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 - The design set: the live path references (`platform/01`, `02`, `05`, `scenes/fishtank-migration.md`) now name the new paths. `platform/03` section 7.2 and `platform/04` are plans written against the fish-tank tree, so each got a note saying which old path is which new one instead of a rewrite; the `docs/03`, `05`, `06` row of `platform/03` now says "copied" (Q5).
 - Not in this PR: `CHANGELOG.md` and `CONTRIBUTING.md` (0.5), the labels, the `.claude/settings.json` allow list and `npm run verify` (recommendations 4 and 6 of BOOTSTRAP section 9).
 
+## Mac numbers (Apple silicon, 2026-11-24; details in `TODO-Win.md`, Re W-1 to W-6)
+
+- Same counts as Windows at every step: 341 and 38 at the import, 356 and 38 after the rename and the move (26 e2e in `scenes/fishtank/tests/`). Lint and format clean. `npm run dist:test` builds an unsigned arm64 dmg; the app starts from it, copies the saved tank from `fish-tank`, and leaves the old folder unchanged.
+- Desktop picture: `a2e0342be199455d6e3f01c46f59e7637bbc2a746b829d25afbabce922e4be7c`, stable, unchanged by the rename and the move.
+- **Window picture: one of two values on this Mac**, not predictable between runs. Import and old checkout: `1d1d14fc…d8cc` or `044576b4…57be`. After the rename and the move (strip says "2ndDesktop"): `a7bc21be9ed5e7493b298e79852427e26b3f6a383f241c32cf58cafec746c245` or `d6fd2e7e8478b812de9a26e1ef4b923769bf3598ea2b93e5aebe3eb21f196367`. The two differ by at most 12 of 255 in nearly every pixel (a tone shift). The proof on the Mac is therefore "one of the two known values". Cause not known.
+- Not seen yet (the session has no permission to read the menu bar or the screen): the menu bar title, the tray icon, the unsigned "Not Opened" first open. Owner to look.
+
 ## Open hand checks
 
 None yet. Step 6 of BOOTSTRAP 7.2 lists them (desktop mode, Win+D, display change, installed build, launch at login; the Mac: menu bar, Dock, first open of an unsigned build).
 
 ## Waiting for the owner
 
-- The Mac session: W-1 in `TODO-Mac.md` (baseline, pictures and 7.3 proofs on the Mac, review of PR 1).
+- The Mac session has answered W-1 to W-6 in `TODO-Win.md` (see "Mac numbers"). Open from it: a follow-up PR for the CI file (`ci.yml` treats a very large code PR as markdown only), and the owner's look at the Mac menu bar and tray icon.
 - Labels (later). Private vulnerability reporting is on (BOOTSTRAP section 3); `SECURITY.md` names it.
 - Decision for the owner: squash and rebase merging are still enabled on the repository (BOOTSTRAP section 3 says they may stay off); the ruleset requires a PR with both checks and zero approving reviews, with the repository admin role allowed to bypass.
