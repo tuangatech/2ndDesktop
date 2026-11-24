@@ -1,12 +1,16 @@
-# docs: design documents for 2ndDesktop (the new platform repository)
+# docs: the documents of 2ndDesktop
 
-Written 2026-11-23 from the Fish Tank project, to start a new repository named **2ndDesktop**. Draft v0.2: the owner reviews, then these files move to `docs/` of the new repository (see `platform/03`, section 7).
+Written 2026-11-23 from the Fish Tank project and moved into this repository on 2026-11-24 (draft v0.2, kept current from here on: a change to the code that the design says otherwise changes both in the same PR).
 
 2ndDesktop puts a living scene on the desktop of a Windows or macOS computer. Scenes are folders that contributors write and players download from a scene store in the tray menu.
 
 **Start here:** `00-2nddesktop-specs.md`, the short product specification (overview, goals, users, concepts, how people use it, features by version, risks, open questions).
 
-**Starting the new repository:** `bootstrap/BOOTSTRAP.md` (decisions to ask, GitHub settings, the dev environment on Windows and Mac, the repository structure, what to copy, the order of PRs, a draft `CLAUDE.md`, the first message for each session) and `bootstrap/import-from-fishtank.mjs` (the one-time copy script, tested).
+**Working on the repository:** `STATUS.md` (where we are and what is next; read it right after `../CLAUDE.md`), `DECISIONS.md` (the dated log of decisions; it wins over prose), `art-style.md` (the style guide for all art).
+
+**How the repository was started:** `bootstrap/BOOTSTRAP.md` (decisions, GitHub settings, the dev environment on Windows and Mac, the repository structure, the order of PRs, the first message for each session) and `bootstrap/import-from-fishtank.mjs` (the one-time copy script, already run).
+
+**The archive:** `reference/README.md` says what an old name, number or path in a comment means; `reference/fishtank-v1/` holds the old Fish Tank spec, plans and measurements.
 
 ## Platform (5 documents)
 

@@ -4,6 +4,8 @@ Status: Draft v0.1, 2026-11-23, updated after the Mac review. This is the detail
 
 Facts below come from the fish-tank checkout at `main`, commit `9d18c90` (2026-11-23): file sizes were counted, imports and names were searched. Test files were classified by their names and imports, not read one by one; check that when moving them.
 
+> **Paths in this document** are those of the fish-tank repository, before the move of bootstrap step 4: `electron/` is now `app/main/`, `renderer/` is `app/page/`, the host unit tests are in `tests/host/`, and the tank's own tests are in `scenes/fishtank/tests/`. The text describes the plan and the facts of that day, so it was not rewritten.
+
 ## 1. What there is to reuse
 
 | Part | Size | What it is |

@@ -228,6 +228,8 @@ Copyright is not a problem: the owner holds the copyright of the code and the ar
 
 ### 7.2 The reuse map
 
+> **Paths in this map** are those of the fish-tank repository (`electron/`, `renderer/`, `tests/unit`); the move of bootstrap step 4 made them `app/main/`, `app/page/`, `tests/host` and `scenes/fishtank/tests`. The map is the plan, so it was not rewritten.
+
 *A detailed version, with the leaks of the tank into the host, the method of three commits and the icon, is in `04-reuse-from-fish-tank.md`; the tank's own folder structure is in `../scenes/fishtank-migration.md`. Where the two differ, document 4 is newer: for example it copies `docs/01` and `docs/02` to `docs/reference/fishtank-v1/`, because about 250 comments in the code cite their numbers.*
 
 | Old path | New place | What to do |
@@ -246,7 +248,7 @@ Copyright is not a problem: the owner holds the copyright of the code and the ar
 | `.github/workflows/ci.yml`, `electron-builder.yml` (**mac target `dmg` and `zip` with `arch: arm64`, `electronLanguages: en`**; document 3, section 3.4), `eslint.config.js`, `.prettierrc`, `.editorconfig`, `.gitattributes`, `vitest`, `playwright` configs | root | Keep; change the app id and product name |
 | `assets/` (tray icons, app icon, species art) | per scene and `app/assets/` | The fish art goes to `scenes/fishtank/art/`; the app and tray icons are replaced when the name is chosen |
 | `docs/perf-notes.md`, `desktop-spike.md`, `edit-mode-spike.md`, `gate-g1.md` | `docs/reference/` | Keep: they are measurements and findings that cost real time |
-| `docs/03`, `05`, `06` | not copied | Replaced by these documents; keep the old repository as the archive. FR and NFR numbers do not carry over |
+| `docs/03`, `05`, `06` | `docs/reference/fishtank-v1/` | Copied after all (decision Q5 of the bootstrap, `DEC-43`), because comments in the code cite them; `docs/reference/README.md` says what the old numbers mean |
 | `docs/01`, `docs/02` | `docs/reference/fishtank-v1/` | Kept as the record of the old requirements and design (document 4, section 4, which is newer and wins) |
 | `docs/04-implementation-phase-1.md` | `docs/reference/` (optional) | Decisions D1 to D36 are useful history, not required |
 | `CLAUDE.md` | root | Rewrite for the new layout, keep the working rules (the calm tone moves to the tank's DESIGN.md; keep: Node 24, Electron pinned, sandbox on, LF endings, the review rules for PRs, no attribution lines) |
