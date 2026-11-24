@@ -61,4 +61,14 @@ Not asked: an installer build. Reply as `Re W-2` in `TODO-Win.md`.
 
 Reply as `Re W-3` in `TODO-Win.md`.
 
+### W-4: read the documents PR (PR 4, branch `docs`)
+
+`tuangatech/2ndDesktop#4`, BOOTSTRAP 7.2 step 5. Read-only, no build needed; do it after W-3.
+
+1. Read `SECURITY.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/`, `.github/CODEOWNERS` and `docs/reference/README.md`. Say what is wrong, unclear or missing; in particular whether the macOS wording is right (Apple silicon only, the unsigned first open).
+2. In `docs/reference/README.md`: pick three old comments from the code (a `D` number, an `FR` number, a `docs/...md` path) and check that the table leads to the right place.
+3. `git diff -M main...docs --stat`: the style guide shows as a rename.
+
+Reply as `Re W-4` in `TODO-Win.md`.
+
 ## Closed
