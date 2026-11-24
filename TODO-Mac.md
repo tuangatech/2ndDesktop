@@ -50,4 +50,15 @@ Reply under "Replies" in `TODO-Win.md` as `Re W-1`: commit tested, PASS/FAIL per
 
 Not asked: an installer build. Reply as `Re W-2` in `TODO-Win.md`.
 
+### W-3: review and run the move PR (PR 3, branch `move`) on the Mac
+
+`tuangatech/2ndDesktop#3`, BOOTSTRAP 7.2 step 4. W-2 (the rename) was merged as `902c508` before you reached it: if you have not run W-2 yet, run its checks on `main` after this one, or on `902c508`. Do W-3 with the branch checked out (`git fetch && git checkout move`, then `npm ci`).
+
+1. 7.3 proofs: `npm test` (28 files, 356 tests), `npm run test:e2e` (38; 26 of them now sit in `scenes/fishtank/tests/`; golden hash unchanged), lint, format. If a count is lower, a test folder is missing from `vitest.config.js` or `playwright.config.js`: say which.
+2. The two pictures (`shasum -a 256`): they must equal your W-2 hashes (the window strip says "2ndDesktop").
+3. **`npm run dist:test` on the Mac** (the step asks for it on both systems): it builds a dmg for Apple silicon. Open the dmg once and start the app (it is unsigned: right-click, Open). Say if it starts, if the menu bar shows "2ndDesktop", and if the tray icon shows. Do not commit anything it writes (`release/` is git-ignored).
+4. Review (read-only): the paths in `package.json` (`main`), `electron-builder.yml` (`files:`), `vite.config.js`, `app/page/art.js` and `app/page/scenes.js` (the glob paths), `eslint.config.js`, `vitest.config.js`, `playwright.config.js`; and that `git diff -M main...move --stat` shows renames, not delete-and-add.
+
+Reply as `Re W-3` in `TODO-Win.md`.
+
 ## Closed
