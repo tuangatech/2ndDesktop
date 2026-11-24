@@ -1,5 +1,5 @@
 // The tank's own textures: the one made in code, and the scale of its atlas. The host loads the atlas itself (D40,
-// renderer/art.js) and hands it to the scene as `host.art`.
+// app/page/art.js) and hands it to the scene as `host.art`.
 import { Texture } from 'pixi.js';
 import atlasData from '../../assets/spritesheets/fishtank.json';
 import { makeRng } from '../../shared/rng.js';

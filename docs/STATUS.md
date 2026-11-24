@@ -6,7 +6,7 @@ Kept current at every merge. A new session reads this right after `CLAUDE.md`.
 
 - Version being worked on: **0.1** (the tank in the new repository, nothing changed), then 0.2.
 - Last step done: BOOTSTRAP 7.2 steps 1 to 3. The first commit is on `main`; the import (PR 1) is merged as `1e2edf3` and tagged `v0.0.0-import`; the rename (PR 2) is merged as `902c508`. The ruleset of BOOTSTRAP section 3 and the repository settings are applied.
-- Next: step 4 (the move into the new layout). The Mac reports on W-1 (the import) and W-2 (the rename) in parallel.
+- In review: step 4 (the move into the new layout), PR `move`. Next: step 5 (documents). The Mac reports on W-1 (the import) and W-2 (the rename) in parallel.
 
 ## Baseline before any change (Windows, 2026-11-24, source fish-tank at `458922d`)
 
@@ -32,6 +32,13 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 - Golden hash unchanged (state `784820e6e804d032`, graph `5be771c4e5cb12a9`), 38 e2e tests green. The desktop picture is byte-identical to the baseline.
 - **The window picture changed on purpose**: the strip at the top of the window says "2ndDesktop" instead of "Fish Tank". A pixel comparison with the import picture finds 904 different pixels, all inside the box x 12 to 109, y 10 to 26 (the title text); nothing else moved. The new hash was the same on two runs. The Mac records its own pair.
 - `FISHTANK_ID` is not an environment variable: it is the exported scene id constant of the tank (`scenes/fishtank/index.js`) and stays. The key `fishtank` inside `window.__scene` (the tank's scene object, used by the tests) also stays until the tank's folder is regrouped.
+
+## The move PR (BOOTSTRAP 7.2 step 4)
+
+- `git mv`: `electron/` to `app/main/`, `renderer/` to `app/page/`; the host unit tests to `tests/host/`; the tank's own tests (9 unit, 4 end-to-end: `backdrop`, `layout`, `palette`, `pacing`, `pointer`, `repository`, `rules`, `species`, `steering`; `feeding`, `game`, `golden`, `step6`) to `scenes/fishtank/tests/`. Git sees every file as a rename. `build/` and `assets/` stay where they are (they move with the tank regrouping).
+- Counts unchanged: 28 files, 356 unit tests; 38 e2e tests (26 of them in `scenes/fishtank/tests/`). The golden hash is unchanged and the file differs from before only in its import paths and one comment. Both pictures give the same hashes as after the rename PR (`B7FDD3D1…8251` and `231D72E8…E2DC`).
+- Paths fixed: `package.json` `main`, `electron-builder.yml` `files:`, Vite root and out dir (the build still goes to `dist/renderer/`), the glob paths of `art.js` and `scenes.js`, the ESLint globs (the tests of a scene are outside the scene clock rule), the Vitest include and the Playwright `testMatch`.
+- `npm run dist:test` built the Windows installer; the unpacked app starts in window mode, saves its records and settings, and its asar holds `app/main/`, the page and the tray images. The installer itself was not run (a hand check). The Mac has not built anything yet.
 
 ## Open hand checks
 

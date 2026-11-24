@@ -21,9 +21,9 @@ A living scene on the desktop of Windows and macOS (Electron + PixiJS v8, plain 
 - The decisions of `docs/bootstrap/BOOTSTRAP.md` section 2 are made: do not ask them again.
 - One concern per PR, under about 400 changed lines where possible. Never mix a move with a rename.
 
-## Layout (today, until the move of BOOTSTRAP 7.2 step 4)
+## Layout
 
-`electron/` main process; `renderer/` host page; `scenes/<id>/` scenes (`scenes/fishtank/`); `shared/` (`rng.js`); `scripts/`; `tests/` (`unit/`, `e2e/`); `docs/`; `build/` and `assets/` icons. After the move: `app/main/`, `app/page/`, `tests/host/`, `scenes/fishtank/tests/` (layout in BOOTSTRAP section 5). Update this section in the PR that moves things.
+`app/main/` main process; `app/page/` host page (built by Vite into `dist/renderer/`); `scenes/<id>/` scenes (`scenes/fishtank/`, its own tests in `scenes/fishtank/tests/`); `shared/` (`rng.js`); `scripts/`; `tests/host/` (unit tests of the host) and `tests/e2e/` (host end-to-end and `helpers.js`); `docs/`; `build/` and `assets/` icons and art (they move to `app/assets/` with the tank regrouping, BOOTSTRAP section 5). Vitest runs `tests/host/` and `scenes/*/tests/`; Playwright runs `tests/e2e/` and `scenes/*/tests/*.spec.js`: a new test folder must be added to `vitest.config.js` or `playwright.config.js`, or its tests silently do not run.
 
 ## Commands
 
@@ -31,7 +31,7 @@ A living scene on the desktop of Windows and macOS (Electron + PixiJS v8, plain 
 
 ## Proofs after every PR (BOOTSTRAP 7.3)
 
-Unit tests 356 (the 341 of the import plus the 15 of the rename PR) and e2e tests 38, all green; the golden hash of `tests/e2e/golden.spec.js` unchanged (never update the snapshot); the two baseline pictures give the same hashes on the same machine (hashes in `docs/STATUS.md`); lint and format clean; `Check (macos-latest)` and `Check (windows-latest)` green. If a proof fails, stop and find what moved; do not widen the step.
+Unit tests 356 (the 341 of the import plus the 15 of the rename PR) and e2e tests 38, all green; the golden hash of `scenes/fishtank/tests/golden.spec.js` unchanged (never update the snapshot); the two baseline pictures give the same hashes on the same machine (hashes in `docs/STATUS.md`); lint and format clean; `Check (macos-latest)` and `Check (windows-latest)` green. If a proof fails, stop and find what moved; do not widen the step.
 
 ## Rules to keep
 

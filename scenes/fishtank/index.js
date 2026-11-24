@@ -1,5 +1,5 @@
 // The one entry point of the fish tank (decisions D33, D50): the host calls `create(host)` and gets back a scene that
-// follows the contract in renderer/host.js. Everything outside this folder talks to the tank through it: the host
+// follows the contract in app/page/host.js. Everything outside this folder talks to the tank through it: the host
 // knows nothing of pellets, fish or the tank's tuning.
 import { TankScene } from './TankScene.js';
 import { createLocalRepository } from './repo/LocalTankRepository.js';
@@ -13,8 +13,8 @@ import speciesData from './species.json';
 export const FISHTANK_ID = 'fishtank';
 
 /**
- * @param {import('../../renderer/host.js').SceneHost} host
- * @returns {Promise<import('../../renderer/host.js').Scene>}
+ * @param {import('../../app/page/host.js').SceneHost} host
+ * @returns {Promise<import('../../app/page/host.js').Scene>}
  */
 export default async function create(host) {
   const { config } = applyTuning(baseConfig, host.tuning ?? undefined);

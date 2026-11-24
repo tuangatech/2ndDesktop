@@ -9,23 +9,29 @@ export default [
     languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals: globals.node },
   },
   {
-    files: ['electron/preload.cjs'],
+    files: ['app/main/preload.cjs'],
     languageOptions: { sourceType: 'commonjs', globals: globals.node },
   },
   {
     // Playwright tests run code both in Node and inside the page (page.evaluate).
-    files: ['tests/e2e/**/*.js', 'scripts/shot.mjs', 'scripts/measure-alloc.mjs'],
+    files: [
+      'tests/e2e/**/*.js',
+      'scenes/*/tests/**/*.spec.js',
+      'scripts/shot.mjs',
+      'scripts/measure-alloc.mjs',
+    ],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
-    files: ['renderer/**/*.js', 'scenes/**/*.js'],
-    ignores: ['scenes/*/rules.js', 'scenes/*/config.js'],
+    files: ['app/page/**/*.js', 'scenes/**/*.js'],
+    ignores: ['scenes/*/rules.js', 'scenes/*/config.js', 'scenes/*/tests/**'],
     languageOptions: { globals: globals.browser },
   },
   {
     // A scene never reads the clock itself: host.clock is the one source of time, so the manual clock and the seed of
     // tests and `npm run shot` work for every scene (platform plan, the contract).
     files: ['scenes/**/*.js'],
+    ignores: ['scenes/*/tests/**'],
     rules: {
       'no-restricted-properties': [
         'error',
