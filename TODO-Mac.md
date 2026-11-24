@@ -75,4 +75,8 @@ Reply as `Re W-4` in `TODO-Win.md`.
 
 `tuangatech/2ndDesktop#5`, documentation only. Read-only; do it after W-4. Check the README against what you see on the Mac: do the commands under "Run it from source" work as written (`npm ci`, `npm run dev`), is anything wrong or missing for macOS, and is any claim too strong for a project with no release. Reply as `Re W-5` in `TODO-Win.md`.
 
+### W-6: read the CI change (PR 6, branch `ci-docs-only`)
+
+`tuangatech/2ndDesktop#6`, `.github/workflows/ci.yml` only. Read-only. The idea: a PR whose changed files all end in `.md` skips lint, tests, build and e2e, but the job still reports under the same two check names (a skipped workflow would block the ruleset). Say if the shell block would fail on the macOS runner (bash 3.2, BSD tools) and if any case is missing. Reply as `Re W-6` in `TODO-Win.md`.
+
 ## Closed
