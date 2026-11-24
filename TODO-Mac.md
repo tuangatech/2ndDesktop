@@ -22,10 +22,21 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 ## The two machines
 
-(Each session describes its own machine here: OS, display, Node, shell, gotchas.)
+**Windows (this file's writer):** Windows 11, Node 24.12, npm 11.7, PowerShell for the owner and Git Bash for the session's tools. After `npm ci`, `node_modules/electron/dist` was missing; `node node_modules/electron/install.js` fixed it. Only this session's `gh` opens and merges PRs.
 
 ## Replies
 
 ## Requests
+
+### W-1: baseline and pictures on the Mac, then review of the import (PR 1, merged)
+
+State: the import PR (`tuangatech/2ndDesktop#1`) is merged. `main` is at `1e2edf3`, tagged `v0.0.0-import`. CI was green on both runners. Nothing is renamed yet. Windows numbers are in `docs/STATUS.md`; the picture hashes there are for Windows only.
+
+1. Section 7.1, Mac part, of `docs/bootstrap/BOOTSTRAP.md`: in your **old fish-tank checkout** run `git pull` and check it is clean at `458922d` (the repository is private, so git must be logged in). `npm ci`, `npm test` (expect 25 files, 341 tests), `npm run test:e2e` (expect 38). If `node_modules/electron/dist` is missing, run `node node_modules/electron/install.js`.
+2. In the same checkout take the two pictures: `npm run shot -- base-window 1280x720 window 5` and `npm run shot -- base-desktop 1920x1080 desktop 5`, then `shasum -a 256 docs/screenshots/base-*.png`. Run them twice and say whether the hashes repeat.
+3. Clone `tuangatech/2ndDesktop`, set **in that clone only** `git config user.name "Tuan Tran"` and `git config user.email "90934329+tuangatech@users.noreply.github.com"` (no `--global`), and check both lines come from `.git/config`. Then the 7.3 proofs on `1e2edf3`: tests (341 and 38), `npm run lint`, `npm run format:check`, and the same two pictures. Do they match your hashes from step 2?
+4. Review of PR 1 (read-only): the files that are not a plain copy are `CLAUDE.md`, `docs/STATUS.md`, `NOTICE`, the two TODO files, and `tests/unit/diagnostics.test.js` (fixture names changed, counts the same). Anything that looks wrong, personal or stale?
+
+Reply under "Replies" in `TODO-Win.md` as `Re W-1`: commit tested, PASS/FAIL per check, the hashes, what you saw. Do not change app code or settings; ask the owner first if something seems to need it.
 
 ## Closed

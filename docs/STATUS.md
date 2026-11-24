@@ -5,8 +5,8 @@ Kept current at every merge. A new session reads this right after `CLAUDE.md`.
 ## Where we are
 
 - Version being worked on: **0.1** (the tank in the new repository, nothing changed), then 0.2.
-- Last step done: BOOTSTRAP 7.2 step 1 (first commit on `main`) and step 2 (the import, PR `import`, nothing renamed except two names in a test fixture; see below).
-- Next: merge the import PR, tag `v0.0.0-import`, create the ruleset (BOOTSTRAP section 3, with the owner's yes), then step 3 (the rename).
+- Last step done: BOOTSTRAP 7.2 steps 1 and 2. The first commit is on `main`; the import (PR 1, nothing renamed except two fixture names, see below) is merged as `1e2edf3` and tagged `v0.0.0-import`. The ruleset of BOOTSTRAP section 3 and the repository settings are applied.
+- Next: step 3 (the rename), one PR, by hand, with the table of BOOTSTRAP 7.2. Then step 4 (the move). Before that the Mac reports on W-1.
 
 ## Baseline before any change (Windows, 2026-11-24, source fish-tank at `458922d`)
 
@@ -33,6 +33,6 @@ None yet. Step 6 of BOOTSTRAP 7.2 lists them (desktop mode, Win+D, display chang
 
 ## Waiting for the owner
 
-- GitHub settings of BOOTSTRAP section 3 (all but the ruleset were proposed, not yet applied).
-- The ruleset, after the first CI run of the import PR.
-- Mac session: run the baseline and the two pictures on the Mac and report in `TODO-Win.md`.
+- The Mac session: W-1 in `TODO-Mac.md` (baseline, pictures and 7.3 proofs on the Mac, review of PR 1).
+- Not done yet: `SECURITY.md`, the PR and issue templates, `CODEOWNERS` (step 5); labels (later).
+- Decision for the owner: squash and rebase merging are still enabled on the repository (BOOTSTRAP section 3 says they may stay off); the ruleset requires a PR with both checks and zero approving reviews, with the repository admin role allowed to bypass.
