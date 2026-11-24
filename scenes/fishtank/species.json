@@ -1,0 +1,71 @@
+{
+  "tetra": {
+    "id": "tetra",
+    "name": "Tetra",
+    "frames": { "body": "tetra-body", "tail": "tetra-tail", "accent": "tetra-accent" },
+    "artLength": 200,
+    "adultLengthPx": 44,
+    "ropePoints": 10,
+    "wave": {
+      "amplitude": 0.06,
+      "wavelength": 1.15,
+      "tailBoost": 2.6,
+      "speed": 7.5,
+      "idleSpeed": 2.4
+    },
+    "baseSpeed": 34,
+    "mouth": { "x": 0.49, "y": 0.02 },
+    "depthRange": [0.12, 0.82],
+    "palettes": {
+      "fry": { "body": [196, 22, 86], "fin": [196, 18, 92], "accent": [190, 40, 80] },
+      "juvenile": { "body": [201, 42, 80], "fin": [22, 52, 88], "accent": [193, 72, 66] },
+      "adult": { "body": [206, 58, 74], "fin": [6, 78, 80], "accent": [188, 95, 56] }
+    }
+  },
+  "guppy": {
+    "id": "guppy",
+    "name": "Guppy",
+    "frames": { "body": "guppy-body", "tail": "guppy-tail", "accent": "guppy-accent" },
+    "artLength": 200,
+    "adultLengthPx": 48,
+    "ropePoints": 10,
+    "wave": {
+      "amplitude": 0.05,
+      "wavelength": 1.1,
+      "tailBoost": 1.9,
+      "speed": 8.5,
+      "idleSpeed": 2.8
+    },
+    "baseSpeed": 38,
+    "mouth": { "x": 0.48, "y": 0.0 },
+    "depthRange": [0.1, 0.68],
+    "palettes": {
+      "fry": { "body": [330, 12, 88], "fin": [48, 15, 92], "accent": [320, 20, 80] },
+      "juvenile": { "body": [340, 30, 82], "fin": [48, 55, 86], "accent": [300, 34, 70] },
+      "adult": { "body": [332, 45, 76], "fin": [42, 88, 76], "accent": [280, 52, 58] }
+    }
+  },
+  "angelfish": {
+    "id": "angelfish",
+    "name": "Angelfish",
+    "frames": { "body": "angelfish-body", "tail": "angelfish-tail", "accent": "angelfish-accent" },
+    "artLength": 200,
+    "adultLengthPx": 52,
+    "ropePoints": 10,
+    "wave": {
+      "amplitude": 0.035,
+      "wavelength": 1.5,
+      "tailBoost": 2.2,
+      "speed": 5,
+      "idleSpeed": 1.6
+    },
+    "baseSpeed": 25,
+    "mouth": { "x": 0.45, "y": 0.005 },
+    "depthRange": [0.24, 0.7],
+    "palettes": {
+      "fry": { "body": [190, 12, 90], "fin": [190, 10, 93], "accent": [200, 18, 80] },
+      "juvenile": { "body": [52, 42, 86], "fin": [190, 28, 88], "accent": [32, 38, 62] },
+      "adult": { "body": [46, 72, 78], "fin": [36, 60, 84], "accent": [22, 62, 40] }
+    }
+  }
+}

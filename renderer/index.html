@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src __CONNECT_SRC__"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fish Tank</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="stage"></div>
+    <!-- Window mode only (D5): a slim strip with the drag area and buttons. Hidden in desktop mode. -->
+    <div id="strip">
+      <span class="grip">Fish Tank</span>
+      <button id="btn-menu" title="Menu" aria-label="Menu">&#9881;</button>
+      <button id="btn-min" title="Minimize" aria-label="Minimize">&#8211;</button>
+      <button id="btn-close" title="Close" aria-label="Close">&#10005;</button>
+    </div>
+    <!-- Window mode only (D31): the scene puts its HTML here (host.ui.root). Empty in desktop mode. -->
+    <div id="hud"></div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

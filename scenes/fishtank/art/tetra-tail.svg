@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 64" width="200" height="64">
+  <title>tetra-tail (tail and fins; tinted in code by the fin color)</title>
+  <defs>
+    <linearGradient id="tailGrad" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#f4f7fb" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="finGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#e9eef4" stop-opacity="0.78"/>
+    </linearGradient>
+  </defs>
+  <!-- Forked tail. It overlaps the body (x 34 to 48), so the wave never shows a gap. -->
+  <path d="M50 32C40 28 22 13 3 5C8 18 9 26 13 32C9 38 8 46 3 59C22 51 40 36 50 32Z" fill="url(#tailGrad)"/>
+  <g fill="none" stroke="#8d9bb0" stroke-opacity="0.28" stroke-width="0.8" stroke-linecap="round">
+    <path d="M48 31.6C36 26 20 14 6 8M48 32C34 31 20 31.6 11 32M48 32.4C36 38 20 50 6 56M44 30.5C34 24 24 18 14 12M44 33.5C34 40 24 46 14 52"/>
+  </g>
+  <!-- Dorsal, anal, pelvic and pectoral fins. -->
+  <path d="M90 16C98 4 114 0 133 2C128 6 126 9 129 12C116 10 106 12 100 19Z" fill="url(#finGrad)"/>
+  <path d="M98 50C104 58 118 62 134 61C129 58 129 54 131 51C119 53 108 51 103 46Z" fill="url(#finGrad)"/>
+  <path d="M140 51C144 58 151 61 159 61C155 57 155 54 157 52Z" fill="url(#finGrad)"/>
+  <path d="M158 37C148 40 141 46 139 51C150 50 159 46 163 40Z" fill="url(#finGrad)" fill-opacity="0.8"/>
+  <g fill="none" stroke="#8d9bb0" stroke-opacity="0.28" stroke-width="0.7" stroke-linecap="round">
+    <path d="M98 17C106 8 116 5 128 4M104 15C112 9 120 7 128 7M108 52C114 56 122 58 130 58M112 50C118 53 124 55 130 55"/>
+  </g>
+</svg>

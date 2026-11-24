@@ -1,0 +1,74 @@
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #14507c;
+  font-family: 'Nunito', system-ui, sans-serif;
+  user-select: none;
+}
+
+#stage,
+#stage canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* The strip belongs to window mode only; desktop mode shows no HTML at all (D31). */
+#strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 2px 0 8px;
+  background: rgba(14, 47, 85, 0.35);
+  color: #f4fbff;
+  font-size: 12px;
+  -webkit-app-region: drag;
+}
+
+html[data-mode='desktop'] #strip {
+  display: none;
+}
+
+#strip .grip {
+  flex: 1;
+  opacity: 0.8;
+}
+
+#strip button {
+  -webkit-app-region: no-drag;
+  width: 22px;
+  height: 18px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+#strip button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* The HUD belongs to window mode too (D31). It lets clicks through to the canvas except on the label. */
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  color: #f4fbff;
+}
+
+html[data-mode='desktop'] #hud {
+  display: none;
+}

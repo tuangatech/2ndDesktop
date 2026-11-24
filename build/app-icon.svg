@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Fish Tank app icon</title>
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9be8e4"/>
+      <stop offset="0.55" stop-color="#3fb0c4"/>
+      <stop offset="1" stop-color="#14507c"/>
+    </linearGradient>
+    <linearGradient id="fish" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#c4cdd9"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#water)"/>
+  <g transform="translate(512 520)">
+    <path fill="url(#fish)" d="M-300 0C-230-150 -50-190 110-120L300-220L250 0L300 220L110 120C-50 190 -230 150 -300 0Z"/>
+    <circle cx="-190" cy="-30" r="26" fill="#14507c"/>
+  </g>
+  <g fill="#ffffff" fill-opacity="0.55">
+    <circle cx="300" cy="300" r="26"/><circle cx="360" cy="220" r="16"/><circle cx="268" cy="196" r="10"/>
+  </g>
+</svg>

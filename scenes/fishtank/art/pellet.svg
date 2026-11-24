@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <title>pellet (a round brown-gold fish food drop)</title>
+  <defs>
+    <radialGradient id="drop" cx="0.38" cy="0.32" r="0.8">
+      <stop offset="0" stop-color="#f2cd7a"/>
+      <stop offset="0.55" stop-color="#d9a441"/>
+      <stop offset="1" stop-color="#a97626"/>
+    </radialGradient>
+  </defs>
+  <circle cx="8" cy="8" r="6.6" fill="url(#drop)"/>
+  <ellipse cx="6" cy="5.4" rx="2.4" ry="1.5" fill="#fff6d6" fill-opacity="0.7" transform="rotate(-25 6 5.4)"/>
+  <circle cx="10.4" cy="10" r="0.7" fill="#8a5d1c" fill-opacity="0.35"/>
+  <circle cx="5.6" cy="10.6" r="0.5" fill="#8a5d1c" fill-opacity="0.3"/>
+</svg>

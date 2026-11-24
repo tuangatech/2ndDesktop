@@ -1,0 +1,9 @@
+{
+  "id": "fishtank",
+  "name": "Tank",
+  "version": "0.1.0",
+  "author": "Fish Tank",
+  "license": { "code": "MIT", "art": "MIT" },
+  "schema": 1,
+  "atlas": "fishtank"
+}

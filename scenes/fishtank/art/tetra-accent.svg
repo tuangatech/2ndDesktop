@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 64" width="200" height="64">
+  <title>tetra-accent (the lateral stripe; tinted in code by the accent color)</title>
+  <defs>
+    <linearGradient id="along" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.16" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.8" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="across" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#d9e1ea"/>
+    </linearGradient>
+    <filter id="soft" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="0.8"/></filter>
+  </defs>
+  <path d="M60 32.5C84 26 128 24 168 28C170 31 170 33 168 35C128 37 84 38 60 32.5Z" fill="url(#along)" filter="url(#soft)"/>
+  <path d="M74 32C98 28 130 27 160 29.4C160 30.4 160 31 160 32C130 33 98 33.6 74 32Z" fill="url(#across)" fill-opacity="0.9" filter="url(#soft)"/>
+  <path d="M96 28.2C116 27 138 27.2 158 29" fill="none" stroke="#ffffff" stroke-opacity="0.7" stroke-width="1" stroke-linecap="round"/>
+</svg>

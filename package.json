@@ -1,0 +1,56 @@
+{
+  "name": "fish-tank",
+  "version": "0.0.1",
+  "description": "A calm desktop aquarium for macOS and Windows",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.js",
+  "author": "tuangatech",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "fishtank": {
+    "channel": "release"
+  },
+  "scripts": {
+    "dev": "npm run assets && concurrently -k -n vite,electron \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 node scripts/run-electron.mjs .\"",
+    "build": "npm run assets && vite build",
+    "start": "node scripts/run-electron.mjs .",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:e2e": "npm run build && playwright test",
+    "dist": "npm run build && node scripts/koffi-universal.mjs && electron-builder",
+    "dist:test": "npm run build && node scripts/koffi-universal.mjs && electron-builder -c.extraMetadata.fishtank.channel=test",
+    "attach:lab": "npm run build && cross-env FISHTANK_ATTACH_LAB=1 FISHTANK_DEBUG=1 FISHTANK_LAB_SECONDS=10 FISHTANK_LAB_VARIANTS=base+show,layered+show,opaque+show,in-workerw+show node scripts/run-electron.mjs .",
+    "attach:lab:nogpu": "npm run build && cross-env FISHTANK_ATTACH_LAB=1 FISHTANK_DEBUG=1 FISHTANK_LAB_SECONDS=10 FISHTANK_NO_GPU=1 FISHTANK_LAB_VARIANTS=base,layered,opaque,base+show,layered+show,opaque+show node scripts/run-electron.mjs .",
+    "attach:lab:swcomp": "npm run build && cross-env FISHTANK_ATTACH_LAB=1 FISHTANK_DEBUG=1 FISHTANK_LAB_SECONDS=10 FISHTANK_CHROMIUM_FLAGS=disable-gpu-compositing FISHTANK_LAB_VARIANTS=base,layered,opaque,base+show,layered+show,opaque+show node scripts/run-electron.mjs .",
+    "assets": "node scripts/make-icons.mjs && node scripts/build-assets.mjs",
+    "shot": "node scripts/shot.mjs",
+    "measure:alloc": "node scripts/measure-alloc.mjs",
+    "sim": "node scripts/pacing-sim.js",
+    "sounds": "node scripts/sound-lab.mjs"
+  },
+  "dependencies": {
+    "koffi": "^3.3.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@fontsource/nunito": "^5.3.0",
+    "@playwright/test": "^1.65.1",
+    "@resvg/resvg-js": "^2.6.2",
+    "concurrently": "^10.0.7",
+    "cross-env": "^10.1.0",
+    "electron": "45.4.1",
+    "electron-builder": "^26.18.0",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "pixi.js": "^8.23.0",
+    "prettier": "^3.10.1",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1",
+    "wait-on": "^9.5.1"
+  }
+}

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="480" viewBox="0 0 720 480" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title>Fish Tank palette</title>
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9be8e4"/>
+      <stop offset="0.5" stop-color="#3fb0c4"/>
+      <stop offset="1" stop-color="#14507c"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="480" fill="url(#water)"/>
+  <text x="24" y="36" font-size="18" fill="#0e2f55" font-weight="600">Fish Tank palette (light, mid, dark)</text>
+
+  <g font-size="12" fill="#0e2f55">
+    <text x="24" y="76">Water</text>
+    <rect x="120" y="58" width="72" height="28" rx="6" fill="#9be8e4"/><rect x="200" y="58" width="72" height="28" rx="6" fill="#3fb0c4"/><rect x="280" y="58" width="72" height="28" rx="6" fill="#14507c"/>
+
+    <text x="24" y="116">Abyss</text>
+    <rect x="120" y="98" width="72" height="28" rx="6" fill="#0e2f55" stroke="#9be8e4" stroke-opacity="0.5"/>
+
+    <text x="24" y="156">Sand</text>
+    <rect x="120" y="138" width="72" height="28" rx="6" fill="#efdfb0"/><rect x="200" y="138" width="72" height="28" rx="6" fill="#d6bb86"/><rect x="280" y="138" width="72" height="28" rx="6" fill="#a98f5e"/>
+
+    <text x="24" y="196">Rock</text>
+    <rect x="120" y="178" width="72" height="28" rx="6" fill="#9aa7b8"/><rect x="200" y="178" width="72" height="28" rx="6" fill="#6f7e93"/><rect x="280" y="178" width="72" height="28" rx="6" fill="#4b5a70"/>
+
+    <text x="24" y="236">Weed</text>
+    <rect x="120" y="218" width="72" height="28" rx="6" fill="#7fd1a0"/><rect x="200" y="218" width="72" height="28" rx="6" fill="#46a97d"/><rect x="280" y="218" width="72" height="28" rx="6" fill="#2b7a5e"/>
+
+    <text x="24" y="276">Coral warm</text>
+    <rect x="120" y="258" width="72" height="28" rx="6" fill="#ffb09f"/><rect x="200" y="258" width="72" height="28" rx="6" fill="#f27f73"/><rect x="280" y="258" width="72" height="28" rx="6" fill="#c75a58"/>
+
+    <text x="24" y="316">Coral cool</text>
+    <rect x="120" y="298" width="72" height="28" rx="6" fill="#f6bfd0"/><rect x="200" y="298" width="72" height="28" rx="6" fill="#e293b0"/><rect x="280" y="298" width="72" height="28" rx="6" fill="#b96d8f"/>
+
+    <text x="24" y="356">Fish neutral</text>
+    <rect x="120" y="338" width="72" height="28" rx="6" fill="#ffffff"/><rect x="200" y="338" width="72" height="28" rx="6" fill="#e6ebf2"/><rect x="280" y="338" width="72" height="28" rx="6" fill="#c4cdd9"/>
+
+    <text x="24" y="396">Accents</text>
+    <rect x="120" y="378" width="72" height="28" rx="6" fill="#ffb35c"/><rect x="200" y="378" width="72" height="28" rx="6" fill="#f6df7a"/><rect x="280" y="378" width="72" height="28" rx="6" fill="#6aa8f0"/>
+    <rect x="360" y="378" width="72" height="28" rx="6" fill="#d9a441"/><text x="440" y="396">pellet</text>
+  </g>
+
+  <text x="24" y="446" font-size="12" fill="#f4fbff">Tintable fish parts are drawn in the neutral grays; the palette colors are applied in code (multiply tint).</text>
+
+  <!-- fish tint preview: one simple rounded body in neutral, then tinted copies -->
+  <g transform="translate(400 70)">
+    <g id="shape">
+      <ellipse cx="60" cy="40" rx="52" ry="22" fill="#e6ebf2"/>
+      <path d="M104 40 L146 18 Q136 40 146 62 Z" fill="#c4cdd9"/>
+      <circle cx="30" cy="34" r="4" fill="#14507c"/>
+    </g>
+    <g transform="translate(0 90)">
+      <ellipse cx="60" cy="40" rx="52" ry="22" fill="#ffb35c"/>
+      <path d="M104 40 L146 18 Q136 40 146 62 Z" fill="#f27f73"/>
+      <circle cx="30" cy="34" r="4" fill="#14507c"/>
+    </g>
+    <g transform="translate(0 180)">
+      <ellipse cx="60" cy="40" rx="52" ry="22" fill="#6aa8f0"/>
+      <path d="M104 40 L146 18 Q136 40 146 62 Z" fill="#e293b0"/>
+      <circle cx="30" cy="34" r="4" fill="#14507c"/>
+    </g>
+    <text x="0" y="274" font-size="12" fill="#f4fbff">neutral, warm and cool tints (illustration only)</text>
+  </g>
+</svg>

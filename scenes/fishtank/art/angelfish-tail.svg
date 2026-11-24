@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" width="200" height="150">
+  <title>angelfish-tail (tail, tall dorsal and anal fins, trailing pelvic fins; tinted in code by the fin color)</title>
+  <defs>
+    <linearGradient id="tailGrad" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#f4f7fb" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="dorsal" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#f4f7fb" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.72"/>
+    </linearGradient>
+    <linearGradient id="anal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f7fb" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.72"/>
+    </linearGradient>
+  </defs>
+  <!-- Tail. It overlaps the body (x 62 to 76), so the wave never shows a gap. -->
+  <path d="M76 76C60 71 36 63 12 50C6 59 8 69 11 76C8 83 6 93 12 102C36 89 60 81 76 76Z" fill="url(#tailGrad)"/>
+  <g fill="none" stroke="#8d9bb0" stroke-opacity="0.26" stroke-width="0.8" stroke-linecap="round">
+    <path d="M72 75C54 69 32 58 14 53M72 76C52 76 30 76 12 76M72 77C54 83 32 94 14 99"/>
+  </g>
+  <!-- Tall dorsal and anal fins, swept back. -->
+  <path d="M140 36C134 18 112 6 80 2C86 14 90 28 98 42C112 40 126 38 140 36Z" fill="url(#dorsal)"/>
+  <path d="M140 118C134 134 112 146 80 148C86 136 90 122 98 108C112 110 126 112 140 118Z" fill="url(#anal)"/>
+  <g fill="none" stroke="#8d9bb0" stroke-opacity="0.26" stroke-width="0.8" stroke-linecap="round">
+    <path d="M132 36C124 22 108 12 88 7M122 38C114 28 104 20 94 14M132 116C124 130 108 140 88 145M122 114C114 124 104 132 94 138"/>
+  </g>
+  <!-- Long thin pelvic fins hanging below the throat. -->
+  <path d="M156 106C163 124 165 138 160 148C155 140 152 124 150 108Z" fill="url(#anal)" fill-opacity="0.85"/>
+  <path d="M148 110C152 126 152 136 148 146C144 138 143 124 143 112Z" fill="url(#anal)" fill-opacity="0.7"/>
+</svg>
