@@ -1,0 +1,154 @@
+/* The HTML of the tank (window mode only, D31). The host's #hud lets clicks through; only the label takes them. */
+#stash {
+  position: absolute;
+  top: 28px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 6px;
+  border-radius: 11px;
+  background: rgba(14, 47, 85, 0.45);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#stash .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f2cd7a, #d9a441 55%, #a97626);
+}
+
+#toast {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  max-width: 86%;
+  padding: 5px 12px;
+  border-radius: 12px;
+  background: rgba(14, 47, 85, 0.62);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+/* The first-launch hint (spec section 8): window mode only, until the first meal. It lets clicks through. */
+#hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: 82%;
+  max-width: 420px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  background: rgba(14, 47, 85, 0.62);
+  color: #f4fbff;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+#hint.show {
+  opacity: 1;
+}
+
+/* A message that appears while the hint is open goes above it, so the two never overlap. */
+#hud:has(#hint.show) #toast {
+  bottom: 84px;
+}
+
+#label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 96px;
+  padding: 6px 10px 7px;
+  border-radius: 10px;
+  background: rgba(14, 47, 85, 0.72);
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+}
+
+#label.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+#label .title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#label .detail {
+  opacity: 0.85;
+}
+
+#label button,
+#label input {
+  margin-top: 4px;
+  font: inherit;
+  font-size: 11px;
+  border-radius: 6px;
+  border: 0;
+  padding: 2px 8px;
+}
+
+#label button {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  cursor: pointer;
+}
+
+#label button:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+#label input {
+  width: 110px;
+  margin-top: 0;
+  user-select: text;
+  color: #12324f;
+}
+
+/* The slice's development panel (FISHTANK_DEV=1, window mode only). */
+#dev {
+  position: fixed;
+  left: 6px;
+  top: 28px;
+  z-index: 5;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(14, 47, 85, 0.55);
+  color: #f4fbff;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#dev button {
+  margin-right: 4px;
+  font: inherit;
+}
+
+#dev input[type='range'] {
+  width: 120px;
+  vertical-align: middle;
+}

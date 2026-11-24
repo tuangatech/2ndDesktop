@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" width="200" height="150">
+  <title>angelfish-accent (three soft vertical bands; tinted in code by the accent color)</title>
+  <defs>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.16" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="0.36" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.64" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.84" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-80%" y="-5%" width="260%" height="110%"><feGaussianBlur stdDeviation="1.6"/></filter>
+    <!-- The bands show on the body and the two tall fins only. -->
+    <clipPath id="clip">
+      <path d="M190 76C190 70 184 62 172 54C158 44 140 34 122 30C108 28 94 36 84 50C76 60 68 70 62 74L62 78C68 82 76 92 84 102C94 116 108 124 122 122C140 118 158 108 172 98C184 90 190 82 190 76Z"/>
+      <path d="M140 36C134 18 112 6 80 2C86 14 90 28 98 42C112 40 126 38 140 36Z"/>
+      <path d="M140 118C134 134 112 146 80 148C86 136 90 122 98 108C112 110 126 112 140 118Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#clip)" fill="url(#fade)" filter="url(#soft)">
+    <!-- Through the eye, over the middle of the body, and near the tail. They lean back at the top. -->
+    <path d="M152 -4L164 -4L160 154L150 154Z" transform="translate(-4 0)"/>
+    <path d="M114 -4L126 -4L122 154L112 154Z" transform="translate(-4 0)"/>
+    <path d="M76 -4L88 -4L84 154L75 154Z" transform="translate(-2 0)"/>
+  </g>
+</svg>

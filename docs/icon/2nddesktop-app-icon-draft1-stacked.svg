@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>2ndDesktop app icon (draft 1)</title>
+  <defs>
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#34487f"/>
+      <stop offset="1" stop-color="#18254a"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fd3f4"/>
+      <stop offset="0.6" stop-color="#fcd9a8"/>
+      <stop offset="1" stop-color="#f7b79b"/>
+    </linearGradient>
+    <clipPath id="screen"><rect x="190" y="320" width="644" height="494" rx="72"/></clipPath>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#base)"/>
+  <!-- the second desktop, peeking out behind the first -->
+  <rect x="270" y="214" width="564" height="300" rx="72" fill="#5f7bc0"/>
+  <!-- the first desktop: a window onto a scene -->
+  <g clip-path="url(#screen)">
+    <rect x="190" y="320" width="644" height="494" fill="url(#sky)"/>
+    <circle cx="630" cy="498" r="74" fill="#fff4c9"/>
+    <path d="M190 660C330 560 470 590 610 650S780 640 834 612V814H190Z" fill="#86c7a0"/>
+    <path d="M190 724C350 650 520 730 834 676V814H190Z" fill="#4d9c7a"/>
+  </g>
+</svg>

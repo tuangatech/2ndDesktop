@@ -1,0 +1,37 @@
+appId: com.weekend.fishtank
+productName: Fish Tank
+copyright: Fish Tank
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/renderer/**
+  - electron/**
+  - assets/tray/*.png
+  - assets/app-icon.png
+  - package.json
+  - '!**/*.map'
+# koffi 3 ships its native code in per-platform packages (@koromix/koffi-*). Native files cannot be
+# loaded from inside the asar archive, so they are unpacked.
+asarUnpack:
+  - node_modules/koffi/**
+  - node_modules/@koromix/**
+mac:
+  category: public.app-category.entertainment
+  # The same drawing on the macOS icon grid (824 of 1024 px); build/icon.png is the Windows icon (npm run assets).
+  icon: build/icon-mac.png
+  target:
+    - target: dmg
+      arch: universal
+  # Desktop mode on macOS reads the window list through koffi for its cover check (electron/desktop-mac.js).
+  # npm installs only the koffi package of the machine's own processor; `npm run dist` adds the other one first
+  # (scripts/koffi-universal.mjs). Both end up in both halves of the universal app, and each half loads its own,
+  # so @electron/universal must be told that these files are allowed to be the same in both (x64ArchFiles).
+  x64ArchFiles: Contents/Resources/app.asar.unpacked/node_modules/@koromix/**
+win:
+  target:
+    - target: nsis
+      arch: x64
+nsis:
+  oneClick: true
+  perMachine: false

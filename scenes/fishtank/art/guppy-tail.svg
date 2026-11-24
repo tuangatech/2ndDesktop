@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <title>guppy-tail (fan tail and fins; tinted in code by the fin color)</title>
+  <defs>
+    <linearGradient id="tailGrad" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0" stop-color="#f4f7fb" stop-opacity="1"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.66"/>
+    </linearGradient>
+    <linearGradient id="finGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#e9eef4" stop-opacity="0.78"/>
+    </linearGradient>
+  </defs>
+  <!-- Fan tail. It overlaps the body (x 78 to 92), so the wave never shows a gap. -->
+  <path d="M92 41C76 37 52 20 22 9C10 5 3 12 4 22C5 31 8 37 9 41C8 45 5 51 4 60C3 70 10 77 22 73C52 62 76 45 92 41Z" fill="url(#tailGrad)"/>
+  <g fill="none" stroke="#8d9bb0" stroke-opacity="0.26" stroke-width="0.8" stroke-linecap="round">
+    <path d="M88 40C70 34 48 20 22 11M88 40.5C70 38 40 28 10 22M88 41C64 41 34 41 12 41M88 41.5C70 44 40 54 10 60M88 42C70 47 48 62 22 71"/>
+  </g>
+  <!-- Dorsal, anal and pectoral fins. -->
+  <path d="M120 25C122 12 134 5 152 7C146 11 144 16 146 23Z" fill="url(#finGrad)"/>
+  <path d="M122 57C128 66 140 70 152 68C147 65 146 61 148 58Z" fill="url(#finGrad)"/>
+  <path d="M160 44C152 48 147 54 149 58C158 56 164 51 165 46Z" fill="url(#finGrad)" fill-opacity="0.8"/>
+  <g fill="none" stroke="#8d9bb0" stroke-opacity="0.26" stroke-width="0.7" stroke-linecap="round">
+    <path d="M124 24C130 14 138 10 148 9M130 25C134 17 140 13 146 12M128 58C134 64 142 67 150 67"/>
+  </g>
+</svg>

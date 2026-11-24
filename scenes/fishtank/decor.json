@@ -1,0 +1,32 @@
+{
+  "rock-large": {
+    "frame": "rock-large",
+    "bubbleSource": true,
+    "vent": { "x": 0.45, "y": 0.1 }
+  },
+  "rock-small": {
+    "frame": "rock-small",
+    "bubbleSource": false
+  },
+  "coral-branch": {
+    "frame": "coral-branch",
+    "bubbleSource": true,
+    "vent": { "x": 0.5, "y": 0.08 },
+    "sway": { "amplitude": 0.05, "speed": 0.9 }
+  },
+  "coral-fan": {
+    "frame": "coral-fan",
+    "bubbleSource": false,
+    "sway": { "amplitude": 0.06, "speed": 0.75 }
+  },
+  "weed-tall": {
+    "frame": "weed-tall",
+    "bubbleSource": false,
+    "sway": { "amplitude": 0.1, "speed": 0.7 }
+  },
+  "weed-short": {
+    "frame": "weed-short",
+    "bubbleSource": false,
+    "sway": { "amplitude": 0.12, "speed": 0.9 }
+  }
+}

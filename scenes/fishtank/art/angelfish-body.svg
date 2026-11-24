@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" width="200" height="150">
+  <title>angelfish-body (Fish neutral tones; tinted in code by the body color)</title>
+  <defs>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cdd6e2"/>
+      <stop offset="0.36" stop-color="#f3f6fa"/>
+      <stop offset="0.7" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dde4ed"/>
+    </linearGradient>
+    <linearGradient id="back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8d9bb0" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#8d9bb0" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="clip"><path d="M190 76C190 70 184 62 172 54C158 44 140 34 122 30C108 28 94 36 84 50C76 60 68 70 62 74L62 78C68 82 76 92 84 102C94 116 108 124 122 122C140 118 158 108 172 98C184 90 190 82 190 76Z"/></clipPath>
+  </defs>
+  <path d="M190 76C190 70 184 62 172 54C158 44 140 34 122 30C108 28 94 36 84 50C76 60 68 70 62 74L62 78C68 82 76 92 84 102C94 116 108 124 122 122C140 118 158 108 172 98C184 90 190 82 190 76Z" fill="url(#skin)"/>
+  <g clip-path="url(#clip)">
+    <rect x="60" y="26" width="132" height="34" fill="url(#back)"/>
+    <path d="M80 100C104 120 140 122 186 84L186 130L80 130Z" fill="#ffffff" fill-opacity="0.3"/>
+    <g fill="none" stroke="#8d9bb0" stroke-opacity="0.14" stroke-width="1">
+      <path d="M96 52q5 6 0 12M106 44q5 6 0 12M116 40q5 6 0 12M126 40q5 6 0 12M136 44q5 6 0 12"/>
+      <path d="M92 70q5 6 0 12M102 66q5 6 0 12M112 64q5 6 0 12M122 64q5 6 0 12M132 66q5 6 0 12M142 70q5 6 0 12"/>
+      <path d="M98 88q5 6 0 12M108 86q5 6 0 12M118 86q5 6 0 12M128 88q5 6 0 12"/>
+    </g>
+  </g>
+  <path d="M158 42C150 62 150 92 158 110" fill="none" stroke="#8d9bb0" stroke-opacity="0.45" stroke-width="1.4" stroke-linecap="round"/>
+  <circle cx="171" cy="66" r="5.8" fill="#f4f7fb"/>
+  <circle cx="171.4" cy="66.2" r="4.6" fill="#1b2735"/>
+  <circle cx="173.2" cy="64.4" r="1.6" fill="#ffffff"/>
+</svg>

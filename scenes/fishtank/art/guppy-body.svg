@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
+  <title>guppy-body (Fish neutral tones; tinted in code by the body color)</title>
+  <defs>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cdd6e2"/>
+      <stop offset="0.36" stop-color="#f3f6fa"/>
+      <stop offset="0.7" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dde4ed"/>
+    </linearGradient>
+    <linearGradient id="back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8d9bb0" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#8d9bb0" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="clip"><path d="M196 41C196 33 189 26 174 23C152 19 124 22 104 30C92 35 84 38 78 40L78 42C84 44 92 47 104 52C124 60 152 63 174 59C189 56 196 49 196 41Z"/></clipPath>
+  </defs>
+  <path d="M196 41C196 33 189 26 174 23C152 19 124 22 104 30C92 35 84 38 78 40L78 42C84 44 92 47 104 52C124 60 152 63 174 59C189 56 196 49 196 41Z" fill="url(#skin)"/>
+  <g clip-path="url(#clip)">
+    <rect x="76" y="16" width="124" height="20" fill="url(#back)"/>
+    <path d="M96 52C122 60 160 62 192 56L192 70L96 70Z" fill="#ffffff" fill-opacity="0.35"/>
+    <g fill="none" stroke="#8d9bb0" stroke-opacity="0.15" stroke-width="1">
+      <path d="M104 31q4 5 0 10M112 28q4 5 0 10M120 27q4 5 0 10M128 26q4 5 0 10M136 26q4 5 0 10M144 26q4 5 0 10"/>
+      <path d="M102 44q4 5 0 10M110 45q4 5 0 10M118 46q4 5 0 10M126 46q4 5 0 10M134 46q4 5 0 10M142 46q4 5 0 10"/>
+    </g>
+  </g>
+  <path d="M166 24C160 34 160 48 166 58" fill="none" stroke="#8d9bb0" stroke-opacity="0.5" stroke-width="1.3" stroke-linecap="round"/>
+  <circle cx="181" cy="36" r="5.4" fill="#f4f7fb"/>
+  <circle cx="181.4" cy="36.2" r="4.3" fill="#1b2735"/>
+  <circle cx="183" cy="34.5" r="1.5" fill="#ffffff"/>
+</svg>
