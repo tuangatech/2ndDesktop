@@ -15,14 +15,49 @@ jobs:
         os: [macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # A change that touches only Markdown files cannot break the code, so the tests are skipped. The job itself always
+      # runs and reports under the same names, because the ruleset of `main` requires both checks: a workflow that does
+      # not start at all (paths-ignore) would leave them "expected" forever and block the pull request.
+      # Everything else runs in full: a push to `main`, a manual run, an empty or unknown diff, any other file.
+      - name: Which files changed
+        id: scope
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          full=true
+          base=""
+          if [ "$EVENT" = "pull_request" ]; then
+            base="$PR_BASE_SHA"
+          elif [ "$EVENT" = "push" ] && [ "$REF" != "refs/heads/main" ]; then
+            base=$(git merge-base origin/main HEAD || true)
+          fi
+          if [ -n "$base" ]; then
+            files=$(git diff --name-only --no-renames "$base" HEAD)
+            echo "Changed files:"
+            echo "$files"
+            if [ -n "$files" ] && ! echo "$files" | grep -qvE '\.md$'; then
+              full=false
+            fi
+          fi
+          echo "Full check: $full"
+          echo "full=$full" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run lint
+        if: steps.scope.outputs.full == 'true'
       - run: npm run format:check
       - run: npm test
+        if: steps.scope.outputs.full == 'true'
       - run: npm run build
+        if: steps.scope.outputs.full == 'true'
       # Desktop mode is checked by hand on real machines: a CI runner has no real desktop to attach to.
       - run: npx playwright test
+        if: steps.scope.outputs.full == 'true'
