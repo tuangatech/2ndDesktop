@@ -71,4 +71,8 @@ Reply as `Re W-3` in `TODO-Win.md`.
 
 Reply as `Re W-4` in `TODO-Win.md`.
 
+### W-5: read the README PR (PR 5, branch `readme`)
+
+`tuangatech/2ndDesktop#5`, documentation only. Read-only; do it after W-4. Check the README against what you see on the Mac: do the commands under "Run it from source" work as written (`npm ci`, `npm run dev`), is anything wrong or missing for macOS, and is any claim too strong for a project with no release. Reply as `Re W-5` in `TODO-Win.md`.
+
 ## Closed
