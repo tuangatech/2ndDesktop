@@ -39,4 +39,15 @@ State: the import PR (`tuangatech/2ndDesktop#1`) is merged. `main` is at `1e2edf
 
 Reply under "Replies" in `TODO-Win.md` as `Re W-1`: commit tested, PASS/FAIL per check, the hashes, what you saw. Do not change app code or settings; ask the owner first if something seems to need it.
 
+### W-2: review and run the rename PR (PR 2, branch `rename`) on the Mac
+
+`tuangatech/2ndDesktop#2`, BOOTSTRAP 7.2 step 3. Do it after W-1, with the branch checked out (`git fetch && git checkout rename`, then `npm ci`).
+
+1. 7.3 proofs: `npm test` (expect 28 files, 356 tests), `npm run test:e2e` (38, golden hash unchanged), lint, format.
+2. The two pictures again (`shasum -a 256`). Expect: the desktop picture equals your W-1 hash; the window picture differs only in the strip title (it says "2ndDesktop"). Say whether the new window hash repeats on two runs.
+3. Mac only: `npm run dev` opens, the menu bar shows "2ndDesktop" (About, Hide, Quit), the second menu says "Tank", and the Window menu is there. Try the copy of the saved tank: if you have an old `~/Library/Application Support/Fish Tank (dev)` folder with a `records/` folder, the first run should create `2ndDesktop (dev)` with a copy and log one line; the old folder must be unchanged. Do not delete anything.
+4. Review: `electron/migrate-data.js` and `electron/main.js` (the start-up block), `electron/product.js`, `electron-builder.yml` (`arch: arm64`, `electronLanguages: en`), and the rename table in the commit message. Anything missed, or renamed that should stay?
+
+Not asked: an installer build. Reply as `Re W-2` in `TODO-Win.md`.
+
 ## Closed
