@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const player = fileURLToPath(new URL('../renderer/SoundPlayer.js', import.meta.url));
+const player = fileURLToPath(new URL('../app/page/SoundPlayer.js', import.meta.url));
 
 const page = `<!doctype html>
 <meta charset="utf-8">

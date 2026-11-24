@@ -3,7 +3,7 @@
 // Run: npx electron spikes/edit-mode/win.mjs   (from the repository root; quit a running tank first; unset
 // ELECTRON_RUN_AS_NODE). The log is written to the temp folder as edit-mode-spike.log.
 // A tiny Electron app that attaches a "tank" window behind the desktop icons exactly like the app does (it uses the
-// repository's electron/desktop-win.js), then tries two ways of entering a mode in which the scene takes clicks:
+// repository's app/main/desktop-win.js), then tries two ways of entering a mode in which the scene takes clicks:
 //   S: a separate full work-area window on top (the attached tank stays where it is)
 //   R: the attached window is destroyed, the overlay shown, and on Done the attached window is made again
 // It measures time, focus and click delivery, and prints what a person must look at on the screen.
@@ -26,7 +26,7 @@ const log = (message) => {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 log('script started');
-const win32 = await import(pathToFileURL(`${repo}/electron/desktop-win.js`).href);
+const win32 = await import(pathToFileURL(`${repo}/app/main/desktop-win.js`).href);
 log('desktop-win.js imported');
 const koffi = createRequire(`${repo}/package.json`)('koffi');
 log('koffi loaded');

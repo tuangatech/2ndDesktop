@@ -4,7 +4,7 @@
   "description": "A living scene on your desktop, for Windows and macOS",
   "private": true,
   "type": "module",
-  "main": "electron/main.js",
+  "main": "app/main/main.js",
   "author": "tuangatech",
   "license": "MIT",
   "engines": {

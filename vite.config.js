@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 
 const project = fileURLToPath(new URL('.', import.meta.url));
-const root = fileURLToPath(new URL('./renderer', import.meta.url));
+const root = fileURLToPath(new URL('./app/page', import.meta.url));
 
 // The Content-Security-Policy in index.html allows the dev server's WebSocket only while developing.
 const csp = {
@@ -17,6 +17,6 @@ export default defineConfig({
   root,
   base: './',
   plugins: [csp],
-  build: { outDir: '../dist/renderer', emptyOutDir: true, target: 'esnext' },
+  build: { outDir: '../../dist/renderer', emptyOutDir: true, target: 'esnext' },
   server: { port: 5173, strictPort: true, fs: { allow: [project] } },
 });

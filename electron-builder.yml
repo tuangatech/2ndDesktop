@@ -6,7 +6,7 @@ directories:
   buildResources: build
 files:
   - dist/renderer/**
-  - electron/**
+  - app/main/**
   - assets/tray/*.png
   - assets/app-icon.png
   - package.json
@@ -25,7 +25,7 @@ mac:
   target:
     - target: dmg
       arch: arm64
-  # Desktop mode on macOS reads the window list through koffi for its cover check (electron/desktop-mac.js).
+  # Desktop mode on macOS reads the window list through koffi for its cover check (app/main/desktop-mac.js).
   # npm installs only the koffi package of the machine's own processor; `npm run dist` adds the other one first
   # (scripts/koffi-universal.mjs). The first Mac download is Apple silicon only (arch: arm64 above); these two lines
   # stay so that a universal build still works if x64 comes back (x64ArchFiles tells @electron/universal that the

@@ -64,7 +64,7 @@ const ax = koffi.load(
 );
 const axTrusted = ax.func('bool AXIsProcessTrusted()');
 
-const mac = await import(`${repo}/electron/desktop-mac.js`);
+const mac = await import(`${repo}/app/main/desktop-mac.js`);
 const windowsHere = () =>
   mac.listWindows().map((w) => ({ ...w, ours: w.pid === process.pid, layer: w.layer }));
 
@@ -91,7 +91,7 @@ const who = () => {
   if (f === process.pid) return 'this app';
   return before && f === before ? 'the app that was in front before' : 'another app';
 };
-/** macOS ignores a hide that comes early in a launch: retry as electron/desktop.js hideDock does. */
+/** macOS ignores a hide that comes early in a launch: retry as app/main/desktop.js hideDock does. */
 async function hideDock() {
   const started = Date.now();
   let tries = 0;
@@ -125,7 +125,7 @@ async function run() {
     `display ${bounds.width}x${bounds.height}, work area ${wa.x},${wa.y} ${wa.width}x${wa.height}`,
   );
 
-  /** The attached tank as the app makes it on the Mac (electron/desktop.js, startDesktopMode). */
+  /** The attached tank as the app makes it on the Mac (app/main/desktop.js, startDesktopMode). */
   async function makeAttached() {
     const started = Date.now();
     const win = new BrowserWindow({
