@@ -10,6 +10,8 @@ Written 2026-11-23 from the Fish Tank project and moved into this repository on 
 
 **How the repository was started:** `bootstrap/BOOTSTRAP.md` (decisions, GitHub settings, the dev environment on Windows and Mac, the repository structure, the order of PRs, the first message for each session) and `bootstrap/import-from-fishtank.mjs` (the one-time copy script, already run).
 
+**Reviews:** `reviews/` holds dated reviews of the code and the design, with the findings and what became of each (the first: `reviews/2026-11-25-host-security-review.md`).
+
 **The archive:** `reference/README.md` says what an old name, number or path in a comment means; `reference/fishtank-v1/` holds the old Fish Tank spec, plans and measurements.
 
 ## Platform (5 documents)
