@@ -6,6 +6,8 @@
 
 The project is a work in progress and has no release yet. Until the first public release (version 0.3), only the latest commit on `main` is supported. After that, the latest release is.
 
+On macOS the first download is for Apple silicon only (Intel Macs are not supported), and it is unsigned until version 0.3: the "Not Opened" warning and the "Open Anyway" step in Privacy & Security are expected and are not a vulnerability.
+
 ## Report a vulnerability
 
 Please do **not** open a public issue for a security problem.

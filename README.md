@@ -19,19 +19,19 @@ More scenes are ideas for later; see [`docs/scenes/`](docs/scenes/) and the road
 
 - **Desktop mode** shows the scene behind your icons and takes no clicks. **Window mode** is a small window you can move and resize. Everything you can do also lives in the tray menu.
 - **Polite by default:** it pauses when the desktop is covered or hidden, runs at no more than 30 frames per second on the desktop, and stays within a memory budget.
-- **Private:** no account, no telemetry, no server. Your saved progress stays on your computer. The only data the app sends is a bug report you choose to send.
-- **Offline first.** A scene that wants the network must ask through the app, with your consent.
+- **Private:** no account, no telemetry, no server. Your saved progress stays on your computer. The app sends nothing by itself: a bug report is text you copy from the tray menu and post yourself.
+- **Offline first.** By design, a scene that wants the network must ask through the app, with your consent (scenes from outside come later; today there is no network use).
 
 ## Run it from source
 
-You need Node 24 (`.nvmrc`) and npm.
+You need Node 24 (`.nvmrc`; the repository pins it in `engines`, so on a machine whose default Node is newer, run `fnm use` or `nvm use` first) and npm. On a Mac the app runs on Apple silicon, macOS 13 or later.
 
 ```
 npm ci
 npm run dev
 ```
 
-`npm run dev` opens the app in window mode with live reload. To run a build instead: `npm run build && npm start`.
+`npm run dev` opens the app with live reload, in the saved display mode (window mode on a first run; if the saved mode is desktop, it opens on your desktop). To run a build instead: `npm run build && npm start`.
 
 If `npm ci` finishes but the app says Electron is missing, run `node node_modules/electron/install.js` once.
 
@@ -40,10 +40,10 @@ Other commands:
 | Command | What it does |
 | --- | --- |
 | `npm test` | Unit tests (Vitest) |
-| `npm run test:e2e` | Builds, then runs the end-to-end tests (Playwright for Electron) |
+| `npm run test:e2e` | Builds, then runs the end-to-end tests (Playwright for Electron; real windows open for a minute or two) |
 | `npm run lint`, `npm run format:check` | ESLint and Prettier |
 | `npm run shot -- <name> <WxH> <window or desktop> <seconds>` | A reproducible picture of the scene, written to `docs/screenshots/` |
-| `npm run dist` | Builds an installer (Windows) or a dmg (macOS, Apple silicon) into `release/` |
+| `npm run dist` | Builds an installer (Windows) or a dmg (macOS, Apple silicon) into `release/`; needs the network (it downloads Electron and, on a Mac, a second native package). The Mac build is unsigned: the first open needs Privacy & Security, Open Anyway |
 
 Development runs use their own data folder (`2ndDesktop (dev)`), so they never touch a real save.
 
@@ -61,7 +61,7 @@ tests/       host unit tests (tests/host) and end-to-end tests (tests/e2e)
 docs/        the design documents
 ```
 
-The main process is the security boundary, and a scene is never trusted. A scene never reads the clock or uses unseeded random numbers itself, so that tests and pictures give the same result every time.
+The main process is the security boundary, and a scene is never trusted. A scene never reads the clock or uses unseeded random numbers itself, so that tests and pictures run the same simulation every time. (On a Mac the window picture can still come out as one of two nearly identical hashes; see `docs/STATUS.md`.)
 
 ## Documents
 

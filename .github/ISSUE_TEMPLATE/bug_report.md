@@ -13,7 +13,7 @@ labels: ''
 
 **Your computer**
 
-- Operating system and version (Windows 10 or 11, macOS version):
+- Operating system and version (Windows version; on a Mac, the macOS version and whether it is Apple silicon or Intel):
 - 2ndDesktop version (tray menu, About):
 - Desktop mode or window mode:
 - Scene:
