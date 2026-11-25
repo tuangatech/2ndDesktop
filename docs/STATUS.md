@@ -63,7 +63,7 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 
 ## Open hand checks
 
-**Windows, by the owner on 2026-11-25 (`npm start` from `main`, unpackaged):** desktop mode on and off, PASS; a maximized window over the desktop pauses the tank and it resumes when restored, PASS; **Win+D (Show Desktop) does not pause it** (unlike F11 on the Mac), PASS; the new icon in the tray and on the taskbar, light and dark, PASS; the About box opens with the new icon (its text was the old one: that app was started before PR 8 merged; PR 11 rewrites it).
+**Windows, by the owner on 2026-11-25 (`npm start` from `main`, unpackaged):** desktop mode on and off, PASS; a maximized window over the desktop pauses the tank and it resumes when restored, PASS; **Win+D (Show Desktop) does not pause it** (unlike F11 on the Mac), PASS; the new icon in the tray and on the taskbar, light and dark, PASS; the About box opens with the new icon (its text was the old one: that app was started before PR 8 merged; PR 11 rewrote it and is merged as `55834af`).
 
 Still open on Windows: a display change (unplug or change a display), the installed build (run the installer once, Start menu icon), launch at login. Open on the Mac: the menu bar and tray icon by eye, the Dock, the first open of a downloaded unsigned build, and the F11 pause (Mac session, W-7).
 
