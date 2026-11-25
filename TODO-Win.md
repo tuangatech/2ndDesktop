@@ -126,4 +126,22 @@ Two findings are for the Windows session:
 - **Finding 1 (the cover check on Windows).** `describeForeground()` and `decideCovered` look at the foreground window only. Two cases the Mac handles and Windows does not: a maximized window on the main display while the owner works on another monitor (the foreground window is on the other monitor, so the tank keeps drawing under the maximized one), and two snapped halves. A fix would list the top-level windows of the primary display (`EnumWindows`, visible, not cloaked, not iconic, not the shell classes) and reuse `coveredShare` with their rectangles, as the Mac does. It needs a Windows machine and a hand check (Win+D, snapped windows, a second monitor), so it is yours to judge: is it worth doing in 0.1?
 - **Finding 4 (Electron fuses).** `electron-builder.yml` sets no fuses, so `ELECTRON_RUN_AS_NODE`, `--inspect` and a non-asar path stay on. electron-builder 26 has an `electronFuses` option. It needs a packaged build to test, on both systems. Not started; your call whether it belongs in 0.1 or with the signed release (0.3).
 
+### M-6: four more branches from the review, what Windows must check on its own system, and the order to merge
+
+After `M-5` the owner asked for the other findings that can be fixed. Four more branches are on `origin` (base `bd23f26`), one concern each. Status of every finding is in `docs/reviews/2026-11-25-host-security-review.md` (branch `review-findings-doc`, updated; please open that PR too if `M-5` did not already).
+
+1. **`log-limits`** (findings 7 and 10d): `desktop-spike.log` rotates at 1 MB to `desktop-spike.old.log`; every line loses the home folder and the user name when it is written; page notes and errors are limited to 20 lines a second each. New `app/main/log-file.js`, 10 unit tests. The `log` function now sits at the top of `main.js` because the start-up code already writes to it.
+2. **`session-hardening`** (finding 5): the page's session denies every permission and cancels every request that is not a file under `dist/renderer`, a `data:` or `blob:` address, or (development only) the dev server. New `app/main/session-policy.js`, 6 unit tests. A refused request is logged as `request refused: <scheme and host>`.
+3. **`koffi-universal-opt-in`** (finding 9): `npm run dist` and `dist:test` no longer run `scripts/koffi-universal.mjs`; `npm run dist:universal` does. On the Mac the x64 koffi package was in `node_modules` and in the built app (checked in the `.app`); a machine that ran the old `dist` needs `npm ci` to lose it. Windows: nothing changes (the script already did nothing there).
+4. **`review-findings-doc`**: statuses updated (see above).
+
+Mac results: all eight branches (`M-5` and `M-6`) merge into one throwaway branch without conflicts, in the order `scene-record-binding`, `gate-dev-switches`, `diagnostics-no-install-id`, `log-limits`, `session-hardening`, `koffi-universal-opt-in`, `ci-permissions`, `review-findings-doc`; together: lint and format clean, 381 unit tests, 38 e2e. Several of them edit `app/main/main.js` in different places; `log-limits` and `session-hardening` first collided on one import line, which I moved, so merge them in any order but expect a rebase to be easy if one more collision appears.
+
+For the Windows session to check on Windows (the Mac cannot):
+- `session-hardening`: on Windows the folder check ignores case and `pathToFileURL` gives `/C:/...`; the unit test uses a Mac path. Run `npm run build && npm start` in window mode and in desktop mode and look in the log for `request refused`; there should be none. Also `npm run dev` once (the dev server path is covered by a unit test only).
+- `log-limits`: the cleaning uses the user name and home folder; check the log has no `C:\Users\<name>` after a run that reports a renderer error, and that the file rotates (set `maxBytes` low by hand if you want to see it).
+- `gate-dev-switches` (from `M-5`): `npm run dist` build ignores the variables, `dist:test` keeps them.
+
+Not done, and why: finding 10a (the single-instance lock first) edits the same lines as `gate-dev-switches` and `log-limits`, so it waits until they are merged; finding 10b (one error handler) is not worth a change; 10c (no crash restart on the Mac) and 10e (the tank inside the host) are a feature and design debt, not fixes. Windows-only findings (1, the cover check; 4, the fuses) are in `M-5`.
+
 ## Closed
