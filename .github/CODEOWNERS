@@ -1,7 +1,8 @@
 # A change to these paths asks the owner for a review (BOOTSTRAP section 9, item 11).
 # A second maintainer is not named yet (platform/03, section 8).
 /app/main/ @tuangatech
-/app/main/preload.cjs @tuangatech
+/package.json @tuangatech
+/package-lock.json @tuangatech
 /electron-builder.yml @tuangatech
 /docs/platform/02-security-data-and-network.md @tuangatech
 /.github/ @tuangatech
