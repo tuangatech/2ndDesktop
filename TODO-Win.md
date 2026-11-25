@@ -101,4 +101,14 @@ All four are on `origin`, based on `884e24e`, one concern each. What was run on 
 - `git push` printed: "GitHub found 1 vulnerability on the default branch (1 moderate)", with the link to the Dependabot alerts of the repository. I did not open it. Please look (it needs the repository's alerts page, not something the Mac can read).
 - The F11 pause above: I will report the logger result as `M-4` when I have it; if the Windows session knows how the Win+D case was read, a line here would help (is Show Desktop treated as "covered" on Windows too?).
 
+### M-4: open a pull request for `show-desktop-mac` (macOS: Show Desktop no longer pauses the tank)
+
+Branch `show-desktop-mac` is on `origin` (one commit, `5a8313a`, based on `main` at `f918b31`), three files: `app/main/cover.js` (new `isShowDesktopMac`), `app/main/desktop.js` (the macOS cover check), `tests/host/cover.test.js` (3 new tests). The owner asked: please review, open the PR, and merge it when both runners are green.
+
+- Problem: on the Mac, Show Desktop (Fn F11) paused the tank although the desktop was clear. The owner has three displays. The window logger showed that during Show Desktop `CGWindowListCopyWindowInfo` still reports five app windows (bounds from 1360 to 1711 wide, starting about x -164 to 176, y 42) over the primary display, while the others are parked at the screen edges. `coveredShare` counted them: 99%, above the 96% threshold.
+- The tell: while Show Desktop is active the window server adds one window per display on layer 18, owned by `WindowManager`, exactly as large as the display. It was present only during Show Desktop (about 10 s per press in the logs) and never in the normal state. The fix reads only layer and bounds (no app names, as the file header promises): a layer-18 window at least as large as the primary display means "Show Desktop", and the share is then 0.
+- Checked on the Mac: `npm test` 28 files, 359 tests (356 + 3); lint and format clean; e2e not run (the change is main-process only and no e2e test reaches it). By hand on the branch with `npm run dev`: F11 keeps the fish moving (the app log shows `windows hide 0%` during F11, never `covered=true`); a maximized app on the laptop screen still pauses (100%, renderer hidden); a window over 90% still lets the tank run (the threshold is 96%).
+- Not known: whether Mission Control or Stage Manager also add layer-18 windows (the logger saw none in normal use). If a later check shows a false "visible" there, the layer test is the place to narrow.
+- For you (M-3): the owner says Win+D is not a problem on Windows, so that question is answered.
+
 ## Closed
