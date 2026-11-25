@@ -25,13 +25,13 @@ import {
 import { buildAppMenuTemplate, buildTrayTemplate, sanitizeSceneMenu } from './menu.js';
 import { createCrashRestart, RESTARTED_ARG, restartCommandLine } from './crash-restart.js';
 import { FALLBACK_NOTE, chooseStartMode, settingsForMode, settingsOnQuit } from './display-mode.js';
-import { createRequestFilter, installSessionPolicy } from './session-policy.js';
 import { createSettingsStore } from './settings.js';
 import { createRecordStore, readJson } from './store.js';
 import { createTray } from './tray.js';
 import { createUsageLog, usageLines } from './usage-log.js';
 import { startSampler } from './sampler.js';
 import { migrateOldData } from './migrate-data.js';
+import { createRequestFilter, installSessionPolicy } from './session-policy.js';
 import {
   APP_ID,
   DEV_DATA_FOLDER,
