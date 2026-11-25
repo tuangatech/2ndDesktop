@@ -24,6 +24,7 @@ import {
 import { buildAppMenuTemplate, buildTrayTemplate, sanitizeSceneMenu } from './menu.js';
 import { createCrashRestart, RESTARTED_ARG, restartCommandLine } from './crash-restart.js';
 import { FALLBACK_NOTE, chooseStartMode, settingsForMode, settingsOnQuit } from './display-mode.js';
+import { createLineLimiter, createLogFile } from './log-file.js';
 import { createSettingsStore } from './settings.js';
 import { createRecordStore, readJson } from './store.js';
 import { createTray } from './tray.js';
@@ -37,6 +38,29 @@ import {
   OLD_DEV_DATA_FOLDER,
   PRODUCT_NAME,
 } from './product.js';
+
+// A small log that testers can send back (Step 1 desktop attach test). It stays under 1 MB (one old file is kept) and
+// every line loses the home folder and the user name when it is written (the stack of an error holds a path). It is
+// defined first: the start-up code below already writes to it.
+let whoAmI = null;
+const logFile = createLogFile({
+  file: () => path.join(app.getPath('userData'), 'desktop-spike.log'),
+  clean: (text) => {
+    whoAmI ??= (() => {
+      try {
+        return { home: os.homedir(), userName: os.userInfo().username };
+      } catch {
+        return { home: os.homedir() };
+      }
+    })();
+    return sanitize(text, whoAmI);
+  },
+});
+function log(message) {
+  const line = `${new Date().toISOString()} ${message}`;
+  console.log(`[2nddesktop] ${line}`);
+  logFile.write(line);
+}
 
 const root = path.join(import.meta.dirname, '..', '..');
 const devUrl = process.env.VITE_DEV_SERVER_URL;
@@ -104,18 +128,6 @@ if (process.env.DESKTOP2_NO_GPU === '1') app.disableHardwareAcceleration();
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
-
-// A small log that testers can send back (Step 1 desktop attach test). Never contains file paths of the user.
-function log(message) {
-  const line = `${new Date().toISOString()} ${message}`;
-  console.log(`[2nddesktop] ${line}`);
-  try {
-    fs.mkdirSync(app.getPath('userData'), { recursive: true });
-    fs.appendFileSync(path.join(app.getPath('userData'), 'desktop-spike.log'), `${line}\n`);
-  } catch {
-    // Logging must never break the app.
-  }
-}
 
 // The local diagnostics log (NFR-7): days, minutes drawn, activity, a sample a minute, errors, start times.
 const who = () => ({ home: os.homedir(), userName: os.userInfo().username });
@@ -549,11 +561,27 @@ app.whenReady().then(async () => {
     log(`renderer frame rate: ${fps} fps`);
     usage.frameRate(fps);
   });
-  ipcMain.on('diag:error', (_event, text) => {
-    log(`renderer error: ${text}`);
-    usage.error(`renderer: ${text}`);
-  });
-  ipcMain.on('diag:note', (_event, text) => log(`renderer: ${String(text).slice(0, 2000)}`));
+  // Lines from the page are limited to 20 a second each (docs/platform/02 section 4); a count of the lines left out follows.
+  const limited = (handler) => {
+    const limit = createLineLimiter();
+    return (...args) => {
+      if (!limit.allow()) return;
+      const dropped = limit.takeDropped();
+      if (dropped > 0) log(`renderer: ${dropped} lines left out (more than 20 a second)`);
+      handler(...args);
+    };
+  };
+  ipcMain.on(
+    'diag:error',
+    limited((_event, text) => {
+      log(`renderer error: ${text}`);
+      usage.error(`renderer: ${text}`);
+    }),
+  );
+  ipcMain.on(
+    'diag:note',
+    limited((_event, text) => log(`renderer: ${String(text).slice(0, 2000)}`)),
+  );
 
   if (process.env.DESKTOP2_ATTACH_LAB === '1') {
     const names = process.env.DESKTOP2_LAB_VARIANTS?.split(',').filter(Boolean);
