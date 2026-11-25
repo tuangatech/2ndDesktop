@@ -33,6 +33,8 @@ async function boot() {
   const { manifest } = chosen;
   if (chosen.fellBack)
     console.log(`scene "${info.activeScene}" is not known, starting ${chosen.id}`);
+  // The main process takes the scene's records from this id, not from later calls: it is said before any scene code runs.
+  api?.bindScene?.(chosen.id);
   // The scene's code is loaded before the renderer starts: the PixiJS parts it imports (meshes, tiling sprites) register
   // themselves when they are imported, and a renderer that has already started would not know them.
   const { default: create } = await chosen.load();
@@ -78,14 +80,13 @@ async function boot() {
 
   // The host's side of the scene contract (app/page/host.js, D33): the record of the active scene, the clock, the
   // random source, the sound and the HTML area. A scene gets nothing else.
-  const sceneId = chosen.id;
   const clock = { offset: 0, now: () => Date.now() + clock.offset };
   // A record that had to be repaired or replaced is kept next to it as `<scene>-damaged-<time>.json`.
   const record = api
     ? {
-        load: () => api.loadRecord(sceneId),
-        save: (data) => api.saveRecord(sceneId, data),
-        keepCopy: (data) => api.keepRecordCopy(sceneId, data),
+        load: () => api.loadRecord(),
+        save: (data) => api.saveRecord(data),
+        keepCopy: (data) => api.keepRecordCopy(data),
       }
     : { load: async () => ({ status: 'missing' }), save() {} };
   // Sounds (FR-38): switched by the menu in the main process, which tells the renderer.

@@ -16,11 +16,14 @@ contextBridge.exposeInMainWorld('desktop2', {
   // A click or key press in the window (the usage log counts minutes with activity, NFR-7).
   reportActivity: () => ipcRenderer.send('diag:activity'),
   reportNote: (text) => ipcRenderer.send('diag:note', String(text).slice(0, 2000)),
-  // The saved progress of a scene, one record per scene id (docs/03-platform-design.md section 5).
-  loadRecord: (id) => ipcRenderer.invoke('record:load', String(id)),
-  saveRecord: (id, record) => ipcRenderer.send('record:save', String(id), record),
+  // The scene the page runs, said once by the host part of the page before any scene code is loaded. The records below
+  // are always those of that scene: the main process ignores any other id (docs/platform/02 section 4).
+  bindScene: (id) => ipcRenderer.send('scene:bind', String(id)),
+  // The saved progress of the scene, one record per scene id (docs/03-platform-design.md section 5).
+  loadRecord: () => ipcRenderer.invoke('record:load'),
+  saveRecord: (record) => ipcRenderer.send('record:save', record),
   // Keeps a record that had to be repaired or replaced next to it (the main process names the file).
-  keepRecordCopy: (id, record) => ipcRenderer.send('record:keep-copy', String(id), record),
+  keepRecordCopy: (record) => ipcRenderer.send('record:keep-copy', record),
   // Tray menu: the main process asks for the scene's lines and items before it opens the menu, and forwards the chosen id.
   onMenuRequest: (callback) => {
     ipcRenderer.on('scene:menu-request', () => ipcRenderer.send('scene:menu', callback()));

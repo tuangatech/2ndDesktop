@@ -25,6 +25,7 @@ import { buildAppMenuTemplate, buildTrayTemplate, sanitizeSceneMenu } from './me
 import { createCrashRestart, RESTARTED_ARG, restartCommandLine } from './crash-restart.js';
 import { FALLBACK_NOTE, chooseStartMode, settingsForMode, settingsOnQuit } from './display-mode.js';
 import { createSettingsStore } from './settings.js';
+import { createSceneBinding } from './scene-binding.js';
 import { createRecordStore, readJson } from './store.js';
 import { createTray } from './tray.js';
 import { createUsageLog, usageLines } from './usage-log.js';
@@ -506,17 +507,26 @@ app.whenReady().then(async () => {
   // The saved progress of a scene (D8, D33): the renderer sends the whole record on every change, main writes it
   // after one second of quiet, and `before-quit` writes whatever is still waiting.
   ipcMain.handle('settings:get', () => ({ sound: readSettings().sound }));
-  ipcMain.handle('record:load', (_event, id) => records.load(id));
-  ipcMain.on('record:save', (_event, id, record) => {
-    if (!records.queue(id, record)) log(`record:save refused (${String(id).slice(0, 40)})`);
+  // The scene id comes from the host part of the page, once, before any scene code runs (app/main/scene-binding.js);
+  // the id in a record call is never taken from the page, so a scene reaches only its own record.
+  const sceneOf = createSceneBinding(records.isValidId);
+  ipcMain.on('scene:bind', (event, id) => {
+    if (!sceneOf.bind(event.sender, id)) log(`scene:bind refused (${String(id).slice(0, 40)})`);
+  });
+  ipcMain.handle('record:load', (event) => {
+    const id = sceneOf.get(event.sender);
+    return id ? records.load(id) : { status: 'missing' };
+  });
+  ipcMain.on('record:save', (event, record) => {
+    const id = sceneOf.get(event.sender);
+    if (!id || !records.queue(id, record)) log(`record:save refused (${id ?? 'no scene'})`);
   });
   // A record the renderer had to repair or replace: main keeps the original next to it and says if it could not.
-  ipcMain.on('record:keep-copy', (_event, id, record) => {
-    const result = records.keepCopy(id, record);
+  ipcMain.on('record:keep-copy', (event, record) => {
+    const id = sceneOf.get(event.sender);
+    const result = id ? records.keepCopy(id, record) : { ok: false, reason: 'no_scene' };
     if (!result.ok) {
-      log(
-        `record:keep-copy of ${String(id).slice(0, 40)} failed (${result.code ?? result.reason})`,
-      );
+      log(`record:keep-copy of ${id ?? 'no scene'} failed (${result.code ?? result.reason})`);
     }
   });
   ipcMain.on('window:minimize', (event) => BrowserWindow.fromWebContents(event.sender)?.minimize());
