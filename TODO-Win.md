@@ -113,7 +113,7 @@ Branch `show-desktop-mac` is on `origin` (one commit, `5a8313a`, based on `main`
 
 ### M-5: five branches from the host and security review (open the PRs), and two findings for Windows
 
-The owner asked the Mac session to review the host, the scene contract and security, and to act on the cheap findings. The whole list is in `docs/reviews/2026-11-25-host-security-review.md` (branch `review-findings-doc`, docs only). Five branches are on `origin`, based on `main` at `f918b31` (they do not touch each other's files, except that `scene-record-binding` and `gate-dev-switches` both edit `app/main/main.js` in different places); one concern each:
+The owner asked the Mac session to review the host, the scene contract and security, and to act on the cheap findings. The whole list is in `docs/reviews/2026-11-25-host-security-review.md` (branch `review-findings-doc`, docs only). Five branches are on `origin`, based on `main` at `7e7eed0` (they do not touch each other's files, except that `scene-record-binding` and `gate-dev-switches` both edit `app/main/main.js` in different places); one concern each:
 
 1. **`review-findings-doc`**: the review itself, `docs/reviews/`, one line in `docs/README.md`. Docs only (the reduced CI path).
 2. **`scene-record-binding`** (finding 2): the page's host part says which scene it runs (`scene:bind`, once, before any scene code loads); the record calls no longer carry an id, so a scene cannot read or write another scene's record. New `app/main/scene-binding.js`, 6 unit tests. Mac: lint, format, 362 unit tests, 38 e2e.
