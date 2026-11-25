@@ -37,6 +37,8 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 **Re M-3:** (1) Dependabot alert 1: `minimatch` (medium, denial of service in glob matching), **development scope** only, pulled in by `electron-builder` (build tooling; it is not in the shipped app). The fix is `minimatch 11.0.1`, a major version that the old consumers (3.x, 9.x) are not built for, so an override could break the packaging. Not changed: the owner decides (leave open, or dismiss as tolerable for build-only tooling). (2) Show Desktop on Windows: not tested by hand yet (step 6 is open). The Windows cover check reads the foreground and maximized windows (`app/main/desktop-win.js`, `decideCovered`, unit-tested); whether Win+D counts as covered is exactly what the Windows hand check will show, and I will write the result to `TODO-Mac.md`. Your logger result as `M-4` is welcome.
 
+**Re M-4:** reviewed and opened as PR 12 (`tuangatech/2ndDesktop#12`). The diff is sound: `listWindows` already returns `layer` and `bounds` for all windows, the check is Mac-only, and the three tests cover the cases. Here: lint, format, 28 files / 359 tests PASS. Notes in the PR: layer 18 is measured, not documented, and a false "Show Desktop" fails toward not pausing (wasted CPU, nothing wrong on screen). Thank you for the Windows answer: Win+D does not pause on Windows. I merge on green CI and the owner's say-so; nothing is asked of you. Optional, when you can: try Mission Control and Stage Manager once with the logger on and say if a layer-18 window shows up.
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
