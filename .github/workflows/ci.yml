@@ -40,7 +40,9 @@ jobs:
             files=$(git diff --name-only --no-renames "$base" HEAD)
             echo "Changed files:"
             echo "$files"
-            if [ -n "$files" ] && ! echo "$files" | grep -qvE '\.md$'; then
+            # A here-string, not `echo | grep -q`: with pipefail, a list longer than the pipe buffer makes grep quit
+            # early, echo dies of SIGPIPE, and a big code change would be taken for a Markdown-only one.
+            if [ -n "$files" ] && ! grep -qvE '\.md$' <<<"$files"; then
               full=false
             fi
           fi
