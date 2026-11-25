@@ -73,11 +73,32 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 - **Failing case: a large changed-file list.** `echo "$files" | grep -qvE '\.md$'` under `pipefail`: when the list is longer than the pipe buffer, `grep -q` quits at the first non-`.md` line, `echo` dies of SIGPIPE, the pipeline returns non-zero, and `! ...` turns that into "markdown only". I made a PR-like diff of 4000 `.js` files (230 KB of names): `full=false`, five times out of five, so **a big code PR would skip lint, tests, build and e2e and still show green**. It is the unsafe direction. Fix (tested the same way, gives `full` correctly): replace the test by `! grep -qvE '\.md$' <<<"$files"` (no pipe), or `rest=$(echo "$files" | grep -vE '\.md$' || true); [ -z "$files" ] || [ -n "$rest" ]`. 
 - Not a bug, a note: `format:check` and `npm ci` stay unconditional, which is right because Prettier checks the root `.md` files. No code or test reads an `.md` file (searched `app`, `scenes`, `shared`, `scripts`, `tests` and the configs), so skipping on markdown-only is safe. On a PR, `base.sha` can be older than `main`; the diff then only gets bigger (runs full), the safe direction.
 
+**The owner's hand check on the Mac (2026-11-24, `npm run dev` on `main`, desktop mode, `884e24e`)**
+
+- It opened **on the desktop** (the saved display mode was copied from the old folder). Clicking to feed a pellet did nothing: that is by design in desktop mode (no clicks; feeding is in the tray menu). After "Show in a window", feeding by click worked and the fish moved. Not a bug; the first-launch hint is the only place that says it.
+- **F11 (Show Desktop) paused the tank**, although the fish were moving before. Expected: windows slide away, the desktop is visible, so it should keep running. Seen in `desktop-spike.log`: the share of the desktop hidden by windows sat at 87% (not covered) and went to 99% (covered, pausing) at the F11 moment; no entry with a low share. So on this Mac Show Desktop is read as "covered". **Cause not known yet**; a one-second window logger (bounds, layer, alpha, process id; no titles) is running on the Mac to catch it. Several apps' windows were listed at layer 0 with full-screen size at the same time, so the next step is to see which window the check counts during F11. Nothing is changed in code yet.
+- The menu bar icon is still the **fish** and the About box shows the **fish icon** and "A calm aquarium for your desktop": the icon drafts in `docs/icon/` were never applied to `build/` and `assets/`, and the About text is the old one. Both are fixed on branches below.
+- About box path line reads "~/Library/Application Support/2ndDesktop (dev)/records" in a dev run: right.
+
 ## Requests
 
 ### M-1: two small checks for the Windows session
 
 1. Fold the Mac numbers of "Re W-1" to "Re W-3" into `docs/STATUS.md` (the Mac section is added there too), and decide what the proof for the window picture is: "one of the known hashes" on the Mac.
-2. W-6: the SIGPIPE case above, PR 6 is already merged, so it needs a small follow-up PR (not mine to open; app code is not touched, only `ci.yml`).
+2. W-6: the SIGPIPE case above. PR 6 is already merged, so the fix is on a branch, see M-2.
+
+### M-2: open four pull requests from branches the Mac pushed (the Mac cannot open PRs)
+
+All four are on `origin`, based on `884e24e`, one concern each. What was run on the Mac: `ci-pipefail` and `docs-macos-wording`: format check (and lint for the docs one); the CI block also in the scratch repository above. `about-text` and `icons-2nddesktop`: lint, format, 28 files / 356 unit tests, and the 38 e2e tests (on `about-text` one e2e test failed in the first run and I did not catch its name; the next four runs were 38 of 38 green on that branch and on the icons branch, so I call it flaky, not caused by the change). Add the usual review tasks for the Mac in `TODO-Mac.md`; the Mac will look at the icon and the About on a real build.
+
+1. **`ci-pipefail`** (`.github/workflows/ci.yml`, 3 lines): the here-string fix of Re W-6. Tested with bash 3.2 and `-eo pipefail`: 4000 `.js` files give `full=true`, 6000 `.md` files give `full=false`, all small cases unchanged.
+2. **`about-text`** (`app/main/main.js`, 3 lines): the About text says what the app is. New: "A living scene on your desktop, calm and quiet. Today that is a fish tank: feed the fish once a day and watch them grow. More scenes are planned." / "The art is original and the sounds are made for this app." / "Your saved progress is in: ...". Please say if you want other words.
+3. **`icons-2nddesktop`** (`build/app-icon.svg`, `assets/tray/*.svg`, the PNGs from `npm run assets`): `docs/icon/` draft 2 (the window with a tree) replaces the fish for the app icon, the macOS tray template and the About box. `assets/tray/tray-color.svg` (the **Windows** tray) is new and mine: the drafts have no colour version, so it is the template drawing with frame and ground `#5d78c0`, canopy `#4d9c7a`, trunk `#c0925f`. **Windows session: please look at it on a light and a dark taskbar** and at the installer and Start menu icon; change the colours if they do not read.
+4. **`docs-macos-wording`** (README, `SECURITY.md`, bug template, PR template, `CODEOWNERS`): the corrections of Re W-4 and Re W-5. Judgement calls you may undo: the bug template asks for "Windows version" without saying 10 or 11 (nothing says Windows 10 is unsupported); `CODEOWNERS` gains `package.json` and `package-lock.json` and loses the `preload.cjs` line.
+
+### M-3: other things seen on the Mac
+
+- `git push` printed: "GitHub found 1 vulnerability on the default branch (1 moderate)", with the link to the Dependabot alerts of the repository. I did not open it. Please look (it needs the repository's alerts page, not something the Mac can read).
+- The F11 pause above: I will report the logger result as `M-4` when I have it; if the Windows session knows how the Win+D case was read, a line here would help (is Show Desktop treated as "covered" on Windows too?).
 
 ## Closed
