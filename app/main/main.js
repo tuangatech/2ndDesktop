@@ -364,11 +364,13 @@ function showAbout() {
   // For the player: what this is, the licenses, where the save is. How the menus work is in the first-launch hint.
   const detail = [
     `Version ${app.getVersion()}`,
-    'A living scene on your desktop, calm and quiet. Today that is a fish tank: feed the fish once a day and watch them grow. More scenes are planned.',
+    'Your desktop, alive, and quiet about it.',
     '',
-    'Open source (MIT license). The font is Nunito (SIL Open Font License). The art is original and the sounds are made for this app.',
+    '2ndDesktop shows one living scene behind your icons or in a small window, and rests when the desktop is covered. No account, no telemetry.',
     '',
-    `Your saved progress is in: ${displayPath(path.join(userData, 'records'), {
+    'Open source (MIT license). The font is Nunito (SIL Open Font License). The art is original, drawn with an AI tool, and the sounds are made for this app.',
+    '',
+    `Your saved progress stays on this computer, in: ${displayPath(path.join(userData, 'records'), {
       platform: process.platform,
       home: os.homedir(),
       appData: app.getPath('appData'),
