@@ -111,4 +111,19 @@ Branch `show-desktop-mac` is on `origin` (one commit, `5a8313a`, based on `main`
 - Not known: whether Mission Control or Stage Manager also add layer-18 windows (the logger saw none in normal use). If a later check shows a false "visible" there, the layer test is the place to narrow.
 - For you (M-3): the owner says Win+D is not a problem on Windows, so that question is answered.
 
+### M-5: five branches from the host and security review (open the PRs), and two findings for Windows
+
+The owner asked the Mac session to review the host, the scene contract and security, and to act on the cheap findings. The whole list is in `docs/reviews/2026-11-25-host-security-review.md` (branch `review-findings-doc`, docs only). Five branches are on `origin`, based on `main` at `f918b31` (they do not touch each other's files, except that `scene-record-binding` and `gate-dev-switches` both edit `app/main/main.js` in different places); one concern each:
+
+1. **`review-findings-doc`**: the review itself, `docs/reviews/`, one line in `docs/README.md`. Docs only (the reduced CI path).
+2. **`scene-record-binding`** (finding 2): the page's host part says which scene it runs (`scene:bind`, once, before any scene code loads); the record calls no longer carry an id, so a scene cannot read or write another scene's record. New `app/main/scene-binding.js`, 6 unit tests. Mac: lint, format, 362 unit tests, 38 e2e.
+3. **`gate-dev-switches`** (finding 3): an installed release ignores the `DESKTOP2_*` variables and `VITE_DEV_SERVER_URL` (new `app/main/dev-switches.js`, 3 unit tests); a run from source and the `dist:test` build (channel `test`) keep them. Mac: lint, format, 359 unit tests, 38 e2e. Please also run `npm run dist:test` once on Windows and check that a variable such as `DESKTOP2_MODE=window` still works there, and that the packaged release channel (`npm run dist`) is the only one that ignores them.
+4. **`diagnostics-no-install-id`** (finding 6): "Copy diagnostics" says `First seen: <day>` and no longer prints the install id. 1 test changed. Mac: lint, format, 356 unit tests.
+5. **`ci-permissions`** (finding 8): `permissions: contents: read` in `ci.yml`. Pinning the actions by commit is not done (I cannot look up the hashes here). Please check that both checks still report.
+
+Two findings are for the Windows session:
+
+- **Finding 1 (the cover check on Windows).** `describeForeground()` and `decideCovered` look at the foreground window only. Two cases the Mac handles and Windows does not: a maximized window on the main display while the owner works on another monitor (the foreground window is on the other monitor, so the tank keeps drawing under the maximized one), and two snapped halves. A fix would list the top-level windows of the primary display (`EnumWindows`, visible, not cloaked, not iconic, not the shell classes) and reuse `coveredShare` with their rectangles, as the Mac does. It needs a Windows machine and a hand check (Win+D, snapped windows, a second monitor), so it is yours to judge: is it worth doing in 0.1?
+- **Finding 4 (Electron fuses).** `electron-builder.yml` sets no fuses, so `ELECTRON_RUN_AS_NODE`, `--inspect` and a non-asar path stay on. electron-builder 26 has an `electronFuses` option. It needs a packaged build to test, on both systems. Not started; your call whether it belongs in 0.1 or with the signed release (0.3).
+
 ## Closed
