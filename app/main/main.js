@@ -364,11 +364,11 @@ function showAbout() {
   // For the player: what this is, the licenses, where the save is. How the menus work is in the first-launch hint.
   const detail = [
     `Version ${app.getVersion()}`,
-    'A calm aquarium for your desktop. Feed the fish once a day and watch them grow.',
+    'A living scene on your desktop, calm and quiet. Today that is a fish tank: feed the fish once a day and watch them grow. More scenes are planned.',
     '',
-    'Open source (MIT license). The font is Nunito (SIL Open Font License). All art and sound were made for this app.',
+    'Open source (MIT license). The font is Nunito (SIL Open Font License). The art is original and the sounds are made for this app.',
     '',
-    `Your tank is saved in: ${displayPath(path.join(userData, 'records'), {
+    `Your saved progress is in: ${displayPath(path.join(userData, 'records'), {
       platform: process.platform,
       home: os.homedir(),
       appData: app.getPath('appData'),
