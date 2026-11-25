@@ -49,7 +49,7 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 ## Small PRs from the Mac session's review (2026-11-25)
 
 - Merged: PR 9 (macOS wording in the README, `SECURITY.md` and templates; `CODEOWNERS` gains `package.json` and the lock file) as `f1dde8e`, PR 10 (the window-with-a-tree icons replace the fish; new Windows tray icon) as `0f00099`.
-- Merged after green CI: PR 7 (`ci.yml`: a very large code change was taken for Markdown-only because of `pipefail` and SIGPIPE) as `d9bc4f1` and PR 8 (the About text) as `24d96fa`. W-7 (the Mac looks at the icons and About on a real build, and the F11 result) is open.
+- Merged after green CI: PR 12 (macOS: Show Desktop no longer pauses the tank, from the Mac session) as `4238774`; PR 7 (`ci.yml`: a very large code change was taken for Markdown-only because of `pipefail` and SIGPIPE) as `d9bc4f1` and PR 8 (the About text) as `24d96fa`. W-7 (the Mac looks at the icons and About on a real build, and the F11 result) is open.
 - The window-picture proof on the Mac is "one of the two known hashes"; on Windows it must repeat exactly (working rule, in `TODO-Mac.md`, until the owner decides).
 - Dependabot alert 1 (`minimatch`, medium, development scope via `electron-builder`; the fix is a major version) is open, for the owner to leave open or dismiss.
 - The reduced CI path (Markdown only) has not run on a real PR yet: PR 9 touched `CODEOWNERS`, which is not a `.md` file, so it ran in full, as it should.
