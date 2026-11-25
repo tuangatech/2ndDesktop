@@ -97,3 +97,24 @@ export function coveredShare(windows, workArea, selfPid) {
   }
   return hidden / total;
 }
+
+// macOS: while "Show Desktop" (F11, or a click on the wallpaper) is active, the window server parks the app windows
+// at the screen edges but still reports some of them with bounds that span the display, and it adds one window per
+// display, on this layer, as large as the display. Measured on a Mac with three displays; no app uses this layer.
+export const MAC_SHOW_DESKTOP_LAYER = 18;
+
+/**
+ * macOS: is "Show Desktop" active? True when a window on the Show Desktop layer is as large as the primary display.
+ * The tank is then visible whatever the other windows report (FR-22).
+ * @param {Array<{layer:number, bounds:{x:number, y:number, width:number, height:number}}>} windows
+ * @param {{width:number, height:number}} display  screen.getPrimaryDisplay().bounds
+ * @returns {boolean}
+ */
+export function isShowDesktopMac(windows, display) {
+  return windows.some(
+    (w) =>
+      w.layer === MAC_SHOW_DESKTOP_LAYER &&
+      w.bounds.width >= display.width - EDGE_SLACK &&
+      w.bounds.height >= display.height - EDGE_SLACK,
+  );
+}
