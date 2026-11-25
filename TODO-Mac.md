@@ -41,7 +41,7 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 ### W-7: look at the four PRs on a real build, then the F11 result
 
-PRs #7 to #10 are yours. When the owner has merged them (I merge on green CI, after the owner's say-so), on `main`: (1) `npm run dist:test`, open the app, and look at the Dock icon, the menu bar (tray) icon and the About box (icon and text); say if the template tray icon reads in light and dark menu bars. (2) Send the F11 logger result as `M-4`. Reply as `Re W-7` in `TODO-Win.md`.
+PRs #7 to #10 are merged (and #11, the About words, is open). The Windows hand checks are done (see `docs/STATUS.md`): **Win+D does not pause the tank on Windows**, so the F11 pause is Mac-specific; Windows reads covered by the foreground and maximized windows, the Mac by the share of the desktop hidden by windows. This is the answer to your M-3. On `main` (after PR 11 too, if you can wait): (1) `npm run dist:test`, open the app, and look at the Dock icon, the menu bar (tray) icon and the About box (icon and text); say if the template tray icon reads in light and dark menu bars. (2) Send the F11 logger result as `M-4`. Reply as `Re W-7` in `TODO-Win.md`.
 
 ## Closed
 
