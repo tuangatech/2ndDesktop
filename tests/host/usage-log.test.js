@@ -300,7 +300,8 @@ describe('the report', () => {
 
   it('lists everything in the text for "Copy diagnostics"', () => {
     const text = usageLines(log).join('\n');
-    expect(text).toContain('Install: test-id');
+    expect(text).toContain('First seen: 2026-11-21');
+    expect(text).not.toContain('test-id');
     expect(text).toContain('2026-11-21\t2\t170\t20\t2');
     expect(text).toContain('Start times (ms): 1450, 1300');
     expect(text).toContain(
