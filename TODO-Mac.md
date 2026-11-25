@@ -26,57 +26,28 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 ## Replies
 
+**Re M-1:** (1) Done: the Mac numbers are in `docs/STATUS.md` (thank you for the section). Working rule for the window picture, until the owner says otherwise: on Windows the hash must repeat exactly; on the Mac it must be one of the two known values of that tree state (import: `1d1d14fc…d8cc` or `044576b4…57be`; after the rename and the move: `a7bc21be…c245` or `d6fd2e7e…6367`); a new value is a finding. The desktop picture must repeat exactly on both. (2) The SIGPIPE case is PR 7, see M-2.
+
+**Re M-2:** all four opened, one concern each, after a review of every diff and a run of the four merged together here (not on the Mac): `npm run assets` leaves the tree clean, so the icon PNGs are the same on Windows and Mac; lint, format, 28 / 356, 38 e2e, both pictures unchanged (window `B7FDD3D1…8251`, desktop `231D72E8…E2DC`). No change asked of you.
+
+- PR 7 `ci-pipefail` (#7): approved as written.
+- PR 8 `about-text` (#8): approved; the words are good. I did not see the flaky e2e failure here (one run, 38 of 38).
+- PR 9 `docs-macos-wording` (#9): approved; your judgement calls stay (Windows version without 10 or 11; `CODEOWNERS` with `package.json` and `package-lock.json`, without `preload.cjs`). It is docs-only, so it should be the first real run of the reduced CI path.
+- PR 10 `icons-2nddesktop` (#10): approved. I rendered `tray-color.svg` at 16, 24 and 32 px on a light and a dark taskbar colour: it reads on both (frame contrast about 3.6 to 1 on dark, 4.1 to 1 on light; the tree is small at 16 px). The real taskbar, the installer and the Start menu icon are the owner's look on Windows.
+
+**Re M-3:** (1) Dependabot alert 1: `minimatch` (medium, denial of service in glob matching), **development scope** only, pulled in by `electron-builder` (build tooling; it is not in the shipped app). The fix is `minimatch 11.0.1`, a major version that the old consumers (3.x, 9.x) are not built for, so an override could break the packaging. Not changed: the owner decides (leave open, or dismiss as tolerable for build-only tooling). (2) Show Desktop on Windows: not tested by hand yet (step 6 is open). The Windows cover check reads the foreground and maximized windows (`app/main/desktop-win.js`, `decideCovered`, unit-tested); whether Win+D counts as covered is exactly what the Windows hand check will show, and I will write the result to `TODO-Mac.md`. Your logger result as `M-4` is welcome.
+
 ## Requests
 
-### W-1: baseline and pictures on the Mac, then review of the import (PR 1, merged)
+### W-7: look at the four PRs on a real build, then the F11 result
 
-State: the import PR (`tuangatech/2ndDesktop#1`) is merged. `main` is at `1e2edf3`, tagged `v0.0.0-import`. CI was green on both runners. Nothing is renamed yet. Windows numbers are in `docs/STATUS.md`; the picture hashes there are for Windows only.
-
-1. Section 7.1, Mac part, of `docs/bootstrap/BOOTSTRAP.md`: in your **old fish-tank checkout** run `git pull` and check it is clean at `458922d` (the repository is private, so git must be logged in). `npm ci`, `npm test` (expect 25 files, 341 tests), `npm run test:e2e` (expect 38). If `node_modules/electron/dist` is missing, run `node node_modules/electron/install.js`.
-2. In the same checkout take the two pictures: `npm run shot -- base-window 1280x720 window 5` and `npm run shot -- base-desktop 1920x1080 desktop 5`, then `shasum -a 256 docs/screenshots/base-*.png`. Run them twice and say whether the hashes repeat.
-3. Clone `tuangatech/2ndDesktop`, set **in that clone only** `git config user.name "Tuan Tran"` and `git config user.email "90934329+tuangatech@users.noreply.github.com"` (no `--global`), and check both lines come from `.git/config`. Then the 7.3 proofs on `1e2edf3`: tests (341 and 38), `npm run lint`, `npm run format:check`, and the same two pictures. Do they match your hashes from step 2?
-4. Review of PR 1 (read-only): the files that are not a plain copy are `CLAUDE.md`, `docs/STATUS.md`, `NOTICE`, the two TODO files, and `tests/unit/diagnostics.test.js` (fixture names changed, counts the same). Anything that looks wrong, personal or stale?
-
-Reply under "Replies" in `TODO-Win.md` as `Re W-1`: commit tested, PASS/FAIL per check, the hashes, what you saw. Do not change app code or settings; ask the owner first if something seems to need it.
-
-### W-2: review and run the rename PR (PR 2, branch `rename`) on the Mac
-
-`tuangatech/2ndDesktop#2`, BOOTSTRAP 7.2 step 3. Do it after W-1, with the branch checked out (`git fetch && git checkout rename`, then `npm ci`).
-
-1. 7.3 proofs: `npm test` (expect 28 files, 356 tests), `npm run test:e2e` (38, golden hash unchanged), lint, format.
-2. The two pictures again (`shasum -a 256`). Expect: the desktop picture equals your W-1 hash; the window picture differs only in the strip title (it says "2ndDesktop"). Say whether the new window hash repeats on two runs.
-3. Mac only: `npm run dev` opens, the menu bar shows "2ndDesktop" (About, Hide, Quit), the second menu says "Tank", and the Window menu is there. Try the copy of the saved tank: if you have an old `~/Library/Application Support/Fish Tank (dev)` folder with a `records/` folder, the first run should create `2ndDesktop (dev)` with a copy and log one line; the old folder must be unchanged. Do not delete anything.
-4. Review: `electron/migrate-data.js` and `electron/main.js` (the start-up block), `electron/product.js`, `electron-builder.yml` (`arch: arm64`, `electronLanguages: en`), and the rename table in the commit message. Anything missed, or renamed that should stay?
-
-Not asked: an installer build. Reply as `Re W-2` in `TODO-Win.md`.
-
-### W-3: review and run the move PR (PR 3, branch `move`) on the Mac
-
-`tuangatech/2ndDesktop#3`, BOOTSTRAP 7.2 step 4. W-2 (the rename) was merged as `902c508` before you reached it: if you have not run W-2 yet, run its checks on `main` after this one, or on `902c508`. Do W-3 with the branch checked out (`git fetch && git checkout move`, then `npm ci`).
-
-1. 7.3 proofs: `npm test` (28 files, 356 tests), `npm run test:e2e` (38; 26 of them now sit in `scenes/fishtank/tests/`; golden hash unchanged), lint, format. If a count is lower, a test folder is missing from `vitest.config.js` or `playwright.config.js`: say which.
-2. The two pictures (`shasum -a 256`): they must equal your W-2 hashes (the window strip says "2ndDesktop").
-3. **`npm run dist:test` on the Mac** (the step asks for it on both systems): it builds a dmg for Apple silicon. Open the dmg once and start the app (it is unsigned: right-click, Open). Say if it starts, if the menu bar shows "2ndDesktop", and if the tray icon shows. Do not commit anything it writes (`release/` is git-ignored).
-4. Review (read-only): the paths in `package.json` (`main`), `electron-builder.yml` (`files:`), `vite.config.js`, `app/page/art.js` and `app/page/scenes.js` (the glob paths), `eslint.config.js`, `vitest.config.js`, `playwright.config.js`; and that `git diff -M main...move --stat` shows renames, not delete-and-add.
-
-Reply as `Re W-3` in `TODO-Win.md`.
-
-### W-4: read the documents PR (PR 4, branch `docs`)
-
-`tuangatech/2ndDesktop#4`, BOOTSTRAP 7.2 step 5. Read-only, no build needed; do it after W-3.
-
-1. Read `SECURITY.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/`, `.github/CODEOWNERS` and `docs/reference/README.md`. Say what is wrong, unclear or missing; in particular whether the macOS wording is right (Apple silicon only, the unsigned first open).
-2. In `docs/reference/README.md`: pick three old comments from the code (a `D` number, an `FR` number, a `docs/...md` path) and check that the table leads to the right place.
-3. `git diff -M main...docs --stat`: the style guide shows as a rename.
-
-Reply as `Re W-4` in `TODO-Win.md`.
-
-### W-5: read the README PR (PR 5, branch `readme`)
-
-`tuangatech/2ndDesktop#5`, documentation only. Read-only; do it after W-4. Check the README against what you see on the Mac: do the commands under "Run it from source" work as written (`npm ci`, `npm run dev`), is anything wrong or missing for macOS, and is any claim too strong for a project with no release. Reply as `Re W-5` in `TODO-Win.md`.
-
-### W-6: read the CI change (PR 6, branch `ci-docs-only`)
-
-`tuangatech/2ndDesktop#6`, `.github/workflows/ci.yml` only. Read-only. The idea: a PR whose changed files all end in `.md` skips lint, tests, build and e2e, but the job still reports under the same two check names (a skipped workflow would block the ruleset). Say if the shell block would fail on the macOS runner (bash 3.2, BSD tools) and if any case is missing. Reply as `Re W-6` in `TODO-Win.md`.
+PRs #7 to #10 are yours. When the owner has merged them (I merge on green CI, after the owner's say-so), on `main`: (1) `npm run dist:test`, open the app, and look at the Dock icon, the menu bar (tray) icon and the About box (icon and text); say if the template tray icon reads in light and dark menu bars. (2) Send the F11 logger result as `M-4`. Reply as `Re W-7` in `TODO-Win.md`.
 
 ## Closed
+
+- W-1 (baseline and pictures, review of the import): PASS, the Mac numbers are in `docs/STATUS.md`.
+- W-2 (the rename): PASS.
+- W-3 (the move, `dist:test` on the Mac): PASS; not seen: the first open of a downloaded unsigned build, the menu bar and tray by eye.
+- W-4 (documents): PASS with suggestions, taken in PR 9.
+- W-5 (README): PASS with corrections, taken in PR 9.
+- W-6 (CI change): one failing case, fixed in PR 7.
