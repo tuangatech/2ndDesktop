@@ -1,22 +1,25 @@
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { createRequestFilter } from '../../app/main/session-policy.js';
 
-const rendererDir = path.join(path.sep, 'app', 'dist', 'renderer');
+const rendererDir = path.resolve(path.sep, 'app', 'dist', 'renderer');
+// The address of that folder as a file URL on this system (file:///app/... on a Mac, file:///C:/app/... on Windows).
+const base = pathToFileURL(rendererDir).href;
 
 describe('createRequestFilter', () => {
   const allow = createRequestFilter({ rendererDir });
 
   it('allows the files of the built page, with a query', () => {
-    expect(allow('file:///app/dist/renderer/index.html?mode=window')).toBe(true);
-    expect(allow('file:///app/dist/renderer/assets/index-abc.js')).toBe(true);
+    expect(allow(`${base}/index.html?mode=window`)).toBe(true);
+    expect(allow(`${base}/assets/index-abc.js`)).toBe(true);
   });
 
   it('refuses other files, also by .. and by a folder with the same start', () => {
     expect(allow('file:///etc/passwd')).toBe(false);
-    expect(allow('file:///app/dist/renderer/../../secret.json')).toBe(false);
-    expect(allow('file:///app/dist/renderer/%2e%2e/%2e%2e/secret.json')).toBe(false);
-    expect(allow('file:///app/dist/renderer-old/index.html')).toBe(false);
+    expect(allow(`${base}/../../secret.json`)).toBe(false);
+    expect(allow(`${base}/%2e%2e/%2e%2e/secret.json`)).toBe(false);
+    expect(allow(`${base}-old/index.html`)).toBe(false);
   });
 
   it('allows data and blob addresses (images and sounds made in the page)', () => {
@@ -49,7 +52,7 @@ describe('createRequestFilter', () => {
 
   it('ignores case on Windows', () => {
     const win = createRequestFilter({ rendererDir, caseInsensitive: true });
-    expect(win('file:///APP/Dist/Renderer/index.html')).toBe(true);
-    expect(allow('file:///APP/Dist/Renderer/index.html')).toBe(false);
+    expect(win(`${base}/index.html`.replace(/dist\/renderer/, 'Dist/Renderer'))).toBe(true);
+    expect(allow(`${base}/index.html`.replace(/dist\/renderer/, 'Dist/Renderer'))).toBe(false);
   });
 });
