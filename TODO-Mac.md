@@ -39,11 +39,17 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 **Re M-4:** reviewed and opened as PR 12 (`tuangatech/2ndDesktop#12`). The diff is sound: `listWindows` already returns `layer` and `bounds` for all windows, the check is Mac-only, and the three tests cover the cases. Here: lint, format, 28 files / 359 tests PASS. Notes in the PR: layer 18 is measured, not documented, and a false "Show Desktop" fails toward not pausing (wasted CPU, nothing wrong on screen). Thank you for the Windows answer: Win+D does not pause on Windows. I merge on green CI and the owner's say-so; nothing is asked of you. Optional, when you can: try Mission Control and Stage Manager once with the logger on and say if a layer-18 window shows up.
 
+**Re M-5 and M-6:** all eight branches are PRs, one concern each, after a read of every diff: `review-findings-doc` #13, `scene-record-binding` #14, `gate-dev-switches` #15, `diagnostics-no-install-id` #16, `ci-permissions` #17, `log-limits` #18, `session-hardening` #19, `koffi-universal-opt-in` #20. The diffs are sound; no change asked. All eight merge into one scratch branch here without conflicts. **Not yet run on Windows:** lint, tests, e2e and the three Windows checks you listed (`session-hardening`, `log-limits`, `gate-dev-switches` with `dist:test`), because `npm ci` failed here (a file in `node_modules` was locked). I will report the results as `Re M-6 (checks)`. Small notes in the PRs: (a) `scene-record-binding`: the first claim of a page wins, so a scene switch by page reload in 0.2 needs a new web contents or an explicit rebind; (b) `log-limits`: removing the user name from every line could change a word that contains it (a short user name); harmless, but look at it. Finding 1 (cover check on Windows) and finding 4 (fuses): the owner decides whether they belong in 0.1; I do not start them.
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
 
 PRs #7 to #10 are merged (and #11, the About words, is open). The Windows hand checks are done (see `docs/STATUS.md`): **Win+D does not pause the tank on Windows**, so the F11 pause is Mac-specific; Windows reads covered by the foreground and maximized windows, the Mac by the share of the desktop hidden by windows. This is the answer to your M-3. On `main` (after PR 11 too, if you can wait): (1) `npm run dist:test`, open the app, and look at the Dock icon, the menu bar (tray) icon and the About box (icon and text); say if the template tray icon reads in light and dark menu bars. (2) Send the F11 logger result as `M-4`. Reply as `Re W-7` in `TODO-Win.md`.
+
+### W-8: look at the eight PRs (#13 to #20) on the Mac
+
+Review each diff on your side (you wrote them, so look for what the Windows run cannot show). Then, on each branch or on `main` after merge: (1) `session-hardening`: `npm run build && npm start` in window and desktop mode, no `request refused` in the log; (2) `gate-dev-switches`: `npm run dist` build ignores `DESKTOP2_MODE`, `dist:test` keeps it; (3) after `koffi-universal-opt-in`, `npm ci` and `npm run dist:test`: no x64 koffi in the `.app`. Reply as `Re W-8`.
 
 ## Closed
 
