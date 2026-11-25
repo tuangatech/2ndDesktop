@@ -46,6 +46,14 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 - The design set: the live path references (`platform/01`, `02`, `05`, `scenes/fishtank-migration.md`) now name the new paths. `platform/03` section 7.2 and `platform/04` are plans written against the fish-tank tree, so each got a note saying which old path is which new one instead of a rewrite; the `docs/03`, `05`, `06` row of `platform/03` now says "copied" (Q5).
 - Not in this PR: `CHANGELOG.md` and `CONTRIBUTING.md` (0.5), the labels, the `.claude/settings.json` allow list and `npm run verify` (recommendations 4 and 6 of BOOTSTRAP section 9).
 
+## Small PRs from the Mac session's review (2026-11-25)
+
+- Merged: PR 9 (macOS wording in the README, `SECURITY.md` and templates; `CODEOWNERS` gains `package.json` and the lock file) as `f1dde8e`, PR 10 (the window-with-a-tree icons replace the fish; new Windows tray icon) as `0f00099`.
+- Waiting for CI: PR 7 (`ci.yml`: a very large code change was taken for Markdown-only because of `pipefail` and SIGPIPE) and PR 8 (the About text).
+- The window-picture proof on the Mac is "one of the two known hashes"; on Windows it must repeat exactly (working rule, in `TODO-Mac.md`, until the owner decides).
+- Dependabot alert 1 (`minimatch`, medium, development scope via `electron-builder`; the fix is a major version) is open, for the owner to leave open or dismiss.
+- The reduced CI path (Markdown only) has not run on a real PR yet: PR 9 touched `CODEOWNERS`, which is not a `.md` file, so it ran in full, as it should.
+
 ## Mac numbers (Apple silicon, 2026-11-24; details in `TODO-Win.md`, Re W-1 to W-6)
 
 - Same counts as Windows at every step: 341 and 38 at the import, 356 and 38 after the rename and the move (26 e2e in `scenes/fishtank/tests/`). Lint and format clean. `npm run dist:test` builds an unsigned arm64 dmg; the app starts from it, copies the saved tank from `fish-tank`, and leaves the old folder unchanged.
