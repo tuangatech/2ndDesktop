@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { MAC_COVER_SHARE, coveredShare, decideCovered, rectToEdges } from '../../app/main/cover.js';
+import {
+  MAC_COVER_SHARE,
+  coveredShare,
+  decideCovered,
+  isShowDesktopMac,
+  rectToEdges,
+} from '../../app/main/cover.js';
 
 const primary = { left: 0, top: 0, right: 2560, bottom: 1600 };
 const base = {
@@ -127,5 +133,23 @@ describe('coveredShare (macOS)', () => {
 
   it('an empty work area is never covered', () => {
     expect(coveredShare([win(0, 0, 100, 100)], { x: 0, y: 0, width: 0, height: 0 }, 1)).toBe(0);
+  });
+});
+
+describe('isShowDesktopMac', () => {
+  const display = { width: 1512, height: 982 };
+  const at = (layer, width, height) => ({ layer, bounds: { x: 0, y: 0, width, height } });
+
+  it('is true for a display-sized window on the Show Desktop layer', () => {
+    expect(isShowDesktopMac([at(0, 800, 600), at(18, 1512, 982)], display)).toBe(true);
+  });
+
+  it('is false for a display-sized window on another layer', () => {
+    expect(isShowDesktopMac([at(0, 1512, 982), at(20, 1512, 982)], display)).toBe(false);
+  });
+
+  it('is false for a small window on the Show Desktop layer, or no windows', () => {
+    expect(isShowDesktopMac([at(18, 300, 200)], display)).toBe(false);
+    expect(isShowDesktopMac([], display)).toBe(false);
   });
 });

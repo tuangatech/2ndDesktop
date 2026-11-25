@@ -4,7 +4,13 @@
 // Switching re-creates the window, which is simpler and safer than re-parenting a live one.
 
 import { BrowserWindow, app, screen } from 'electron';
-import { coveredShare, decideCovered, MAC_COVER_SHARE, rectToEdges } from './cover.js';
+import {
+  coveredShare,
+  decideCovered,
+  isShowDesktopMac,
+  MAC_COVER_SHARE,
+  rectToEdges,
+} from './cover.js';
 import { WINDOW_RULES, fitWindowToDisplays, sizeLimitsFor } from './placement.js';
 
 // How long the window must be still before its position and size are written to the settings.
@@ -446,11 +452,12 @@ export function createDesktopController({
       } else if (isMac && mac) {
         let nowCovered = false;
         try {
-          const share = coveredShare(
-            mac.listWindows(),
-            screen.getPrimaryDisplay().workArea,
-            process.pid,
-          );
+          const display = screen.getPrimaryDisplay();
+          const windows = mac.listWindows();
+          // With Show Desktop active the desktop is visible, even where windows are still reported over it.
+          const share = isShowDesktopMac(windows, display.bounds)
+            ? 0
+            : coveredShare(windows, display.workArea, process.pid);
           nowCovered = share >= MAC_COVER_SHARE;
           // Logged in steps of a tenth, so the log shows why a pause did or did not happen without a line every check.
           const step = Math.floor(share * 10);
