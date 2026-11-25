@@ -1,4 +1,4 @@
-// Before a universal macOS build: make sure both koffi native packages are in node_modules.
+// Before a universal macOS build (`npm run dist:universal`; `dist` and `dist:test` do not run it): make sure both koffi native packages are in node_modules.
 // npm installs only the package of the build machine's processor (@koromix/koffi-darwin-arm64 on an M1), and
 // `npm install --os=darwin --cpu=x64` refuses it with "notsup", so the missing one is fetched with `npm pack` and
 // unpacked by hand, at the version of the installed koffi. Nothing is saved to package.json or the lock file.
