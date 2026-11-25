@@ -1,4 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
-  <title>Fish Tank tray icon, macOS template (black on transparent)</title>
-  <path fill="#000" fill-rule="evenodd" d="M1.2 8.2C2.6 4.9 6.3 3.9 9.4 5.1L13.9 2.6L12.8 8.2L13.9 13.4L9.4 11.3C6.3 12.5 2.6 11.5 1.2 8.2ZM4.6 6.6a0.9 0.9 0 1 0 0 1.8a0.9 0.9 0 1 0 0-1.8Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>2ndDesktop tray icon, macOS template (black on transparent)</title>
+  <rect x="5" y="3.5" width="22" height="21" rx="3.5" fill="none" stroke="#000" stroke-width="2.4"/>
+  <circle cx="16" cy="10" r="4.2" fill="#000"/>
+  <circle cx="11.8" cy="13.2" r="3.4" fill="#000"/>
+  <circle cx="20.2" cy="13.2" r="3.4" fill="#000"/>
+  <rect x="14.4" y="14" width="3.2" height="8" fill="#000"/>
+  <rect x="3" y="27" width="26" height="2.4" rx="1.2" fill="#000"/>
 </svg>
