@@ -33,8 +33,7 @@ async function boot() {
   const { manifest } = chosen;
   if (chosen.fellBack)
     console.log(`scene "${info.activeScene}" is not known, starting ${chosen.id}`);
-  // The main process takes the scene's records from this id, not from later calls: it is said before any scene code runs.
-  api?.bindScene?.(chosen.id);
+  // The main process chose this scene and takes the scene's records from its own assignment, not from the page.
   // The scene's code is loaded before the renderer starts: the PixiJS parts it imports (meshes, tiling sprites) register
   // themselves when they are imported, and a renderer that has already started would not know them.
   const { default: create } = await chosen.load();

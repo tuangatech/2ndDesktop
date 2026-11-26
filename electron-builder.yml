@@ -7,6 +7,9 @@ directories:
 files:
   - dist/renderer/**
   - app/main/**
+  # The main process reads each scene's manifest to decide which scene runs (app/main/scene-registry.js); the scenes'
+  # source is bundled into the page by Vite and is not shipped.
+  - scenes/*/scene.json
   - assets/tray/*.png
   - assets/app-icon.png
   - package.json

@@ -16,10 +16,8 @@ contextBridge.exposeInMainWorld('desktop2', {
   // A click or key press in the window (the usage log counts minutes with activity, NFR-7).
   reportActivity: () => ipcRenderer.send('diag:activity'),
   reportNote: (text) => ipcRenderer.send('diag:note', String(text).slice(0, 2000)),
-  // The scene the page runs, said once by the host part of the page before any scene code is loaded. The records below
-  // are always those of that scene: the main process ignores any other id (docs/platform/02 section 4).
-  bindScene: (id) => ipcRenderer.send('scene:bind', String(id)),
-  // The saved progress of the scene, one record per scene id (docs/03-platform-design.md section 5).
+  // The saved progress of the scene, one record per scene id (docs/03-platform-design.md section 5). No call carries an
+  // id: the records are always those of the scene the main process assigned to this page (docs/platform/02 section 4).
   loadRecord: () => ipcRenderer.invoke('record:load'),
   saveRecord: (record) => ipcRenderer.send('record:save', record),
   // Keeps a record that had to be repaired or replaced next to it (the main process names the file).
