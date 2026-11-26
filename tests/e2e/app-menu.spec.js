@@ -32,3 +32,54 @@ test.describe('the application menu', () => {
     }
   });
 });
+
+// About is a small window, not a native message box (about.js): the version sits under the name, the text takes the
+// whole width. The menu item to click exists on macOS only (Windows has About in the tray menu).
+test.describe('the About window', () => {
+  test.skip(process.platform !== 'darwin', 'the application menu is macOS only');
+
+  const clickAbout = (app) =>
+    app.evaluate(({ Menu }) => {
+      const top = Menu.getApplicationMenu().items[0];
+      top.submenu.items.find((item) => item.label.startsWith('About')).click();
+    });
+
+  test('opens one window, with the version under the name, and closes with Escape', async () => {
+    const app = await launch();
+    try {
+      const opened = app.app.waitForEvent('window');
+      await clickAbout(app.app);
+      const about = await opened;
+      await about.waitForLoadState('domcontentloaded');
+      await expect(about.locator('h1')).toHaveText('2ndDesktop');
+      await expect(about.locator('.version')).toHaveText(/^Version \d+\.\d+\.\d+/);
+      const [name, version, paragraph] = await Promise.all([
+        about.locator('h1').boundingBox(),
+        about.locator('.version').boundingBox(),
+        about.locator('p').first().boundingBox(),
+      ]);
+      expect(version.y).toBeGreaterThan(name.y);
+      expect(paragraph.y).toBeGreaterThan(version.y + version.height);
+      // The text runs under the icon, over the width of the window.
+      expect(paragraph.x).toBeLessThan(name.x);
+
+      // A second request brings the same window forward; it does not open another.
+      await clickAbout(app.app);
+      const count = await app.app.evaluate(
+        ({ BrowserWindow }) =>
+          BrowserWindow.getAllWindows().filter((w) => w.getTitle().startsWith('About')).length,
+      );
+      expect(count).toBe(1);
+
+      const closed = about.waitForEvent('close');
+      // Playwright's own key press goes round Electron's input hook, so the key is sent from the main process.
+      await app.app.evaluate(({ BrowserWindow }) => {
+        const win = BrowserWindow.getAllWindows().find((w) => w.getTitle().startsWith('About'));
+        win.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Escape' });
+      });
+      await closed;
+    } finally {
+      await app.close();
+    }
+  });
+});

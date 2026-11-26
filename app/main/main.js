@@ -3,9 +3,9 @@ import {
   Menu,
   app,
   clipboard,
-  dialog,
   ipcMain,
   nativeImage,
+  nativeTheme,
   powerMonitor,
   screen,
   session,
@@ -13,6 +13,7 @@ import {
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { aboutHtml } from './about.js';
 import { createDesktopController } from './desktop.js';
 import { devSwitchesAllowed, removeDevSwitches } from './dev-switches.js';
 import {
@@ -378,32 +379,67 @@ async function copyDiagnostics() {
   setTimeout(refreshAppMenu, 5100).unref();
 }
 
+// One About window at a time (a second request brings it forward). Its page is built by about.js.
+let aboutWindow = null;
+
 function showAbout() {
+  if (aboutWindow && !aboutWindow.isDestroyed()) {
+    aboutWindow.show();
+    aboutWindow.focus();
+    return;
+  }
   // For the player: what this is, the licenses, where the save is. How the menus work is in the first-launch hint.
-  const detail = [
-    `Version ${app.getVersion()}`,
+  const paragraphs = [
     'Your desktop, alive, and quiet about it.',
-    '',
     '2ndDesktop shows one living scene behind your icons or in a small window, and rests when the desktop is covered. No account, no telemetry.',
-    '',
     'Open source (MIT license). The font is Nunito (SIL Open Font License). The art is original, drawn with an AI tool, and the sounds are made for this app.',
-    '',
     `Your saved progress stays on this computer, in: ${displayPath(path.join(userData, 'records'), {
       platform: process.platform,
       home: os.homedir(),
       appData: app.getPath('appData'),
     })}`,
-  ].join('\n');
-  dialog.showMessageBox({
-    // 'none', not 'info': on Windows a standard type shows its own symbol (a blue "i") instead of the app icon.
-    type: 'none',
-    icon: nativeImage.createFromPath(appIconPath),
+  ];
+  const icon = nativeImage.createFromPath(appIconPath);
+  const dark = nativeTheme.shouldUseDarkColors;
+  const win = new BrowserWindow({
+    width: 520,
+    height: 360,
+    useContentSize: true,
+    show: false,
     title: `About ${PRODUCT_NAME}`,
-    message: PRODUCT_NAME,
-    detail,
-    buttons: ['OK'],
-    noLink: true,
+    icon,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    backgroundColor: dark ? '#1e1e1e' : '#ffffff',
+    webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
   });
+  aboutWindow = win;
+  win.on('closed', () => {
+    aboutWindow = null;
+  });
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown' && input.key === 'Escape') win.close();
+  });
+  // The window is as high as the text: measured once the page is drawn, then shown.
+  win.webContents.once('did-finish-load', async () => {
+    try {
+      const height = await win.webContents.executeJavaScript('document.body.scrollHeight');
+      if (!win.isDestroyed()) win.setContentSize(520, Math.ceil(height));
+    } catch {
+      // Keep the default height.
+    }
+    if (!win.isDestroyed()) win.show();
+  });
+  const html = aboutHtml({
+    name: PRODUCT_NAME,
+    version: app.getVersion(),
+    iconUrl: icon.resize({ width: 128 }).toDataURL(),
+    paragraphs,
+    dark,
+  });
+  win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
 }
 
 const menuSettings = () => ({
