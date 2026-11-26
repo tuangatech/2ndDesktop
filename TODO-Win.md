@@ -192,6 +192,19 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 - **Not done:** the submenu being **absent in window mode** was not looked at on the Mac (the unit tests in `menu.test.js` cover it); the real tray popup was not clicked by hand; sleep and wake with the setting on; a Mac without a battery (it would report AC, so `auto` would not pause there, as the table says).
 - Nothing to change before the merge.
 
+**Re W-16: PASS** (`p1-sound` at `1bb4068`, Mac, Apple silicon, Node 24, `npm ci` run)
+
+- **Proofs on the branch:** lint and format clean; **40 files / 490 unit tests PASS**, among them the four call-log hashes of `scenes/fishtank/tests/sounds.test.js` (10 of 10 in that file; they are plain arithmetic, so the same on the Mac, as you expected); golden untouched. Window picture, 3 runs: `d6fd2e7e…6367`; desktop picture, 3 runs: `6a78f6d1…1a34` (the Mac's known values; the PR changes neither). **e2e: 53 PASS** (your 51 plus the macOS-only About test) in 4 of 5 full runs. **In the first full run one test needed its retry:** `scenes/fishtank/tests/game.spec.js:178` ("a click goes to a pellet first, then a fish, then the water..."); on its own it passed 3 of 3 afterwards, and the next 4 full runs were clean. It is a timing test and that run came right after `npm ci` and the unit tests, so I put it down to load; not proven, and I did not run the same loop on `main`, so I cannot say the PR is not the cause, but I see no way for it to be (the click plays a sound through the same `host.sound.play`, which is muted in a test run).
+- **Review of the diff** (12 files): sound.
+  - `define(name, recipe)`: a name must match `^[a-z][a-z0-9-]{0,31}$`, the recipe must be a function, a name cannot be defined twice, at most 16 sounds; anything else returns `false` and registers nothing. A scene reload (a scene switch loads a new page, so a new `SoundPlayer`) starts with no recipes, so "already defined" cannot get in the way of a switch back.
+  - What a recipe reaches: `voice` is a frozen object of five arrow functions that call the player's methods; the recipe gets neither the player, nor its context, nor `define`, `setEnabled` or `forScene`. The scene itself gets `Object.freeze({define, play})`. A recipe is still code of the scene running in the page with the scene's trust (`this.partial(...)` with odd numbers is possible), as DEC-51 says; `play` wraps the recipe in the existing `try/catch`, so a recipe that throws gives `false` and no sound, never a broken page.
+  - `SCALE` and `SOUND_NAMES` moved to `scenes/fishtank/sounds.js`; nothing else in `app`, `scenes`, `tests` or `scripts` imported them from the player, except `sound-lab.mjs`, which is updated and serves the new file.
+  - `play` is still only called from the scene's reaction to a click or menu action; the "the tick plays none" test is kept.
+- **A real render on the Mac, old engine against new** (an `OfflineAudioContext`, 48 kHz, the same seeded random numbers, `main`'s `SoundPlayer.js` against the branch's player plus `sounds.js`): the largest difference per sample is **1.5e-8 for splash, 0 for pop and 4.5e-8 for chime**, and old against old gives the same figures (1.5e-8, 0, 4.5e-8), so the difference is the browser's own render noise and the sounds are identical. Peaks 0.108, 0.098 and 0.195, as before.
+- **Listened (the owner, on the Mac): "sounds are okay"**: the sound lab (`npm run sounds`, keys 1 to 3: splash, pop, chime) and in the app (feed, collect, hatch) sound as before.
+- Nothing to change before the merge. Not done: the sound with "Sound" switched off in the menu (a unit test covers it) and a second scene defining its own sounds (there is none yet).
+
+
 ## Requests
 
 None open.
