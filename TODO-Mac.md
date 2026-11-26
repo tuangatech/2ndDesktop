@@ -67,6 +67,8 @@ One writer per file means the two sessions never edit the same lines, so there a
 **Re M-9:** opened as PR 31 (`about-wider`). The diff matches your description: one commit, one file, the `ABOUT_WIDTH = 560` constant in two places. Looked at on Windows with the app's own page code (`aboutHtml`) in a real Electron window, dark and light theme, at 520 and at 560 px: at 560 no paragraph ends with a lone word, the last lines leave no big empty strip, and the window is 287 px high, so it fits a small screen. One width for both systems is fine here; no platform switch is needed. Not checked: the installed Windows build.
 **Re W-14:** thank you; PR 32 is merged as `50ba4cc` (4 of 4 checks green, your PASS and the owner's look answered). (1) **DEC-48 was taken** by PR 30 (the tray icon) while PR 32 was open, so the scene-switch decision is **DEC-49**; main is merged into the branch and the proofs were run again (lint, format, 452 unit, 50 e2e + 1 skipped, golden unchanged) before the merge. (2) **The stricter id rule** you found is now a line in the PR text; no record file like that exists. (3) **The contract sentence** (a scene must send every change of its record as it happens, because a switch only confirms that the saves arrived) goes into `platform/01` section 4 with the 0.2 contract; it is in the carried list of the plan. (4) **The dip to the page's blue:** left as is; if it ever looks like a blink on a slow machine, the fix is to keep the old picture until the new scene is ready. (5) Next is 7.5 (the power setting "When the desktop is covered"); a W-n for it comes with its PR.
 
+**Re W-15:** thank you; PR 33 is merged as `a7a5c7f` (4 of 4 checks green, your PASS answered). (1) **The `on-battery` event** was not seen on either machine while covered: Windows saw `on-ac` (plug in, drawing again within a second) and read `isOnBatteryPower()` as `true` after the unplug, but the desktop was no longer covered by then; you saw `on-ac` once. It is the same handler as `on-ac` (`reevaluateCover`), and a unit test drives the flip both ways, so it stays as an open hand check, not a blocker. (2) **The submenu absent in window mode** is a unit test (`menu.test.js`) only; nobody has looked at the real tray menu in window mode, which the owner can do in a minute. (3) **Sleep and wake with the setting on, and a Mac with no battery** stay unchecked, as you list them. (4) Your note on the cover helper that was only killed with a plain `kill` is useful for the next time a script needs a cover window. (5) Next is W-16 (PR 34, the sound split: please also listen with `npm run sounds`), then 7.7.
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
@@ -89,9 +91,6 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 
 
-### W-15: review PR 33 (`p1-power`, work package 7.5) and run it on the Mac
-
-PR 33 adds the setting **"When the desktop is covered"** (`platform/01` section 7.1): `whenCovered` in `settings.json` is `always` (default, "Always pause"), `auto` ("Pause on battery only") or `never`. New `app/main/cover-policy.js` (the three words, the labels, `shouldPauseWhenCovered(setting, onBattery)`: `auto` pauses on battery **and when the power state is unknown**); `desktop.js` keeps "covered" as a fact and asks a new option `shouldPauseWhenCovered()` whether it pauses, with `reevaluateCover()` for a change of setting or power (`setCovered` is now on the controller so a unit test needs no native code); `main.js` wires the setting, `powerMonitor` `on-battery` / `on-ac` and the menu choice; `menu.js` has a radio submenu after Sound. **DEC-50:** the submenu is shown in **desktop mode only** (the cover check runs only there; "window mode, fully covered" of the table in 7.1 is not built in 0.1). Windows: lint, format, 39 files / 475 unit (23 new), 53 e2e (52 passed + 1 skipped; 2 new in `tests/e2e/cover-setting.spec.js`), golden untouched, both pictures equal the baselines. **Also run by hand on Windows in real desktop mode** (a maximised console window over the desktop): default covered paused; Never pause drew again; Pause on battery only on AC changed nothing; Always pause paused; closing the window resumed (all in the log). **Not seen on Windows:** the charger being pulled out (a desktop PC with no battery), so that step is first seen on your MacBook. Say what `isOnBatteryPower()` reports on your machine. Reply as `Re W-15` in `TODO-Win.md`.
 
 ### W-16: review PR 34 (`p1-sound`, work package 7.6) and listen on the Mac
 
@@ -99,6 +98,7 @@ PR 34 splits the sound engine from the tank's sounds (no sound changes). **Two c
 
 ## Closed
 
+- W-15 (review PR 33, work package 7.5): PASS, merged as `a7a5c7f`. See `Re W-15` above.
 - W-14 (review PR 32, work package 7.4): PASS, merged as `50ba4cc`. See `Re W-14` above.
 - W-13 (review PR 29, work package 7.3): PASS, merged as `f2a2395`. See `Re W-13` above.
 
