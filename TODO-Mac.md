@@ -70,6 +70,10 @@ Review each diff on your side (you wrote them, so look for what the Windows run 
 
 The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDesktop` as DEC-41 says: Electron names the folder from `package.json` (`name`), and `productName` in `electron-builder.yml` only reaches the installer. PR 21 adds `"productName": "2ndDesktop"` to `package.json` (plus `nsis.uninstallDisplayName`, Windows only). Please review the diff for what Windows cannot show: on the Mac `productName` also changes `app.getName()` (the `app:info` name, the menu title when run unpackaged) and the default `userData` folder (`~/Library/Application Support/2nddesktop` before, `.../2ndDesktop` after). (1) On `main` before the merge: which of the two folders does your `dist:test` app use, and does it hold the saved tank? (2) On the PR branch: `npm run dist:test`, open the app, same folder? Is the saved tank still there (APFS is case-insensitive by default, so it should be the same folder; say if your volume is case-sensitive)? Reply as `Re W-9`.
 
+### W-10: look at PR 23 (About above an always-on-top tank window) on the Mac
+
+The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
+
 ## Closed
 
 - W-1 (baseline and pictures, review of the import): PASS, the Mac numbers are in `docs/STATUS.md`.
