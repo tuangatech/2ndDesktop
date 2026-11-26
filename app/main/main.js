@@ -13,7 +13,7 @@ import {
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { aboutHtml } from './about.js';
+import { aboutHtml, aboutStaysOnTop } from './about.js';
 import { createDesktopController } from './desktop.js';
 import { devSwitchesAllowed, removeDevSwitches } from './dev-switches.js';
 import {
@@ -412,6 +412,8 @@ function showAbout() {
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
+    // Above a tank window that is always on top, which would otherwise cover About (same level as the tank on a Mac).
+    alwaysOnTop: aboutStaysOnTop(BrowserWindow.getAllWindows()),
     backgroundColor: dark ? '#1e1e1e' : '#ffffff',
     webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
   });

@@ -51,3 +51,13 @@ ${body}
 </html>
 `;
 }
+
+/**
+ * True when the About window must stay above the others: some other window is "Always on top" (the tank window in window
+ * mode). Without it a window that is always on top covers About, which opens as a window of its own.
+ * @param {Array<{isAlwaysOnTop: () => boolean, isDestroyed?: () => boolean}>} windows  every window of the app
+ * @param {unknown} [except]  the About window itself
+ */
+export function aboutStaysOnTop(windows, except) {
+  return windows.some((w) => w !== except && !w.isDestroyed?.() && w.isAlwaysOnTop());
+}
