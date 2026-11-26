@@ -30,6 +30,7 @@ import { FALLBACK_NOTE, chooseStartMode, settingsForMode, settingsOnQuit } from 
 import { createLineLimiter, createLogFile } from './log-file.js';
 import { createSettingsStore } from './settings.js';
 import { createSceneBinding } from './scene-binding.js';
+import { chooseActiveScene, readSceneManifests } from './scene-registry.js';
 import { createRecordStore, readJson } from './store.js';
 import { createTray } from './tray.js';
 import { createUsageLog, usageLines } from './usage-log.js';
@@ -108,10 +109,27 @@ const records = createRecordStore({
 });
 const DEFAULT_SCENE = 'fishtank';
 const settingsStore = createSettingsStore({ file: path.join(userData, 'settings.json') });
+// The scenes of this build, read from their manifests without loading any scene code. An installed app ships each
+// scene.json but not the scenes' source (Vite has bundled it into the page), so it does not look for index.js.
+const sceneList = (() => {
+  const { scenes, rejected } = readSceneManifests(path.join(root, 'scenes'), {
+    requireIndex: !app.isPackaged,
+  });
+  for (const item of rejected) log(`scene ${item.folder} is not used: ${item.problems.join('; ')}`);
+  return scenes;
+})();
+// A development or test build may run a scene marked `dev: true` (the empty scene); an installed release never does.
+const devScenes = isDev || channel === 'test';
+// The main process decides which scene a page runs and assigns it before the page loads (app/main/scene-binding.js):
+// the page never claims a scene, so it can only reach its own record.
+const sceneOf = createSceneBinding(records.isValidId);
+const chosenScene = () =>
+  chooseActiveScene(settingsStore.get().activeScene, sceneList, {
+    dev: devScenes,
+    fallback: DEFAULT_SCENE,
+  });
 function readSettings() {
-  const data = settingsStore.get();
-  const activeScene = records.isValidId(data.activeScene) ? data.activeScene : DEFAULT_SCENE;
-  return { ...data, activeScene };
+  return { ...settingsStore.get(), activeScene: chosenScene() };
 }
 function readTuning() {
   if (!isDev && channel !== 'test') return null;
@@ -183,6 +201,8 @@ app.on('child-process-gone', (_event, details) =>
 );
 
 async function loadRenderer(win, mode, extra = {}) {
+  // Before the page exists, so that no record call of this page can come first.
+  sceneOf.assign(win.webContents, chosenScene());
   if (process.env.DESKTOP2_DEBUG === '1') {
     win.webContents.on('console-message', (event) => log('renderer console: ' + event.message));
   }
@@ -552,14 +572,15 @@ app.whenReady().then(async () => {
     Menu.setApplicationMenu(null);
   }
 
-  ipcMain.handle('app:info', () => ({
+  ipcMain.handle('app:info', (event) => ({
     name: app.getName(),
     version: app.getVersion(),
     platform: process.platform,
     electron: process.versions.electron,
     chrome: process.versions.chrome,
     mode: controller.getMode(),
-    activeScene: readSettings().activeScene,
+    // The scene this page was assigned (the same one its record calls use).
+    activeScene: sceneOf.get(event.sender) ?? chosenScene(),
     tuning: readTuning(),
     // Test runs only (DESKTOP2_TEST=1): a fixed random seed, and time that moves only when a test steps the scene.
     test:
@@ -573,12 +594,8 @@ app.whenReady().then(async () => {
   // The saved progress of a scene (D8, D33): the renderer sends the whole record on every change, main writes it
   // after one second of quiet, and `before-quit` writes whatever is still waiting.
   ipcMain.handle('settings:get', () => ({ sound: readSettings().sound }));
-  // The scene id comes from the host part of the page, once, before any scene code runs (app/main/scene-binding.js);
-  // the id in a record call is never taken from the page, so a scene reaches only its own record.
-  const sceneOf = createSceneBinding(records.isValidId);
-  ipcMain.on('scene:bind', (event, id) => {
-    if (!sceneOf.bind(event.sender, id)) log(`scene:bind refused (${String(id).slice(0, 40)})`);
-  });
+  // The scene of a record call is the one the main process assigned to the page that asks (`sceneOf`, above); no call
+  // carries an id, so a scene reaches only its own record.
   ipcMain.handle('record:load', (event) => {
     const id = sceneOf.get(event.sender);
     return id ? records.load(id) : { status: 'missing' };

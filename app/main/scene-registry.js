@@ -18,6 +18,10 @@ const isPlainText = (value) =>
 /**
  * Checks what the host needs of a bundled scene's `scene.json`. Other keys are allowed and ignored (the manifest grows
  * with the contract); only the fields below are checked.
+ * Not checked on purpose, because these scenes are ours and the other rows of docs/platform/01 section 8.2 (summary,
+ * apiVersion, minHost, authors, license.assets, reserved ids, thumbnail, budget) are the catalog's checks. For the
+ * scene store, also: the exact case of `index.js` as `readdir` returns it (a Mac or Windows disk ignores case, Linux
+ * does not) and the bidirectional control characters in a name.
  * @param {unknown} raw  the parsed manifest
  * @param {string} folder  the name of the folder it was read from
  * @returns {{ok: true, manifest: object} | {ok: false, problems: string[]}}
@@ -62,9 +66,11 @@ export function checkManifest(raw, folder) {
  * Reads every scene folder under `scenesDir`. A folder that is not a scene (no `scene.json`) is skipped; a scene whose
  * manifest does not pass `checkManifest`, or that has no `index.js`, is left out and reported in `rejected`.
  * @param {string} scenesDir
+ * @param {{requireIndex?: boolean}} [options]  `requireIndex: false` for an installed app, which ships the manifests
+ *        but not the scenes' source (Vite has bundled it into the page)
  * @returns {{scenes: object[], rejected: {folder: string, problems: string[]}[]}}  scenes sorted by id
  */
-export function readSceneManifests(scenesDir) {
+export function readSceneManifests(scenesDir, { requireIndex = true } = {}) {
   const scenes = [];
   const rejected = [];
   let entries;
@@ -88,7 +94,7 @@ export function readSceneManifests(scenesDir) {
     const checked = checkManifest(raw, entry.name);
     if (!checked.ok) {
       rejected.push({ folder: entry.name, problems: checked.problems });
-    } else if (!fs.existsSync(path.join(dir, 'index.js'))) {
+    } else if (requireIndex && !fs.existsSync(path.join(dir, 'index.js'))) {
       rejected.push({ folder: entry.name, problems: ['index.js is missing'] });
     } else {
       scenes.push(checked.manifest);
@@ -106,4 +112,18 @@ export function readSceneManifests(scenesDir) {
  */
 export function listedScenes(scenes, { dev }) {
   return scenes.filter((scene) => dev || scene.dev !== true);
+}
+
+/**
+ * The scene to run: the one the settings name, if it is a scene the player may have in this build, otherwise the
+ * fallback (the tank). The main process decides this, never the page. A hand-edited `settings.json` cannot start a
+ * `dev: true` scene in a release build, and an unknown or malformed id falls back.
+ * @param {unknown} wanted  `activeScene` from settings.json
+ * @param {object[]} scenes  from `readSceneManifests`
+ * @param {{dev: boolean, fallback: string}} options
+ * @returns {string}
+ */
+export function chooseActiveScene(wanted, scenes, { dev, fallback }) {
+  if (typeof wanted !== 'string') return fallback;
+  return listedScenes(scenes, { dev }).some((scene) => scene.id === wanted) ? wanted : fallback;
 }

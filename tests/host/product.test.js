@@ -29,6 +29,10 @@ describe('the product names (one place: app/main/product.js)', () => {
     expect(html).toContain(`<span class="grip">${PRODUCT_NAME}</span>`);
   });
 
+  it('ships the manifests of the scenes, which the main process reads to choose the scene', () => {
+    expect(read('electron-builder.yml').split(/\r?\n/)).toContain('  - scenes/*/scene.json');
+  });
+
   it('ships for Apple silicon and English only on the Mac', () => {
     const lines = read('electron-builder.yml').split(/\r?\n/);
     expect(lines).toContain('  electronLanguages: en');

@@ -3,7 +3,12 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { listScenes } from '../../app/page/scenes.js';
-import { checkManifest, listedScenes, readSceneManifests } from '../../app/main/scene-registry.js';
+import {
+  checkManifest,
+  chooseActiveScene,
+  listedScenes,
+  readSceneManifests,
+} from '../../app/main/scene-registry.js';
 
 const scenesDir = path.join(import.meta.dirname, '..', '..', 'scenes');
 const good = {
@@ -114,6 +119,49 @@ describe('readSceneManifests', () => {
       .map((s) => s.id)
       .sort();
     expect(fromPage).toEqual(fromDisk);
+  });
+});
+
+describe('readSceneManifests for an installed app', () => {
+  it('does not look for index.js when asked not to (the app ships manifests, not scene source)', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), '2nddesktop-registry-'));
+    try {
+      fs.mkdirSync(path.join(root, 'meadow'));
+      fs.writeFileSync(path.join(root, 'meadow', 'scene.json'), JSON.stringify(good));
+      expect(readSceneManifests(root).scenes).toEqual([]);
+      expect(readSceneManifests(root, { requireIndex: false }).scenes.map((s) => s.id)).toEqual([
+        'meadow',
+      ]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('chooseActiveScene', () => {
+  const scenes = [{ id: 'empty', dev: true }, { id: 'fishtank' }, { id: 'meadow' }];
+  const options = { dev: false, fallback: 'fishtank' };
+
+  it('runs the scene that settings.json names when the player may have it', () => {
+    expect(chooseActiveScene('meadow', scenes, options)).toBe('meadow');
+  });
+
+  it('falls back to the tank for an unknown scene, a missing name or one of a wrong type', () => {
+    for (const wanted of ['nope', '../fishtank', '', undefined, null, 7, {}, ['meadow']]) {
+      expect(chooseActiveScene(wanted, scenes, options)).toBe('fishtank');
+    }
+  });
+
+  it('refuses a dev scene in a release build, however it got into settings.json', () => {
+    expect(chooseActiveScene('empty', scenes, { ...options, dev: false })).toBe('fishtank');
+  });
+
+  it('allows a dev scene in a development or test build', () => {
+    expect(chooseActiveScene('empty', scenes, { ...options, dev: true })).toBe('empty');
+  });
+
+  it('falls back when the list of scenes is empty (a build without manifests)', () => {
+    expect(chooseActiveScene('meadow', [], options)).toBe('fishtank');
   });
 });
 
