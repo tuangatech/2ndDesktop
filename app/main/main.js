@@ -8,6 +8,7 @@ import {
   nativeImage,
   powerMonitor,
   screen,
+  session,
 } from 'electron';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -33,6 +34,7 @@ import { createTray } from './tray.js';
 import { createUsageLog, usageLines } from './usage-log.js';
 import { startSampler } from './sampler.js';
 import { migrateOldData } from './migrate-data.js';
+import { createRequestFilter, installSessionPolicy } from './session-policy.js';
 import {
   APP_ID,
   DEV_DATA_FOLDER,
@@ -445,6 +447,17 @@ function refreshAppMenu() {
 
 app.whenReady().then(async () => {
   if (!gotLock) return;
+  // No permissions and no request outside the app's own files (the dev server in a development run), for every window.
+  installSessionPolicy({
+    session: session.defaultSession,
+    app,
+    allow: createRequestFilter({
+      rendererDir: path.join(root, 'dist', 'renderer'),
+      devUrl,
+      caseInsensitive: process.platform === 'win32',
+    }),
+    log: (message) => log(message),
+  });
   controller = createDesktopController({
     preloadPath: path.join(import.meta.dirname, 'preload.cjs'),
     iconPath: appIconPath,
