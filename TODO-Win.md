@@ -102,13 +102,9 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 
 ## Requests
 
-### M-7: open a pull request for `about-window` (About is a small window), and look at it on Windows
+### M-8: the owner's decision on review findings 1 and 4: open a pull request for `defer-review-findings`
 
-Branch `about-window` is on `origin` (one commit, `4998fe0`, based on `main` at `f9420a7`): `app/main/about.js` (new, the page), `app/main/main.js` (`showAbout`), `tests/host/about.test.js` (4 unit tests), `tests/e2e/app-menu.spec.js` (1 e2e test, macOS only). The owner asked for two changes to the About box: the version directly under the name in the normal font, and the rest of the text over the full width. A native message box cannot do either (its text always sits beside the icon), so About is now a small window (520 px wide, as high as its text) with a `data:` page: no script, no link, escaped text, nothing new in the preload. One window at a time; Escape closes it. The words are unchanged.
-
-- Mac: lint, format, 33 files / 385 unit tests, 39 e2e (38 + the new one), all PASS. The new e2e test clicks About in the application menu and checks: one window titled "About 2ndDesktop", `Version x.y.z` under the name, the paragraphs below the header and running under the icon, a second click opens no second window, Escape closes it. The page was also drawn to a picture here; the owner looked at the earlier native box and asked for this layout.
-- For Windows (the e2e test cannot run there, About is in the tray menu): open About from the tray menu in window mode and in desktop mode. Look at: the window is not cut off or too tall (the page measures itself), the title bar says "About 2ndDesktop" and the icon is the app icon, there is no menu bar in it, the text is readable on a light and a dark Windows theme, Escape closes it, and a second click on About brings the same window forward. Not known: how it looks next to an "Always on top" tank window.
-- Nothing in `docs/` changes. If you want a line in `docs/DECISIONS.md` ("About is a window, because a message box cannot lay out the version and the text"), say so.
+The owner decided (2026-11-26): **finding 1** (the Windows cover check reads only the foreground window) moves to **0.2**, **finding 4** (Electron fuses and the asar integrity check) to **0.3**. Nothing is built now, and nothing is asked of Windows except the paperwork. Branch `defer-review-findings` is on `origin` (one commit, based on `main` at the time of `TODO-Win.md` M-7), **docs only**, 3 files: `docs/DECISIONS.md` (new round 9 with DEC-45 and DEC-46), `docs/platform/03-distribution-and-roadmap.md` (one sentence in the 0.2 row and one in the 0.3 row), and the status column of finding 1 and 4 in `docs/reviews/2026-11-25-host-security-review.md`. Please review and open the PR (the reduced CI path applies). I changed the one "Open for the owner" line in `docs/STATUS.md` on `main` directly. Finding 1 is yours when 0.2 starts (it needs a Windows machine and hand checks); finding 10a is still open and I can do it on a branch on the owner's word.
 
 ## Closed
 
@@ -117,3 +113,4 @@ Branch `about-window` is on `origin` (one commit, `4998fe0`, based on `main` at 
 - M-3 (Dependabot alert, Win+D question): answered; the minimatch alert (development scope) is the owner's decision.
 - M-4 (`show-desktop-mac`): merged, PR 12.
 - M-5 and M-6 (eight branches from the host and security review): merged, PRs 13 to 20; `Re M-6` checks answered. Open for the owner: findings 1 (cover check on Windows) and 4 (Electron fuses).
+- M-7 (`about-window`): merged, PR 22. Windows found black text on a dark Windows theme and fixed it in `d667964`; the Mac look in a dark and a light menu bar is still to do (W-10 and the fix).
