@@ -52,7 +52,7 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 - Merged after green CI: PR 12 (macOS: Show Desktop no longer pauses the tank, from the Mac session) as `4238774`; PR 7 (`ci.yml`: a very large code change was taken for Markdown-only because of `pipefail` and SIGPIPE) as `d9bc4f1` and PR 8 (the About text) as `24d96fa`. W-7 (the Mac looks at the icons and About on a real build, and the F11 result) is open.
 - The window-picture proof on the Mac is "one of the two known hashes"; on Windows it must repeat exactly (working rule, in `TODO-Mac.md`, until the owner decides).
 - Dependabot alert 1 (`minimatch`, medium, development scope via `electron-builder`; the fix is a major version) is open, for the owner to leave open or dismiss.
-- The reduced CI path (Markdown only) has not run on a real PR yet: PR 9 touched `CODEOWNERS`, which is not a `.md` file, so it ran in full, as it should.
+- The reduced CI path (Markdown only) has now run on a real PR (PR 26, 2026-11-26) and works; PR 9 had touched `CODEOWNERS`, which is not a `.md` file, so it ran in full, as it should.
 
 ## Host and security review PRs (Mac review, 2026-11-25)
 
@@ -67,7 +67,7 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 ## Step 7 (P1, the platform core)
 
 - Work packages 7.1 to 7.7 (loader spike, manifest check and the empty scene, main decides the scene, switching, the power setting, the sound split, baselines and the switch memory script); the plan is a scratch file on the Windows machine (`temp/`, not in the repository).
-- 7.1 the loader spike: PR 24 is open (`docs/platform/06-loader-spike.md`). On Windows every required check passes; WebRTC leaks without a mitigation and not with any of the three. One correction proposed to `02`: `connect-src 'self'`, not 'none'. The Mac run (W-11, Apple silicon) gave the same table: all loader checks pass, the baseline leaks (15 datagrams there), b, c and d are blocked. The Mac asked the harness to remove its temporary folder; done on the branch. PR 24 is merged once CI is green on that last commit and the owner says so. Also open: PR 26 (DEC-45, DEC-46: the Windows cover check moves to 0.2, the Electron fuses to 0.3; docs only).
+- 7.1 the loader spike: PR 24 is open (`docs/platform/06-loader-spike.md`). On Windows every required check passes; WebRTC leaks without a mitigation and not with any of the three. One correction proposed to `02`: `connect-src 'self'`, not 'none'. The Mac run (W-11, Apple silicon) gave the same table: all loader checks pass, the baseline leaks (15 datagrams there), b, c and d are blocked. The Mac asked the harness to remove its temporary folder; done on the branch. Merged after green CI on both runners: PR 24 as `b446510` and PR 26 (DEC-45, DEC-46: the Windows cover check moves to 0.2, the Electron fuses to 0.3; docs only) as `0747f0a`. PR 26 was the first real run of the reduced CI path: it finished in about 30 s per runner (a code PR takes 2 to 3 minutes). Next: 7.2 (manifest check and the empty scene); the proposed CSP change (`connect-src 'self'`) and the WebRTC mitigations of the spike go into `platform/02` with the PR that first serves a page from `scene://`.
 
 ## Mac numbers (Apple silicon, 2026-11-24; details in `TODO-Win.md`, Re W-1 to W-6)
 
