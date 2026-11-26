@@ -93,7 +93,7 @@ async function boot() {
   // Sounds (FR-38): switched by the menu in the main process, which tells the renderer.
   const sound = new SoundPlayer({ enabled: (await api?.getSettings?.())?.sound !== false });
   api?.onSettingsChanged?.((settings) => sound.setEnabled(settings.sound !== false));
-  const scene = await create({
+  const host = {
     app,
     art,
     // The scene may define and play its sounds; the player itself (mute, the audio context) stays with the host.
@@ -109,7 +109,8 @@ async function boot() {
       console.log(message);
       api?.reportNote?.(message);
     },
-  });
+  };
+  const scene = await create(host);
   app.stage.addChild(scene.root);
   scene.resize(app.screen.width, app.screen.height);
   app.renderer.on('resize', () => scene.resize(app.screen.width, app.screen.height));
@@ -156,8 +157,10 @@ async function boot() {
   // been sent on this channel, so the answer says that main has them all. The host does not call serialize() here:
   // it would save the bare state without the scene's own wrapper (schema and time) and could overwrite a read-only record.
   api?.onSaveAndClose?.(() => api.reportSaved());
-  // For screenshots and measurements (scripts/shot.mjs).
-  if (debug || dev) window.__scene = { ...scene.debug, clock, fishtank: scene, app, sound };
+  // For screenshots and measurements (scripts/shot.mjs) and the contract test (`host` and `create` make a
+  // second instance of this scene with a host of the test's own).
+  if (debug || dev)
+    window.__scene = { ...scene.debug, clock, fishtank: scene, app, sound, host, create };
 
   let label = null;
   if (debug) {
