@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <title>2ndDesktop tray icon, Windows, for a dark taskbar (white 2)</title>
+  <title>2ndDesktop tray icon, Windows, for a dark taskbar (peach 2)</title>
   <g transform="translate(16 16) scale(0.036) translate(-520 -506)">
-    <path d="M340 396C340 294 420 232 516 232C618 232 690 296 690 388C690 462 648 514 588 566L338 780L702 780" fill="none" stroke="#ffffff" stroke-width="140" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M340 396C340 294 420 232 516 232C618 232 690 296 690 388C690 462 648 514 588 566L338 780L702 780" fill="none" stroke="#ffb08a" stroke-width="140" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 </svg>
