@@ -21,6 +21,7 @@ Written 2026-11-23 from the Fish Tank project and moved into this repository on 
 3. `platform/03-distribution-and-roadmap.md`: how players get scenes (the catalog), the pack, signing and updates, the backend pieces, licensing, the roadmap, how to reuse the fish-tank code (new repository or rename), and what else to discuss.
 4. `platform/04-reuse-from-fish-tank.md`: what of the fish-tank host code is reused, where the tank leaks into it, the method of three commits for the new repository, the reuse table by file, what is easy to break, the app icon, the order of work. Draft icons are in `icon/`.
 5. `platform/05-verified-from-fish-tank.md`: **what fish-tank already measured and checked on Windows and the Mac** (the empty host and the tank, what costs memory and what was tried, desktop attach, the covered pause, Edit mode, the scene switch, packaging and the first open, the tests that prove nothing changed), with a level for each fact (measured, passed, expected, open), so 2ndDesktop does not measure them again.
+6. `platform/06-loader-spike.md`: **the P1 loader spike** (`scene://`, the host's PixiJS through an import map, the CSP, WebRTC), with its results and what they mean for documents 01 and 02. Read it with section 8.6 of 01 and section 3 of 02.
 
 ## Scenes (3 design documents, each the future `DESIGN.md` of its folder, plus one migration document)
 
