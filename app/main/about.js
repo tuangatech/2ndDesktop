@@ -15,10 +15,12 @@ export function escapeHtml(text) {
 }
 
 /**
- * @param {{name: string, version: string, iconUrl: string, paragraphs: string[]}} content  `iconUrl` is a data: URL
+ * @param {{name: string, version: string, iconUrl: string, paragraphs: string[], dark?: boolean}} content  `iconUrl` is a data: URL;
+ *   `dark` is the system theme as the main process knows it: the page uses its own colours, because on Windows the page's
+ *   `prefers-color-scheme` stays light under a dark system theme and the text would be black on the dark window
  * @returns {string}
  */
-export function aboutHtml({ name, version, iconUrl, paragraphs }) {
+export function aboutHtml({ name, version, iconUrl, paragraphs, dark = false }) {
   const body = paragraphs.map((text) => `<p>${escapeHtml(text)}</p>`).join('\n');
   return `<!doctype html>
 <html lang="en">
@@ -27,8 +29,8 @@ export function aboutHtml({ name, version, iconUrl, paragraphs }) {
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'">
 <title>About ${escapeHtml(name)}</title>
 <style>
-  :root { color-scheme: light dark; }
-  body { margin: 0; padding: 24px 28px 26px; font: 13.5px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  :root { color-scheme: ${dark ? 'dark' : 'light'}; }
+  body { background: ${dark ? '#1e1e1e' : '#ffffff'}; color: ${dark ? '#f0f0f0' : '#1a1a1a'}; margin: 0; padding: 24px 28px 26px; font: 13.5px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif; }
   header { display: flex; align-items: center; gap: 16px; }
   img { width: 64px; height: 64px; }
   h1 { margin: 0; font-size: 20px; font-weight: 600; }

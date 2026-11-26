@@ -32,6 +32,12 @@ describe('the About page', () => {
     expect(html).toContain("default-src 'none'");
   });
 
+  it('sets its own colours for a light and a dark system theme, so the text never matches the window background', () => {
+    expect(aboutHtml(content)).toMatch(/background: #ffffff; color: #1a1a1a/);
+    expect(aboutHtml({ ...content, dark: true })).toMatch(/background: #1e1e1e; color: #f0f0f0/);
+    expect(aboutHtml({ ...content, dark: true })).toContain('color-scheme: dark');
+  });
+
   it('escapes the five characters that matter in a page', () => {
     expect(escapeHtml(`<a href="x">'&'</a>`)).toBe(
       '&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;',

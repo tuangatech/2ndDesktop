@@ -400,6 +400,7 @@ function showAbout() {
     })}`,
   ];
   const icon = nativeImage.createFromPath(appIconPath);
+  const dark = nativeTheme.shouldUseDarkColors;
   const win = new BrowserWindow({
     width: 520,
     height: 360,
@@ -411,7 +412,7 @@ function showAbout() {
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
-    backgroundColor: nativeTheme.shouldUseDarkColors ? '#1e1e1e' : '#ffffff',
+    backgroundColor: dark ? '#1e1e1e' : '#ffffff',
     webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
   });
   aboutWindow = win;
@@ -436,6 +437,7 @@ function showAbout() {
     version: app.getVersion(),
     iconUrl: icon.resize({ width: 128 }).toDataURL(),
     paragraphs,
+    dark,
   });
   win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
 }
