@@ -96,7 +96,8 @@ async function boot() {
   const scene = await create({
     app,
     art,
-    sound,
+    // The scene may define and play its sounds; the player itself (mute, the audio context) stays with the host.
+    sound: sound.forScene(),
     record,
     clock,
     rng: makeRng(info.test?.seed ?? (Date.now() ^ Math.floor(Math.random() * 2 ** 32)) >>> 0),

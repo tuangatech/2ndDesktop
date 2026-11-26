@@ -1,14 +1,16 @@
-// The sounds (FR-38, D19, D36): synthesized with the Web Audio API, short and quiet. No sound files are shipped.
-// `play` is only ever called from something the player did (a click or a tray action), never from a timer or from
-// the game tick; the scene decides when, and a test checks it. The audio context is created on the first play, which
-// is always a reaction to the player.
+// The sound engine of the host (FR-38, D19, D36): synthesized with the Web Audio API, short and quiet. No sound files
+// are shipped. A scene brings its own sounds as recipes: `define(name, recipe)`, then `play(name)` (work package 7.6;
+// the tank's are in scenes/fishtank/sounds.js). `play` is only ever called from something the player did (a click or
+// a tray action), never from a timer or from the game tick; the scene decides when, and a test checks it. The audio
+// context is created on the first play, which is always a reaction to the player.
+//
+// A recipe is `(voice, at) => void`: it makes one sound from the engine's voices (`partial`, `bubble`, `touch`, `pick`,
+// `random`), starting at the time `at`.
 //
 // How the sounds are made (docs/04, D36):
 // - One shared chain, built once with the context: voices go to a dry bus and to a send into a small generated
 //   room (convolution reverb), both into a master gain, a soft low-pass that takes the edge off, and a gentle
 //   compressor that keeps stacked sounds from getting louder than one.
-// - One key for everything, D major pentatonic (no note clashes with another, so any two sounds can overlap).
-//   Notes stay between 500 Hz and 1.5 kHz because laptop speakers do not reproduce much below that.
 // - Every voice starts from silence with a few milliseconds of attack and ends with an exponential tail
 //   (`setTargetAtTime`), so there is never a click; its nodes are disconnected when it ends.
 // - The water sounds are small bubbles: a sine whose pitch glides up a little as it rings, the way a trapped air
@@ -19,10 +21,9 @@ const REVERB_SECONDS = 1.1;
 const NOISE_SECONDS = 0.4;
 const TAIL = 7; // an exponential tail is 7 time constants long: down to about -61 dB, then the voice stops
 
-/** D major pentatonic, D5 to E6, in Hz. */
-export const SCALE = [587.33, 659.25, 739.99, 880.0, 987.77, 1174.66, 1318.51];
-
-export const SOUND_NAMES = ['splash', 'pop', 'chime'];
+// What a scene may call a sound, and how many it may define: a name is a word, not a path or a message.
+const NAME_PATTERN = /^[a-z][a-z0-9-]{0,31}$/;
+const MAX_SOUNDS = 16;
 
 export class SoundPlayer {
   /**
@@ -37,13 +38,44 @@ export class SoundPlayer {
     this.bus = null;
     this.noise = null;
     this.last = {}; // the last note picked per sound, so the same note never comes twice in a row
+    this.recipes = new Map();
+    // What a recipe is given: the voices, and nothing of the player (not the context, not `define`, not `setEnabled`).
+    this.voice = Object.freeze({
+      partial: (...args) => this.partial(...args),
+      bubble: (...args) => this.bubble(...args),
+      touch: (...args) => this.touch(...args),
+      pick: (...args) => this.pick(...args),
+      random: () => this.random(),
+    });
   }
 
   setEnabled(on) {
     this.enabled = Boolean(on);
   }
 
-  /** @param {'splash'|'pop'|'chime'} name */
+  /**
+   * Registers a sound. Returns false (and registers nothing) for a name that is not a lowercase word of at most 32
+   * characters, a name that is already defined, a recipe that is not a function, or more than 16 sounds.
+   * @param {string} name
+   * @param {(voice: SoundPlayer['voice'], at: number) => void} recipe
+   */
+  define(name, recipe) {
+    if (typeof name !== 'string' || !NAME_PATTERN.test(name)) return false;
+    if (typeof recipe !== 'function' || this.recipes.has(name)) return false;
+    if (this.recipes.size >= MAX_SOUNDS) return false;
+    this.recipes.set(name, recipe);
+    return true;
+  }
+
+  /** What a scene gets as `host.sound`: define and play, and nothing else of the player. */
+  forScene() {
+    return Object.freeze({
+      define: (name, recipe) => this.define(name, recipe),
+      play: (name) => this.play(name),
+    });
+  }
+
+  /** @param {string} name  a sound the scene defined */
   play(name) {
     if (!this.enabled || this.failed) return false;
     try {
@@ -53,10 +85,11 @@ export class SoundPlayer {
         return false;
       }
       if (this.ctx.state === 'suspended') this.ctx.resume?.()?.catch?.(() => {});
-      if (!SOUND_NAMES.includes(name)) return false;
+      const recipe = this.recipes.get(name);
+      if (!recipe) return false;
       this.bus ??= this.buildBus();
       const now = this.ctx.currentTime + 0.005; // a hair of lead time so the start is scheduled, not late
-      this[name](now);
+      recipe(this.voice, now);
       return true;
     } catch {
       // Sound must never break the game.
@@ -102,7 +135,7 @@ export class SoundPlayer {
     return { dry, send };
   }
 
-  /** An index into `SCALE`, not the one this sound picked last. `from`..`to` is an index range. */
+  /** An index into a scale of the scene, not the one this sound picked last. `from`..`to` is an index range. */
   pick(name, from, to) {
     let index;
     do index = from + Math.floor(this.random() * (to - from + 1));
@@ -179,47 +212,6 @@ export class SoundPlayer {
       gain.disconnect();
       tap?.disconnect();
     };
-  }
-
-  /** Food landing in the water: a soft touch and two small bubbles, the second higher and fainter. */
-  splash(at) {
-    const index = this.pick('splash', 0, 2);
-    this.touch(at, { peak: 0.1, decay: 0.07 });
-    this.bubble(SCALE[index], at + 0.012, { peak: 0.42, decay: 0.2 });
-    this.bubble(SCALE[index + 2], at + 0.075 + this.random() * 0.02, {
-      peak: 0.16,
-      decay: 0.14,
-      glide: 1.25,
-    });
-  }
-
-  /** A pellet collected: one small, bright bubble that rises. */
-  pop(at) {
-    this.bubble(SCALE[this.pick('pop', 3, 5)], at, {
-      peak: 0.45,
-      decay: 0.12,
-      glide: 1.5,
-      glideTime: 0.04,
-      send: 0.2,
-    });
-  }
-
-  /** A new fish: three bell notes going up the D major triad, each with a soft overtone, in the room. */
-  chime(at) {
-    const notes = [SCALE[2], SCALE[3], SCALE[5]]; // F#5, A5, D6
-    notes.forEach((frequency, i) => {
-      const start = at + i * 0.15;
-      const last = i === notes.length - 1;
-      const decay = last ? 1.5 : 0.9;
-      this.partial(frequency, start, { peak: 0.24, attack: 0.008, decay, send: 0.5 });
-      // A bar-like overtone (about 2.76 times the pitch) gives the glassy bell colour; it dies sooner.
-      this.partial(frequency * 2.76, start, {
-        peak: 0.036,
-        attack: 0.004,
-        decay: decay * 0.3,
-        send: 0.5,
-      });
-    });
   }
 }
 
