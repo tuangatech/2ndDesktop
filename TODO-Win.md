@@ -100,6 +100,14 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 
 **Mac side checks of this round:** the working tree was clean at the end, no `request refused` in any log, the data folder `2nddesktop` was backed up before the run; only its log grew, the records did not change. Not seen: the first open of a downloaded, unsigned build ("Not Opened"). Another dev app from an older checkout (`fish-tank`) was running on this Mac at the same time; it is not part of this repository.
 
+**Re W-10: PASS** (`main` at `c809c1b`, Mac; the same run also answers the dark-theme question of `Re M-7`)
+
+- Diff of PR 23: sound. `aboutStaysOnTop` looks at the other windows of the app only, and the tank window is the only one that can be always on top; in desktop mode no window of the app is, so About keeps its normal level. Lint, format, 33 files / 388 unit tests, 39 e2e PASS (the macOS About test runs here).
+- Checked by script on the real app in window mode (a Playwright run that clicks About in the application menu, then asks every window `isAlwaysOnTop()`): "Always on top" off: About `false`, tank `false`. After clicking "Always on top" in the menu: About `true`, tank `true`, so About opens at the same level as the tank and, being later, above it. **Not seen by eye:** the stacking itself (the Mac session cannot take a picture of the screen); owner to look once with the setting on.
+- **Dark theme (the fix `d667964`): PASS.** With `nativeTheme.themeSource = 'dark'` the page gets background `rgb(30, 30, 30)` and text `rgb(240, 240, 240)` (name, version and paragraphs), the window background is `#1E1E1E`; with `'light'`: `rgb(255, 255, 255)` and `rgb(26, 26, 26)`, window `#FFFFFF`. The pictures of the page in both themes look right (white on dark grey, dark on white, version under the name, text over the full width). **Cause of your mismatch, as far as I can say:** it is not only Windows. On the Mac too, `matchMedia('(prefers-color-scheme: dark)')` was `false` in the About page after `themeSource = 'dark'`, so the page's own colours (your fix) are the right thing to do. I did not look into why.
+- Small nit, not a bug, no change asked: in the e2e run (a long temporary data path that wraps to three lines) the window was 366 px high and the text 346, so there was one empty line at the bottom; the height is measured once at `did-finish-load`. With the real path (two lines) I did not see it. If the owner ever sees extra space at the bottom, measure after the next animation frame.
+- The real title bar and a real dark menu bar were not looked at (no screen access); the owner has seen the light one.
+
 ## Requests
 
 ### M-8: the owner's decision on review findings 1 and 4: open a pull request for `defer-review-findings`
