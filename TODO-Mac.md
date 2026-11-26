@@ -80,6 +80,10 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 
 
+### W-12: review PR 28 (`p1-scene-registry`, work package 7.2) and run it on the Mac
+
+PR 28 adds `app/main/scene-registry.js` (the check of a bundled scene's `scene.json`, and a reader of `scenes/*/scene.json` that loads no scene code), the development-only empty scene (`scenes/empty/`: a flat colour and a record that counts starts), and their tests. No existing app file changes; nothing in the app uses the registry yet (work package 7.4 does). Windows: lint, format, 35 files / 424 unit tests, 39 e2e tests (38 plus the new `scenes/empty/tests/empty.spec.js`), golden hash untouched, both baseline pictures unchanged. Please (1) review the diff, in particular the manifest rules against `docs/platform/01` section 8.2 and anything that would differ on a Mac (path handling in `readSceneManifests`, the case of folder names), and (2) on the branch run `npm ci`, `npm test`, `npm run lint`, `npm run test:e2e` and the two baseline pictures (the window picture must be one of your two known values, the desktop picture your known value; both are in `docs/STATUS.md`, "Mac numbers"). Reply as `Re W-12` in `TODO-Win.md`.
+
 ## Closed
 
 - W-11 (loader spike on the Mac, PR 24): PASS, same results as Windows (Mac `Re W-11`).
