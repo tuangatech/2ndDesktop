@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createDesktopController } from './desktop.js';
+import { devSwitchesAllowed, removeDevSwitches } from './dev-switches.js';
 import {
   buildText,
   describeGpuDevice,
@@ -40,6 +41,16 @@ import {
 } from './product.js';
 
 const root = path.join(import.meta.dirname, '..', '..');
+// The channel ("release" or "test") comes from package.json; only development and test builds read tuning.json (D25).
+const channel = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).desktop2?.channel;
+  } catch {
+    return 'release';
+  }
+})();
+// An installed release ignores every development and test switch (app/main/dev-switches.js).
+if (!devSwitchesAllowed({ packaged: app.isPackaged, channel })) removeDevSwitches(process.env);
 const devUrl = process.env.VITE_DEV_SERVER_URL;
 const isDev = Boolean(devUrl) || !app.isPackaged;
 
@@ -58,14 +69,6 @@ if (process.env.DESKTOP2_USER_DATA) {
 }
 app.setAppUserModelId(APP_ID);
 
-// The channel ("release" or "test") comes from package.json; only development and test builds read tuning.json (D25).
-const channel = (() => {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).desktop2?.channel;
-  } catch {
-    return 'release';
-  }
-})();
 const userData = app.getPath('userData');
 // The app icon, for the window and the About box. The installed app gets its icon from the .exe and the .icns.
 const appIconPath = path.join(root, 'assets', 'app-icon.png');
