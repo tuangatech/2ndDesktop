@@ -1,5 +1,6 @@
 {
   "name": "2nddesktop",
+  "productName": "2ndDesktop",
   "version": "0.0.1",
   "description": "A living scene on your desktop, for Windows and macOS",
   "private": true,
