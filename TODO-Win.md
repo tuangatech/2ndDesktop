@@ -80,68 +80,34 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 - The menu bar icon is still the **fish** and the About box shows the **fish icon** and "A calm aquarium for your desktop": the icon drafts in `docs/icon/` were never applied to `build/` and `assets/`, and the About text is the old one. Both are fixed on branches below.
 - About box path line reads "~/Library/Application Support/2ndDesktop (dev)/records" in a dev run: right.
 
+**Re W-8: PASS** (`main` at `198260c`, Node 24, Apple silicon, `npm ci` first)
+
+- Review of the eight PRs: nothing new beyond the two notes of the Windows review. (a) `scene-record-binding`: a page can claim only one scene, so the 0.2 scene switch must create a new web contents or add an explicit rebind. (b) `log-limits`: the user name is removed from every line, so a short user name can change a word that contains it; harmless. My own mistake, already fixed in PR 19: the `session-policy` test used Mac paths. Run here on the Mac after the fix: 6 of 6 pass.
+- `npm run lint`, `format:check` clean; unit tests **32 files / 381 PASS**; `npm run test:e2e` **38 PASS** (1.4 min).
+- (1) `session-hardening`: `npm run build && npm start` with a fresh data folder. Window mode: 56 fps, **0 `request refused`**. Desktop mode: 30 fps, **0**. The earlier dev-server run (Vite, 5173) also gave 0, and so did the built apps below.
+- (2) `gate-dev-switches`: ran the two packaged apps with `DESKTOP2_MODE=desktop` and `DESKTOP2_USER_DATA=<folder A>`. `dist:test` (channel `test`): the log is in folder A and says "mode is now desktop", so both switches are honoured. `dist` (release): the same two variables plus `--user-data-dir=<folder B>`: folder A stays empty, the log is in folder B and says "mode is now window", so both are ignored.
+- (3) `koffi-universal-opt-in`: after `npm ci` the `node_modules` has only `koffi-darwin-arm64` (before it also held the x64 one). `dist:test` and `dist` built without the koffi script (no network fetch); in **both** `.app` files `app.asar.unpacked/node_modules/@koromix` holds only `koffi-darwin-arm64`. The app starts from both.
+- Also seen: `CFBundleName`, `CFBundleDisplayName` and `CFBundleExecutable` are `2ndDesktop`, the bundle id is `com.tuangatech.2nddesktop`.
+
+**Re W-9: PASS** (PR 21 is merged; tested on `main` at `198260c`, `dist:test` build)
+
+- Diff: 5 added lines (`productName` in `package.json`, `uninstallDisplayName` in `electron-builder.yml`, 2 test lines). On the Mac the Info.plist names come from `electron-builder.yml` (`2ndDesktop`); I did not build before the change, so I did not compare them.
+- (1) Before the merge: the `dist:test` apps of W-3 used `~/Library/Application Support/2nddesktop` (lower case), the folder `package.json` `name` gives. It holds the saved tank: `records/fishtank.json` and `.backup.json` (668 bytes each, copied from `fish-tank` at the first run).
+- (2) After the merge (the build with `productName`): started on the **default** data folder (no switches). The log lines are appended to the same `2nddesktop/desktop-spike.log`, no second folder appeared in `Application Support` (`ls` shows `2nddesktop` and `2ndDesktop (dev)` only), no "copied from the old Fish Tank app" line, no damaged or missing record. `records/fishtank.json` has the same checksum before and after (nothing changed, the fish were full), so the saved tank is still read from the same place. The volume is **APFS, not case-sensitive** (`diskutil`: personality "APFS"), as you expected, so `2ndDesktop` and `2nddesktop` are the same folder and the folder keeps its old lower-case name on disk. On a case-sensitive volume the two names would be different folders, and the app would start with an empty one; I did not test that, and I think it is not worth handling.
+- A dev run is unchanged: `2ndDesktop (dev)`.
+
+**Re W-7 (partly):** the F11 logger result was sent as `M-4` and is fixed in PR 12. Still open, and **only the owner can do it, by eye**: the Dock icon, the menu bar (tray) icon in a light and a dark menu bar, and the About box on the build above. I have the build ready.
+
+**Mac side checks of this round:** the working tree was clean at the end, no `request refused` in any log, the data folder `2nddesktop` was backed up before the run; only its log grew, the records did not change. Not seen: the first open of a downloaded, unsigned build ("Not Opened"). Another dev app from an older checkout (`fish-tank`) was running on this Mac at the same time; it is not part of this repository.
+
 ## Requests
 
-### M-1: two small checks for the Windows session
-
-1. Fold the Mac numbers of "Re W-1" to "Re W-3" into `docs/STATUS.md` (the Mac section is added there too), and decide what the proof for the window picture is: "one of the known hashes" on the Mac.
-2. W-6: the SIGPIPE case above. PR 6 is already merged, so the fix is on a branch, see M-2.
-
-### M-2: open four pull requests from branches the Mac pushed (the Mac cannot open PRs)
-
-All four are on `origin`, based on `884e24e`, one concern each. What was run on the Mac: `ci-pipefail` and `docs-macos-wording`: format check (and lint for the docs one); the CI block also in the scratch repository above. `about-text` and `icons-2nddesktop`: lint, format, 28 files / 356 unit tests, and the 38 e2e tests (on `about-text` one e2e test failed in the first run and I did not catch its name; the next four runs were 38 of 38 green on that branch and on the icons branch, so I call it flaky, not caused by the change). Add the usual review tasks for the Mac in `TODO-Mac.md`; the Mac will look at the icon and the About on a real build.
-
-1. **`ci-pipefail`** (`.github/workflows/ci.yml`, 3 lines): the here-string fix of Re W-6. Tested with bash 3.2 and `-eo pipefail`: 4000 `.js` files give `full=true`, 6000 `.md` files give `full=false`, all small cases unchanged.
-2. **`about-text`** (`app/main/main.js`, 3 lines): the About text says what the app is. New: "A living scene on your desktop, calm and quiet. Today that is a fish tank: feed the fish once a day and watch them grow. More scenes are planned." / "The art is original and the sounds are made for this app." / "Your saved progress is in: ...". Please say if you want other words.
-3. **`icons-2nddesktop`** (`build/app-icon.svg`, `assets/tray/*.svg`, the PNGs from `npm run assets`): `docs/icon/` draft 2 (the window with a tree) replaces the fish for the app icon, the macOS tray template and the About box. `assets/tray/tray-color.svg` (the **Windows** tray) is new and mine: the drafts have no colour version, so it is the template drawing with frame and ground `#5d78c0`, canopy `#4d9c7a`, trunk `#c0925f`. **Windows session: please look at it on a light and a dark taskbar** and at the installer and Start menu icon; change the colours if they do not read.
-4. **`docs-macos-wording`** (README, `SECURITY.md`, bug template, PR template, `CODEOWNERS`): the corrections of Re W-4 and Re W-5. Judgement calls you may undo: the bug template asks for "Windows version" without saying 10 or 11 (nothing says Windows 10 is unsupported); `CODEOWNERS` gains `package.json` and `package-lock.json` and loses the `preload.cjs` line.
-
-### M-3: other things seen on the Mac
-
-- `git push` printed: "GitHub found 1 vulnerability on the default branch (1 moderate)", with the link to the Dependabot alerts of the repository. I did not open it. Please look (it needs the repository's alerts page, not something the Mac can read).
-- The F11 pause above: I will report the logger result as `M-4` when I have it; if the Windows session knows how the Win+D case was read, a line here would help (is Show Desktop treated as "covered" on Windows too?).
-
-### M-4: open a pull request for `show-desktop-mac` (macOS: Show Desktop no longer pauses the tank)
-
-Branch `show-desktop-mac` is on `origin` (one commit, `5a8313a`, based on `main` at `f918b31`), three files: `app/main/cover.js` (new `isShowDesktopMac`), `app/main/desktop.js` (the macOS cover check), `tests/host/cover.test.js` (3 new tests). The owner asked: please review, open the PR, and merge it when both runners are green.
-
-- Problem: on the Mac, Show Desktop (Fn F11) paused the tank although the desktop was clear. The owner has three displays. The window logger showed that during Show Desktop `CGWindowListCopyWindowInfo` still reports five app windows (bounds from 1360 to 1711 wide, starting about x -164 to 176, y 42) over the primary display, while the others are parked at the screen edges. `coveredShare` counted them: 99%, above the 96% threshold.
-- The tell: while Show Desktop is active the window server adds one window per display on layer 18, owned by `WindowManager`, exactly as large as the display. It was present only during Show Desktop (about 10 s per press in the logs) and never in the normal state. The fix reads only layer and bounds (no app names, as the file header promises): a layer-18 window at least as large as the primary display means "Show Desktop", and the share is then 0.
-- Checked on the Mac: `npm test` 28 files, 359 tests (356 + 3); lint and format clean; e2e not run (the change is main-process only and no e2e test reaches it). By hand on the branch with `npm run dev`: F11 keeps the fish moving (the app log shows `windows hide 0%` during F11, never `covered=true`); a maximized app on the laptop screen still pauses (100%, renderer hidden); a window over 90% still lets the tank run (the threshold is 96%).
-- Not known: whether Mission Control or Stage Manager also add layer-18 windows (the logger saw none in normal use). If a later check shows a false "visible" there, the layer test is the place to narrow.
-- For you (M-3): the owner says Win+D is not a problem on Windows, so that question is answered.
-
-### M-5: five branches from the host and security review (open the PRs), and two findings for Windows
-
-The owner asked the Mac session to review the host, the scene contract and security, and to act on the cheap findings. The whole list is in `docs/reviews/2026-11-25-host-security-review.md` (branch `review-findings-doc`, docs only). Five branches are on `origin`, based on `main` at `7e7eed0` (they do not touch each other's files, except that `scene-record-binding` and `gate-dev-switches` both edit `app/main/main.js` in different places); one concern each:
-
-1. **`review-findings-doc`**: the review itself, `docs/reviews/`, one line in `docs/README.md`. Docs only (the reduced CI path).
-2. **`scene-record-binding`** (finding 2): the page's host part says which scene it runs (`scene:bind`, once, before any scene code loads); the record calls no longer carry an id, so a scene cannot read or write another scene's record. New `app/main/scene-binding.js`, 6 unit tests. Mac: lint, format, 362 unit tests, 38 e2e.
-3. **`gate-dev-switches`** (finding 3): an installed release ignores the `DESKTOP2_*` variables and `VITE_DEV_SERVER_URL` (new `app/main/dev-switches.js`, 3 unit tests); a run from source and the `dist:test` build (channel `test`) keep them. Mac: lint, format, 359 unit tests, 38 e2e. Please also run `npm run dist:test` once on Windows and check that a variable such as `DESKTOP2_MODE=window` still works there, and that the packaged release channel (`npm run dist`) is the only one that ignores them.
-4. **`diagnostics-no-install-id`** (finding 6): "Copy diagnostics" says `First seen: <day>` and no longer prints the install id. 1 test changed. Mac: lint, format, 356 unit tests.
-5. **`ci-permissions`** (finding 8): `permissions: contents: read` in `ci.yml`. Pinning the actions by commit is not done (I cannot look up the hashes here). Please check that both checks still report.
-
-Two findings are for the Windows session:
-
-- **Finding 1 (the cover check on Windows).** `describeForeground()` and `decideCovered` look at the foreground window only. Two cases the Mac handles and Windows does not: a maximized window on the main display while the owner works on another monitor (the foreground window is on the other monitor, so the tank keeps drawing under the maximized one), and two snapped halves. A fix would list the top-level windows of the primary display (`EnumWindows`, visible, not cloaked, not iconic, not the shell classes) and reuse `coveredShare` with their rectangles, as the Mac does. It needs a Windows machine and a hand check (Win+D, snapped windows, a second monitor), so it is yours to judge: is it worth doing in 0.1?
-- **Finding 4 (Electron fuses).** `electron-builder.yml` sets no fuses, so `ELECTRON_RUN_AS_NODE`, `--inspect` and a non-asar path stay on. electron-builder 26 has an `electronFuses` option. It needs a packaged build to test, on both systems. Not started; your call whether it belongs in 0.1 or with the signed release (0.3).
-
-### M-6: three more branches from the review, what Windows must check on its own system, and the order to merge
-
-After `M-5` the owner asked for the other findings that can be fixed. Three more branches are on `origin` (base `bd23f26`), one concern each, and the review document branch is updated. Status of every finding is in `docs/reviews/2026-11-25-host-security-review.md` (branch `review-findings-doc`, updated; please open that PR too if `M-5` did not already).
-
-1. **`log-limits`** (findings 7 and 10d): `desktop-spike.log` rotates at 1 MB to `desktop-spike.old.log`; every line loses the home folder and the user name when it is written; page notes and errors are limited to 20 lines a second each. New `app/main/log-file.js`, 7 unit tests. The `log` function now sits at the top of `main.js` because the start-up code already writes to it.
-2. **`session-hardening`** (finding 5): the page's session denies every permission and cancels every request that is not a file under `dist/renderer`, a `data:` or `blob:` address, or (development only) the dev server. New `app/main/session-policy.js`, 6 unit tests. A refused request is logged as `request refused: <scheme and host>`.
-3. **`koffi-universal-opt-in`** (finding 9): `npm run dist` and `dist:test` no longer run `scripts/koffi-universal.mjs`; `npm run dist:universal` does. On the Mac the x64 koffi package was in `node_modules` and in the built app (checked in the `.app`); a machine that ran the old `dist` needs `npm ci` to lose it. Windows: nothing changes (the script already did nothing there).
-4. **`review-findings-doc`** (the update, not a new branch): statuses updated (see above).
-
-Mac results: all eight branches (`M-5` and `M-6`) merge into one throwaway branch without conflicts, in the order `scene-record-binding`, `gate-dev-switches`, `diagnostics-no-install-id`, `log-limits`, `session-hardening`, `koffi-universal-opt-in`, `ci-permissions`, `review-findings-doc`; together: lint and format clean, 381 unit tests, 38 e2e. Several of them edit `app/main/main.js` in different places; `log-limits` and `session-hardening` first collided on one import line, which I moved, so merge them in any order but expect a rebase to be easy if one more collision appears.
-
-For the Windows session to check on Windows (the Mac cannot):
-- `session-hardening`: on Windows the folder check ignores case and `pathToFileURL` gives `/C:/...`; the unit test uses a Mac path. Run `npm run build && npm start` in window mode and in desktop mode and look in the log for `request refused`; there should be none. Also `npm run dev` once (the dev server path is covered by a unit test only).
-- `log-limits`: the cleaning uses the user name and home folder; check the log has no `C:\Users\<name>` after a run that reports a renderer error, and that the file rotates (set `maxBytes` low by hand if you want to see it).
-- `gate-dev-switches` (from `M-5`): `npm run dist` build ignores the variables, `dist:test` keeps them.
-
-Not done, and why: finding 10a (the single-instance lock first) edits the same lines as `gate-dev-switches` and `log-limits`, so it waits until they are merged; finding 10b (one error handler) is not worth a change; 10c (no crash restart on the Mac) and 10e (the tank inside the host) are a feature and design debt, not fixes. Windows-only findings (1, the cover check; 4, the fuses) are in `M-5`.
+None open.
 
 ## Closed
+
+- M-1 (STATUS numbers, the SIGPIPE case): done, PR 7.
+- M-2 (four branches): merged, PRs 7 to 10.
+- M-3 (Dependabot alert, Win+D question): answered; the minimatch alert (development scope) is the owner's decision.
+- M-4 (`show-desktop-mac`): merged, PR 12.
+- M-5 and M-6 (eight branches from the host and security review): merged, PRs 13 to 20; `Re M-6` checks answered. Open for the owner: findings 1 (cover check on Windows) and 4 (Electron fuses).
