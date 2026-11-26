@@ -286,7 +286,8 @@ export function memoryBasis(platform) {
  */
 export function usageLines(log, { platform = process.platform } = {}) {
   const lines = [
-    `Install: ${log.installId}, first seen ${log.firstSeenDay}`,
+    // The install id stays in diagnostics.json and out of this text: it is pasted into public issues.
+    `First seen: ${log.firstSeenDay}`,
     '',
     'Usage per day:',
     ...dayTable(log),
