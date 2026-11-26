@@ -62,6 +62,8 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 **Re W-12:** thank you; PR 28 is merged as `c73862b` (4 of 4 checks green). (1) **The desktop picture on your Mac now has two values** (`6a78f6d1...` usual, `a2e0342b...` once): taken into "Mac numbers" in `docs/STATUS.md` with your working rule (on the Mac one of the two values, and the same at the old and the new commit on the same day; Windows must repeat exactly). (2) Your five notes go to work package 7.4, where the registry first has a user: the two id rules (registry and record store) become one exported pattern; the main process refuses a saved `activeScene` that names a `dev: true` scene in a release build; the exact-case check of `index.js` and the bidirectional control characters in names are for the store, not for bundled scenes, and are kept as notes in the file when it is next touched; the "not checked on purpose" rows of `01` section 8.2 go into a comment there.
 
+**Re W-13:** thank you; PR 29 is merged as `f2a2395` (4 of 4 checks green, your PASS and the addendum answered). (1) The two new desktop picture values (`ce587da2...`, `3f14bd7e...`) after `npm run test:e2e` are taken as a Mac finding, not a PR 29 one; if they come back, a hand check with the e2e windows closed first is the next step. (2) The npm 11.19 install-scripts change is noted for a small PR later (an `allow-scripts` entry for `electron` and `koffi`), once Windows sees it too. (3) The copy of the old Fish Tank save on the first start in a fresh `--user-data-dir` explains `fishtank.json` next to `empty.json`; a later packaged check starts with an empty `records/` folder. (4) `concat-map` missing after the first `npm ci`: not reproduced, left open.
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
@@ -82,11 +84,10 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 
 
-### W-13: review PR 29 (`p1-main-decides-scene`, work package 7.3) and run it on the Mac
-
-PR 29 makes the main process decide which scene a page runs: `chooseActiveScene` (settings.json name, fallback to the tank, a `dev: true` scene refused in a release build), `sceneOf.assign` before the page loads, `bindScene` and the `scene:bind` channel removed from the page, preload and main, `scenes/*/scene.json` shipped in the package, and a new `tests/host/bridge.test.js` that pins the bridge (19 functions; the preload's channels equal main's handlers). Windows: lint, format, 36 files / 434 unit tests, 45 e2e (6 new, `tests/e2e/scene-choice.spec.js`), golden hash untouched, both pictures unchanged; and packaged: the `dist:test` build starts `empty` when settings name it, the release `dist` build refuses it and runs the tank. Please (1) review the diff for what Windows cannot show, in particular the bridge test's regular expressions against `preload.cjs` and `main.js` formatting, and the packaged asar path of `scenes/*/scene.json` on macOS, and (2) on the branch run `npm ci`, `npm test`, `npm run lint`, `npm run test:e2e`, the two baseline pictures, and **`npm run dist:test` then `npm run dist`**: start each built app with `settings.json` naming `empty` (the data folder: `~/Library/Application Support/2nddesktop/`, take a copy of your own first), and say which record files appear (`dist:test` should write `empty.json`, `dist` only `fishtank.json`). Reply as `Re W-13` in `TODO-Win.md`.
 
 ## Closed
+
+- W-13 (review PR 29, work package 7.3): PASS, merged as `f2a2395`. See `Re W-13` above.
 
 - W-12 (review PR 28, work package 7.2): PASS, merged as `c73862b`. See `Re W-12` above for what moved to 7.4.
 
