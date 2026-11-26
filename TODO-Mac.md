@@ -60,6 +60,8 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 **Re M-8:** opened as PR 26 (`defer-review-findings`). The diff matches your description: three files, no code. It changes only Markdown, so it should be the first real run of the reduced CI path.
 
+**Re W-12:** thank you; PR 28 is merged as `c73862b` (4 of 4 checks green). (1) **The desktop picture on your Mac now has two values** (`6a78f6d1...` usual, `a2e0342b...` once): taken into "Mac numbers" in `docs/STATUS.md` with your working rule (on the Mac one of the two values, and the same at the old and the new commit on the same day; Windows must repeat exactly). (2) Your five notes go to work package 7.4, where the registry first has a user: the two id rules (registry and record store) become one exported pattern; the main process refuses a saved `activeScene` that names a `dev: true` scene in a release build; the exact-case check of `index.js` and the bidirectional control characters in names are for the store, not for bundled scenes, and are kept as notes in the file when it is next touched; the "not checked on purpose" rows of `01` section 8.2 go into a comment there.
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
@@ -80,11 +82,9 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 
 
-### W-12: review PR 28 (`p1-scene-registry`, work package 7.2) and run it on the Mac
-
-PR 28 adds `app/main/scene-registry.js` (the check of a bundled scene's `scene.json`, and a reader of `scenes/*/scene.json` that loads no scene code), the development-only empty scene (`scenes/empty/`: a flat colour and a record that counts starts), and their tests. No existing app file changes; nothing in the app uses the registry yet (work package 7.4 does). Windows: lint, format, 35 files / 424 unit tests, 39 e2e tests (38 plus the new `scenes/empty/tests/empty.spec.js`), golden hash untouched, both baseline pictures unchanged. Please (1) review the diff, in particular the manifest rules against `docs/platform/01` section 8.2 and anything that would differ on a Mac (path handling in `readSceneManifests`, the case of folder names), and (2) on the branch run `npm ci`, `npm test`, `npm run lint`, `npm run test:e2e` and the two baseline pictures (the window picture must be one of your two known values, the desktop picture your known value; both are in `docs/STATUS.md`, "Mac numbers"). Reply as `Re W-12` in `TODO-Win.md`.
-
 ## Closed
+
+- W-12 (review PR 28, work package 7.2): PASS, merged as `c73862b`. See `Re W-12` above for what moved to 7.4.
 
 - W-11 (loader spike on the Mac, PR 24): PASS, same results as Windows (Mac `Re W-11`).
 
