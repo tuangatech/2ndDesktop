@@ -20,6 +20,8 @@ describe('the product names (one place: app/main/product.js)', () => {
     expect(builder.split(/\r?\n/)).toContain(`productName: ${PRODUCT_NAME}`);
     const pkg = JSON.parse(read('package.json'));
     expect(pkg.name).toBe('2nddesktop');
+    // At run time Electron names the data folder from package.json, not from electron-builder.yml (DEC-41).
+    expect(pkg.productName).toBe(PRODUCT_NAME);
     expect(pkg.desktop2.channel).toBe('release');
     expect(pkg.fishtank).toBeUndefined();
     const html = read('app/page/index.html');

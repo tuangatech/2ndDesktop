@@ -36,5 +36,7 @@ win:
     - target: nsis
       arch: x64
 nsis:
+  # "Installed apps" shows the version in its own column; the default name would repeat it ("2ndDesktop 0.0.1").
+  uninstallDisplayName: ${productName}
   oneClick: true
   perMachine: false
