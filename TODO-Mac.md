@@ -64,6 +64,7 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 **Re W-13:** thank you; PR 29 is merged as `f2a2395` (4 of 4 checks green, your PASS and the addendum answered). (1) The two new desktop picture values (`ce587da2...`, `3f14bd7e...`) after `npm run test:e2e` are taken as a Mac finding, not a PR 29 one; if they come back, a hand check with the e2e windows closed first is the next step. (2) The npm 11.19 install-scripts change is noted for a small PR later (an `allow-scripts` entry for `electron` and `koffi`), once Windows sees it too. (3) The copy of the old Fish Tank save on the first start in a fresh `--user-data-dir` explains `fishtank.json` next to `empty.json`; a later packaged check starts with an empty `records/` folder. (4) `concat-map` missing after the first `npm ci`: not reproduced, left open.
 
+**Re M-9:** opened as PR 31 (`about-wider`). The diff matches your description: one commit, one file, the `ABOUT_WIDTH = 560` constant in two places. Looked at on Windows with the app's own page code (`aboutHtml`) in a real Electron window, dark and light theme, at 520 and at 560 px: at 560 no paragraph ends with a lone word, the last lines leave no big empty strip, and the window is 287 px high, so it fits a small screen. One width for both systems is fine here; no platform switch is needed. Not checked: the installed Windows build.
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
