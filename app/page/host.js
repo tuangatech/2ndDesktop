@@ -12,8 +12,10 @@
  * @property {{load: () => Promise<{status: string, data?: object}>, save: (record: object) => void,
  *             keepCopy?: (record: object) => void}} record
  *           the scene's own saved record (one file per scene id); `keepCopy` keeps a damaged record next to it
- * @property {{play: (name: 'splash'|'pop'|'chime') => unknown}} [sound]  short sounds, only for the player's own
- *           actions (v0: the names are the tank's; a scene with its own sounds has no way in yet)
+ * @property {{define: (name: string, recipe: (voice: object, at: number) => void) => boolean,
+ *             play: (name: string) => unknown}} [sound]  short sounds, only for the player's own actions. A scene
+ *           defines its sounds when it is created (`define`, a name of lowercase letters, digits and dashes and a recipe
+ *           for the engine's voices, app/page/SoundPlayer.js), then plays them by name. At most 16 names.
  * @property {{now: () => number}} clock  epoch milliseconds; the dev panel can move it. The only source of time.
  * @property {ReturnType<typeof import('../../shared/rng.js').makeRng>} rng
  * @property {Record<string, unknown>|null} tuning  numbers a test build may change (tuning.json); the scene checks them
