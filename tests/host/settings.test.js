@@ -119,6 +119,24 @@ describe('createSettingsStore', () => {
     expect(read.desktopAttempt).toBe('ok');
   });
 
+  it('remembers "When the desktop is covered" as one of its three words, and has none stored at first', () => {
+    const store = createSettingsStore({ file });
+    expect(store.get().whenCovered).toBeUndefined(); // a missing value means the default, `always`
+    for (const word of ['auto', 'never', 'always']) {
+      expect(store.setChoices({ whenCovered: word })).toBe(true);
+      expect(createSettingsStore({ file }).get().whenCovered).toBe(word);
+    }
+    expect(store.setChoices({ whenCovered: 'battery' })).toBe(false);
+    expect(createSettingsStore({ file }).get().whenCovered).toBe('always');
+  });
+
+  it('drops an unknown word for it found in the file, and keeps the other keys', () => {
+    fs.writeFileSync(file, JSON.stringify({ whenCovered: 'sometimes', sound: false }));
+    const read = createSettingsStore({ file }).get();
+    expect(read.whenCovered).toBeUndefined();
+    expect(read.sound).toBe(false);
+  });
+
   it('remembers the active scene, keeps the other keys, and refuses what is not a scene id', () => {
     const store = createSettingsStore({ file });
     expect(store.set('sound', false)).toBe(true);
