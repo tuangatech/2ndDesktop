@@ -77,7 +77,9 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 
 **The installed build (owner, 2026-11-25, `npm run dist`, ran the installer):** PASS. It starts in desktop mode, the tray menu works, switching between window and desktop works, the Start menu finds it with the window-with-a-tree icon, About has the new text, and the uninstall works. Found: the data folder was `2nddesktop` and "Installed apps" showed "2ndDesktop 0.0.1" (PR 21). By design the uninstall keeps `%APPDATA%\2nddesktop` (saved tank, settings, and about 12 MB of Chromium caches). The installed size is 360 MB (the installer is 117 MB), normal for Electron. The Publisher is `author` (`tuangatech`), left as it is.
 
-Still open on Windows: a display change (unplug or change a display), launch at login (with the installed build). Open on the Mac: the menu bar and tray icon by eye, the Dock, the first open of a downloaded unsigned build, and the F11 pause (Mac session, W-7).
+**Main display switch (owner, 2026-11-26, three screens, installed build):** after "Make this my main display" in Windows the scene is on the new main screen and the tray menu still works (collecting pellets). PASS. Not yet tried: unplugging a screen, a resolution change, and a scene on a screen that is not the main one (the app uses only the primary display; the cover check also looks only at it).
+
+Still open on Windows: unplugging a display or changing its resolution, launch at login (with the installed build). Open on the Mac: the menu bar and tray icon by eye, the Dock, the first open of a downloaded unsigned build, and the F11 pause (Mac session, W-7).
 
 ## Waiting for the owner
 
