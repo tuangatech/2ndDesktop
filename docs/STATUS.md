@@ -64,6 +64,11 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 - Windows checks passed (see `TODO-Mac.md`, Re M-6): both pictures unchanged, 38 e2e, no `request refused`, no user path in the log, `dist:test` keeps and `dist` ignores `DESKTOP2_USER_DATA`. The `session-policy` unit test was Mac-only (hard-coded `file:///app/...`); fixed in PR 19.
 - Decided by the owner (2026-11-26): review finding 1 (Windows cover check reads only the foreground window) moves to 0.2 and finding 4 (Electron fuses) to 0.3 (DEC-45 and DEC-46, in the branch `defer-review-findings`: the log, the roadmap rows and the review's status column). Finding 10a (single-instance lock before the data migration) can now be done, since the branches that touched the same lines are merged.
 
+## Step 7 (P1, the platform core)
+
+- Work packages 7.1 to 7.7 (loader spike, manifest check and the empty scene, main decides the scene, switching, the power setting, the sound split, baselines and the switch memory script); the plan is a scratch file on the Windows machine (`temp/`, not in the repository).
+- 7.1 the loader spike: PR 24 is open (`docs/platform/06-loader-spike.md`). On Windows every required check passes; WebRTC leaks without a mitigation and not with any of the three. One correction proposed to `02`: `connect-src 'self'`, not 'none'. Mac run: W-11.
+
 ## Mac numbers (Apple silicon, 2026-11-24; details in `TODO-Win.md`, Re W-1 to W-6)
 
 - Same counts as Windows at every step: 341 and 38 at the import, 356 and 38 after the rename and the move (26 e2e in `scenes/fishtank/tests/`). Lint and format clean. `npm run dist:test` builds an unsigned arm64 dmg; the app starts from it, copies the saved tank from `fish-tank`, and leaves the old folder unchanged.
