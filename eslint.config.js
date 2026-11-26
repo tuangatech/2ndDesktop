@@ -9,8 +9,13 @@ export default [
     languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals: globals.node },
   },
   {
-    files: ['app/main/preload.cjs'],
+    files: ['app/main/preload.cjs', 'spikes/loader/preload.cjs'],
     languageOptions: { sourceType: 'commonjs', globals: globals.node },
+  },
+  {
+    // The loader spike (docs/platform/06-loader-spike.md): the page side runs in the browser.
+    files: ['spikes/loader/runtime.js', 'spikes/loader/pack/**/*.js'],
+    languageOptions: { globals: globals.browser },
   },
   {
     // Playwright tests run code both in Node and inside the page (page.evaluate).

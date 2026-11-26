@@ -19,3 +19,6 @@ Thumbs.db
 
 # local tool settings
 .claude/settings.local.json
+
+# scratch notes and plans (not part of the project)
+temp/

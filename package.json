@@ -33,7 +33,8 @@
     "shot": "node scripts/shot.mjs",
     "measure:alloc": "node scripts/measure-alloc.mjs",
     "sim": "node scripts/pacing-sim.js",
-    "sounds": "node scripts/sound-lab.mjs"
+    "sounds": "node scripts/sound-lab.mjs",
+    "spike:loader": "node spikes/loader/run.mjs"
   },
   "dependencies": {
     "koffi": "^3.3.8"
