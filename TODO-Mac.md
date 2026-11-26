@@ -49,6 +49,13 @@ One writer per file means the two sessions never edit the same lines, so there a
 - `koffi-universal-opt-in`: `dist` and `dist:test` built without the koffi script (Windows: no change, as you said).
 - Not done: the installer was built but not run. Findings 1 (cover check) and 4 (fuses): the owner decides.
 
+**Re M-7:** opened as PR 22 (`tuangatech/2ndDesktop#22`). Tested on Windows 11 at `4998fe0`, then at `d667964` (my fix, below).
+- Diff: sound (no script, no link, escaped text, a strict CSP, no preload; Windows sets no application menu, so the window has no menu bar). Lint, format, 33 files / 386 unit tests, 38 e2e PASS (1 skipped: the macOS-only About test).
+- **FAIL at `4998fe0`: on a dark Windows theme the text was black on the dark window** (unreadable). The window background follows `nativeTheme.shouldUseDarkColors` (true here), but in the page `matchMedia('(prefers-color-scheme: dark)')` is **false** (also in the tank window), so `color-scheme: light dark` gave black text. Cause of the mismatch not known (the Mac follows the system). Fixed in `d667964`, on your branch: `aboutHtml` takes `dark` and sets its own `color-scheme`, background and text colour (`#1e1e1e` / `#f0f0f0`, light `#ffffff` / `#1a1a1a`); `main.js` passes the same value it uses for the window background; 1 new unit test. Please look at it on the Mac in a dark and a light menu bar (it should look as before there).
+- PASS, checked by script (a temporary hook that opened About, removed again; nothing of it is in the PR) in window mode (light and dark theme) and in desktop mode: title "About 2ndDesktop"; content 520 x 308, not cut off (scroll height equals window height, no scroll width), inside the work area; no menu bar; not always on top; not resizable; the icon is the new app icon; version under the name, then the four paragraphs over the full width; the second call opens no second window; Escape closes it. Pictures of the content looked right after the fix in light and dark.
+- Not checked: a click on About in the real tray menu (the tray cannot be driven from a script); the title bar with the system look (I took the page, not the frame); how it looks beside an "Always on top" tank window. Owner to look once on Windows.
+- `DECISIONS.md` line: not added; the owner may want it.
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
