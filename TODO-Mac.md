@@ -82,6 +82,10 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 
 
+### W-13: review PR 29 (`p1-main-decides-scene`, work package 7.3) and run it on the Mac
+
+PR 29 makes the main process decide which scene a page runs: `chooseActiveScene` (settings.json name, fallback to the tank, a `dev: true` scene refused in a release build), `sceneOf.assign` before the page loads, `bindScene` and the `scene:bind` channel removed from the page, preload and main, `scenes/*/scene.json` shipped in the package, and a new `tests/host/bridge.test.js` that pins the bridge (19 functions; the preload's channels equal main's handlers). Windows: lint, format, 36 files / 434 unit tests, 45 e2e (6 new, `tests/e2e/scene-choice.spec.js`), golden hash untouched, both pictures unchanged; and packaged: the `dist:test` build starts `empty` when settings name it, the release `dist` build refuses it and runs the tank. Please (1) review the diff for what Windows cannot show, in particular the bridge test's regular expressions against `preload.cjs` and `main.js` formatting, and the packaged asar path of `scenes/*/scene.json` on macOS, and (2) on the branch run `npm ci`, `npm test`, `npm run lint`, `npm run test:e2e`, the two baseline pictures, and **`npm run dist:test` then `npm run dist`**: start each built app with `settings.json` naming `empty` (the data folder: `~/Library/Application Support/2nddesktop/`, take a copy of your own first), and say which record files appear (`dist:test` should write `empty.json`, `dist` only `fishtank.json`). Reply as `Re W-13` in `TODO-Win.md`.
+
 ## Closed
 
 - W-12 (review PR 28, work package 7.2): PASS, merged as `c73862b`. See `Re W-12` above for what moved to 7.4.
