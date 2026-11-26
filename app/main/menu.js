@@ -3,6 +3,7 @@
 // list of settings items (FR-36) shared by the tray menu and the gear menu of the window; Phase 2 adds Reduced
 // effects and Day/night lighting there.
 
+import { WHEN_COVERED, WHEN_COVERED_LABELS, normalizeWhenCovered } from './cover-policy.js';
 import { PRODUCT_NAME } from './product.js';
 
 const MAX_LABEL = 60;
@@ -43,11 +44,35 @@ export function sanitizeSceneMenu(raw) {
 }
 
 /**
- * The settings items (FR-36): Always on top (window mode only), Launch at login, Sound, Copy diagnostics, About.
+ * "When the desktop is covered" (docs/platform/01 section 7.1): a submenu of three radio items. Desktop mode only,
+ * because that is the only mode with a cover check; a window that is minimised or hidden always pauses.
+ * @param {{mode?: string, whenCovered?: string}} settings
+ * @param {{setWhenCovered?: (word: string) => void}} handlers
+ * @returns {object[]}  zero or one menu items
+ */
+export function whenCoveredItems(settings, handlers) {
+  if (settings.mode !== 'desktop') return [];
+  const current = normalizeWhenCovered(settings.whenCovered);
+  return [
+    {
+      label: 'When the desktop is covered',
+      submenu: WHEN_COVERED.map((word) => ({
+        label: WHEN_COVERED_LABELS[word],
+        type: 'radio',
+        checked: word === current,
+        click: () => handlers.setWhenCovered?.(word),
+      })),
+    },
+  ];
+}
+
+/**
+ * The settings items (FR-36): Always on top (window mode only), Launch at login, Sound, When the desktop is covered
+ * (desktop mode only), Copy diagnostics, About.
  * @param {{mode?: string, alwaysOnTop?: boolean, sound?: boolean, launchAtLogin?: boolean,
- *          canLaunchAtLogin?: boolean, copied?: boolean}} settings
- * @param {{setSetting?: (key: string, value: boolean) => void, copyDiagnostics?: () => void,
- *          about?: () => void}} handlers
+ *          canLaunchAtLogin?: boolean, copied?: boolean, whenCovered?: string}} settings
+ * @param {{setSetting?: (key: string, value: boolean) => void, setWhenCovered?: (word: string) => void,
+ *          copyDiagnostics?: () => void, about?: () => void}} handlers
  * @param {{withAbout?: boolean}} [options]  the macOS menu bar has About in the application menu instead
  */
 export function settingsItems(settings, handlers, { withAbout = true } = {}) {
@@ -78,6 +103,7 @@ export function settingsItems(settings, handlers, { withAbout = true } = {}) {
       checked: settings.sound !== false,
       click: (item) => handlers.setSetting?.('sound', item.checked),
     },
+    ...whenCoveredItems(settings, handlers),
     { type: 'separator' },
     {
       label: settings.copied ? 'Copied' : 'Copy diagnostics',

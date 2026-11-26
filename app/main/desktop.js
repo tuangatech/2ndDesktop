@@ -51,6 +51,7 @@ const FAILURE_WINDOW_MS = 60_000;
  * @param {(mode: string, reason?: string) => void} deps.onModeChanged
  * @param {(paused: boolean) => void} [deps.onPausedChanged]  called when the tank starts or stops being paused
  * @param {() => boolean} [deps.getAlwaysOnTop]  the "Always on top" setting (window mode only, FR-20)
+ * @param {() => boolean} [deps.shouldPauseWhenCovered]  does a covered desktop stop the drawing now? The setting "When the desktop is covered" and the power state decide (cover-policy.js); the default is the quiet one
  * @param {boolean} [deps.startedAtLogin]  the first window is shown without taking focus (NFR-6)
  * @param {(result: {ok: boolean, layout?: string, ms?: number, reason?: string}) => void} [deps.onAttachResult]  the outcome of each attach (diagnostics)
  * @param {(state: 'trying' | 'ok') => void} [deps.onDesktopAttempt]  the safe start (FR-64): 'trying' before an attach, 'ok' after it was stable
@@ -65,6 +66,7 @@ export function createDesktopController({
   onModeChanged,
   onPausedChanged,
   getAlwaysOnTop = () => false,
+  shouldPauseWhenCovered = () => true,
   startedAtLogin = false,
   getWindowBounds = () => null,
   saveWindowBounds = () => {},
@@ -476,8 +478,33 @@ export function createDesktopController({
   function setCovered(nowCovered) {
     if (nowCovered === covered) return;
     covered = nowCovered;
-    log(covered ? 'desktop is covered: pausing' : 'desktop is visible: resuming');
-    setPauseReason('cover', covered);
+    if (covered) {
+      log(
+        shouldPauseWhenCovered()
+          ? 'desktop is covered: pausing'
+          : 'desktop is covered: not pausing (setting)',
+      );
+    } else {
+      log('desktop is visible: resuming');
+    }
+    applyCover();
+  }
+
+  // `covered` is a fact about the screen; whether it pauses is the player's setting, so the two are kept apart.
+  function applyCover() {
+    setPauseReason('cover', covered && shouldPauseWhenCovered());
+  }
+
+  // The setting or the power state changed while the desktop may be covered: decide again.
+  function reevaluateCover() {
+    if (!covered) return;
+    const pauses = shouldPauseWhenCovered();
+    if (pauses !== pauseReasons.has('cover')) {
+      log(
+        pauses ? 'covered desktop: pausing (setting)' : 'covered desktop: drawing again (setting)',
+      );
+    }
+    applyCover();
   }
 
   function stopMonitor() {
@@ -578,6 +605,10 @@ export function createDesktopController({
     },
     isPaused: () => pauseReasons.size > 0,
     setPauseReason,
+    /** The cover check found the desktop covered or visible (the monitor calls this; tests call it without native code). */
+    setCovered,
+    /** The setting or the power state changed: decide again whether a covered desktop pauses. */
+    reevaluateCover,
     /** The renderer of the current window finished starting (the safe start waits for it). */
     rendererReady() {
       rendererIsReady = true;

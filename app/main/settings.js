@@ -1,17 +1,22 @@
 // The player's settings (FR-36), kept in `settings.json` in the user data folder. Plain Node, so it is unit-tested.
 // Only the booleans below are changed through `set`; other keys in the file are kept. `activeScene` is read by
 // app/main/scene-registry.js (`chooseActiveScene`, which falls back for anything it does not know) and written by `setActiveScene`.
-import { CHOICES } from './display-mode.js';
+import { WHEN_COVERED } from './cover-policy.js';
+import { CHOICES as DISPLAY_CHOICES } from './display-mode.js';
 import { normalizeWindowBounds } from './placement.js';
 import { isSceneId } from './scene-id.js';
 import { readJson, writeJsonAtomic } from './store.js';
+
+// The settings that are one of a few known words: the display mode and the desktop attempt (FR-60, FR-64), and
+// "When the desktop is covered" (a missing value means the default, `always`; see cover-policy.js).
+const CHOICES = Object.freeze({ ...DISPLAY_CHOICES, whenCovered: WHEN_COVERED });
 
 export const DEFAULTS = Object.freeze({ alwaysOnTop: false, sound: true });
 const BOOLEAN_KEYS = Object.keys(DEFAULTS);
 
 /**
  * The raw file content with every known setting a boolean (the default when it is missing or of a wrong type).
- * `window` (the remembered window rectangle, FR-19) is kept only when it is a valid rectangle; `displayMode` and `desktopAttempt` only when they are known words.
+ * `window` (the remembered window rectangle, FR-19) is kept only when it is a valid rectangle; `displayMode`, `desktopAttempt` and `whenCovered` only when they are known words.
  */
 export function normalizeSettings(raw) {
   const data = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
@@ -19,7 +24,7 @@ export function normalizeSettings(raw) {
   for (const key of BOOLEAN_KEYS) {
     out[key] = typeof data[key] === 'boolean' ? data[key] : DEFAULTS[key];
   }
-  // The display mode and the desktop attempt (FR-60, FR-64): only a known word is kept.
+  // The choices (display mode, desktop attempt, when covered): only a known word is kept.
   for (const [key, allowed] of Object.entries(CHOICES)) {
     if (!allowed.includes(data[key])) delete out[key];
   }
@@ -56,7 +61,7 @@ export function createSettingsStore({ file }) {
       return save({ ...(cache ?? load()), [key]: value });
     },
     /**
-     * Sets known words such as { displayMode: 'desktop', desktopAttempt: 'trying' } in one write.
+     * Sets known words such as { displayMode: 'desktop', desktopAttempt: 'trying' } or { whenCovered: 'auto' } in one write.
      * Returns false (and writes nothing) if a key is unknown or a value is not one of its words.
      */
     setChoices(patch) {

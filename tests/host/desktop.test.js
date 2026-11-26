@@ -153,6 +153,81 @@ describe('desktop mode controller', () => {
     controller.dispose();
   });
 
+  describe('a covered desktop and the setting "When the desktop is covered" (work package 7.5)', () => {
+    const pauses = (win) => win.sent.filter(([channel]) => channel === 'scene:pause');
+
+    it('pauses when covered and resumes when visible, as before the setting existed', async () => {
+      const controller = makeController(); // no setting given: the default, "Always pause"
+      await controller.start('desktop');
+      const win = controller.getWindow();
+      controller.setCovered(true);
+      expect(controller.isPaused()).toBe(true);
+      expect(pauses(win)).toEqual([['scene:pause', true]]);
+      controller.setCovered(false);
+      expect(controller.isPaused()).toBe(false);
+      expect(pauses(win)).toEqual([
+        ['scene:pause', true],
+        ['scene:pause', false],
+      ]);
+      controller.dispose();
+    });
+
+    it('keeps drawing under a cover when the setting says so, and says why in the log', async () => {
+      const controller = makeController({ shouldPauseWhenCovered: () => false });
+      await controller.start('desktop');
+      controller.setCovered(true);
+      expect(controller.isPaused()).toBe(false);
+      expect(pauses(controller.getWindow())).toEqual([]);
+      expect(logs).toContain('desktop is covered: not pausing (setting)');
+      controller.dispose();
+    });
+
+    it('decides again when the setting or the power changes while covered', async () => {
+      let pause = false;
+      const controller = makeController({ shouldPauseWhenCovered: () => pause });
+      await controller.start('desktop');
+      const win = controller.getWindow();
+      controller.setCovered(true);
+      expect(controller.isPaused()).toBe(false);
+      pause = true; // for example the charger was pulled out with "Pause on battery only"
+      controller.reevaluateCover();
+      expect(controller.isPaused()).toBe(true);
+      expect(pauses(win)).toEqual([['scene:pause', true]]);
+      controller.reevaluateCover(); // nothing changed: nothing is sent again
+      expect(pauses(win)).toEqual([['scene:pause', true]]);
+      pause = false;
+      controller.reevaluateCover();
+      expect(controller.isPaused()).toBe(false);
+      expect(pauses(win)).toEqual([
+        ['scene:pause', true],
+        ['scene:pause', false],
+      ]);
+      controller.dispose();
+    });
+
+    it('does nothing when the desktop is not covered', async () => {
+      let pause = false;
+      const controller = makeController({ shouldPauseWhenCovered: () => pause });
+      await controller.start('desktop');
+      pause = true;
+      controller.reevaluateCover();
+      expect(controller.isPaused()).toBe(false);
+      expect(pauses(controller.getWindow())).toEqual([]);
+      controller.dispose();
+    });
+
+    it('never lets the setting undo another reason: a hidden window or a locked screen still pauses', async () => {
+      const controller = makeController({ shouldPauseWhenCovered: () => false });
+      await controller.start('desktop');
+      controller.setPauseReason('power', true);
+      controller.setCovered(true);
+      expect(controller.isPaused()).toBe(true);
+      controller.setPauseReason('power', false);
+      expect(controller.isPaused()).toBe(false);
+      controller.dispose();
+    });
+  });
+
   it('hides the Dock icon on the desktop even when macOS ignores the first tries, and shows it in a window', async () => {
     const dock = electronApp.dock;
     dock.visible = true;

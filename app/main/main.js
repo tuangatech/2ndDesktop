@@ -14,6 +14,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { aboutHtml, aboutStaysOnTop } from './about.js';
+import { normalizeWhenCovered, shouldPauseWhenCovered } from './cover-policy.js';
 import { createDesktopController } from './desktop.js';
 import { devSwitchesAllowed, removeDevSwitches } from './dev-switches.js';
 import {
@@ -338,6 +339,23 @@ function setSetting(key, value) {
   refreshAppMenu();
 }
 
+// "When the desktop is covered" (docs/platform/01 section 7.1): saved, then applied to a desktop that is covered now.
+function setWhenCovered(word) {
+  if (!settingsStore.setChoices({ whenCovered: word })) return;
+  log(`when the desktop is covered: ${word}`);
+  controller?.reevaluateCover();
+  refreshAppMenu();
+}
+
+// True on battery power, false on AC; null when it cannot be read ("Pause on battery only" then pauses).
+function onBatteryPower() {
+  try {
+    return powerMonitor.isOnBatteryPower();
+  } catch {
+    return null;
+  }
+}
+
 /** The graphics card(s), for example `NVIDIA (vendor 0x10de) device 0x2684 (active)`, or `unknown`. */
 async function describeGpu() {
   try {
@@ -509,7 +527,11 @@ async function switchScene(id) {
 }
 // Tests only (DESKTOP2_TEST=1): the end-to-end tests have no other way to choose a scene from outside the menu.
 if (process.env.DESKTOP2_TEST === '1') {
-  globalThis.__desktop2Test = { switchScene, menuTemplate: () => buildMenuTemplate() };
+  globalThis.__desktop2Test = {
+    switchScene,
+    setWhenCovered,
+    menuTemplate: () => buildMenuTemplate(),
+  };
 }
 
 const menuSettings = () => ({
@@ -518,6 +540,7 @@ const menuSettings = () => ({
   mode: controller?.getMode(),
   alwaysOnTop: readSettings().alwaysOnTop,
   sound: readSettings().sound,
+  whenCovered: normalizeWhenCovered(readSettings().whenCovered),
   launchAtLogin: launchAtLogin(),
   canLaunchAtLogin: canLaunchAtLogin(),
   copied: Date.now() - copiedAt < 5000,
@@ -525,6 +548,7 @@ const menuSettings = () => ({
 const menuHandlers = () => ({
   setMode: (mode) => controller.setMode(mode),
   setSetting,
+  setWhenCovered,
   copyDiagnostics,
   about: showAbout,
   switchScene: (id) => void switchScene(id),
@@ -583,6 +607,8 @@ app.whenReady().then(async () => {
     },
     onPausedChanged: () => syncPointerPolling(),
     getAlwaysOnTop: () => readSettings().alwaysOnTop,
+    shouldPauseWhenCovered: () =>
+      shouldPauseWhenCovered(readSettings().whenCovered, onBatteryPower()),
     startedAtLogin: startedAtLogin(),
     // The safe start (FR-64): 'trying' goes to disk before the tank is attached to the desktop, 'ok' once it was stable.
     onAttachResult: (result) => usage.desktopResult(result),
@@ -602,6 +628,10 @@ app.whenReady().then(async () => {
     ['resume', false],
   ]) {
     powerMonitor.on(event, () => controller.setPauseReason('power', on));
+  }
+  // Pulling out or plugging in the charger matters to a covered desktop when "Pause on battery only" is chosen.
+  for (const event of ['on-battery', 'on-ac']) {
+    powerMonitor.on(event, () => controller.reevaluateCover());
   }
 
   createTray({ trayDir: path.join(root, 'assets', 'tray'), buildMenuTemplate });
