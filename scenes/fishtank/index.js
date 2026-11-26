@@ -7,6 +7,7 @@ import { applyTuning, config as baseConfig } from './config.js';
 import { createHud } from './hud.js';
 import { createDevPanel } from './devPanel.js';
 import { menuItems, statusLine } from './menu.js';
+import { defineSounds } from './sounds.js';
 import decorData from './decor.json';
 import speciesData from './species.json';
 
@@ -32,6 +33,7 @@ export default async function create(host) {
   if (problem) host.log(`record: ${problem}${fixes.length ? ` (${fixes.join(', ')})` : ''}`);
   const scene = new TankScene(art, repository, config);
   if (host.sound) scene.sound = host.sound;
+  defineSounds(host.sound);
 
   // Measurements only (DESKTOP2_SCENE_OPTIONS='{"fish":8}'): a tank of mixed species and stages that is never saved.
   const fishCount = host.options?.fish ?? 0;

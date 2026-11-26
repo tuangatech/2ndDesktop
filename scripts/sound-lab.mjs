@@ -1,6 +1,6 @@
 // Audition the game sounds in a browser: `npm run sounds`.
-// A tiny local server (127.0.0.1 only, random port) serves one page and the real `SoundPlayer.js`, so what you
-// hear is what the game plays. The page also renders each sound offline and shows its length, peak and loudness,
+// A tiny local server (127.0.0.1 only, random port) serves one page, the real `SoundPlayer.js` (the engine) and the
+// tank's `sounds.js` (its recipes), so what you hear is what the game plays. The page also renders each sound offline and shows its length, peak and loudness,
 // and the largest jump between two samples (a click shows up there). Press Ctrl+C to stop. Development only; the
 // app never runs this.
 import { createServer } from 'node:http';
@@ -9,6 +9,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const player = fileURLToPath(new URL('../app/page/SoundPlayer.js', import.meta.url));
+const tankSounds = fileURLToPath(new URL('../scenes/fishtank/sounds.js', import.meta.url));
 
 const page = `<!doctype html>
 <meta charset="utf-8">
@@ -29,8 +30,10 @@ const page = `<!doctype html>
 <p><small>"Biggest step" is the largest change between two neighbouring samples; a click makes it large (over 0.1).
 The peak is shown before your system volume.</small></p>
 <script type="module">
-  import { SoundPlayer, SOUND_NAMES } from './SoundPlayer.js';
+  import { SoundPlayer } from './SoundPlayer.js';
+  import { SOUND_NAMES, defineSounds } from './sounds.js';
   const live = new SoundPlayer();
+  defineSounds(live.forScene());
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const buttons = document.getElementById('buttons');
   const play = (name) => live.play(name);
@@ -58,7 +61,9 @@ The peak is shown before your system volume.</small></p>
   const db = (x) => (x > 0 ? (20 * Math.log10(x)).toFixed(1) + ' dBFS' : '-inf');
   for (const name of SOUND_NAMES) {
     const offline = new OfflineAudioContext(2, rate * 3, rate);
-    new SoundPlayer({ createContext: () => offline }).play(name);
+    const offlinePlayer = new SoundPlayer({ createContext: () => offline });
+    defineSounds(offlinePlayer.forScene());
+    offlinePlayer.play(name);
     const rendered = await offline.startRendering();
     const data = rendered.getChannelData(0);
     let peak = 0, sum = 0, step = 0, last = 0;
@@ -86,6 +91,12 @@ const server = createServer(async (request, response) => {
       'cache-control': 'no-store',
     });
     response.end(await readFile(player));
+  } else if (request.url === '/sounds.js') {
+    response.writeHead(200, {
+      'content-type': 'text/javascript; charset=utf-8',
+      'cache-control': 'no-store',
+    });
+    response.end(await readFile(tankSounds));
   } else response.writeHead(404).end();
 });
 

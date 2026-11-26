@@ -630,7 +630,7 @@ Sound: short, quiet, synthesized or recorded by the author; plays only as a reac
 | `host.data` | granted data kinds (`weather@1`, `tasks@1`, ...) with `updatedAt` and `source: live or simulated` | farmhouse, desk | yes |
 | `host.safeArea` | insets of the taskbar, menu bar, Dock and the strip where icons sit | farmhouse, desk | no |
 | `host.ui` | a node for HTML (window mode); `prompt(text)` a small host dialog for one line | fishtank, desk | no |
-| `host.sound` | play a named short sound (only after a player action) | fishtank | no |
+| `host.sound` | define named short sounds as recipes (`define(name, recipe)`) and play them (`play(name)`, only after a player action); built in 0.1, DEC-51 | fishtank | no |
 | `host.net` | a named request to a declared host (document 2) | none yet | yes |
 | per-scene options | declared in `scene.json`, shown in the host's menu and settings | farmhouse, desk | no |
 
