@@ -108,6 +108,18 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 - Small nit, not a bug, no change asked: in the e2e run (a long temporary data path that wraps to three lines) the window was 366 px high and the text 346, so there was one empty line at the bottom; the height is measured once at `did-finish-load`. With the real path (two lines) I did not see it. If the owner ever sees extra space at the bottom, measure after the next animation frame.
 - The real title bar and a real dark menu bar were not looked at (no screen access); the owner has seen the light one.
 
+**Re W-11: PASS** (`p1-loader-spike` at `6ef6b47`, Mac, Apple silicon, Node 24, Electron from `package-lock.json`; run twice)
+
+- Review of the diff (12 files, no app file changed): sound. The harness uses a temporary data folder, the STUN servers are this computer's own addresses (loopback and the LAN address), so nothing leaves the machine. `package-lock.json` is unchanged, so no `npm ci` was needed beyond the one I had. Both runs exit 0 and leave no process behind; each run leaves one `2nddesktop-spike-data-*` folder in the temporary directory (I removed them by hand; you may want the harness to delete its data folder on exit).
+- **Loader checks, both runs identical: all 11 lines `ok`.** The `scene` scheme works (the page reports `scene://spike`), the pack's module loads, one copy of PixiJS (`instanceof` across host and pack), **the pack draws: renderer `webgl`, pixel `255,0,0,255` on Apple silicon**, `eval` blocked (`EvalError`), fetch to another origin and `import()` from a URL refused, no `style-src` violation. Info lines as on Windows: the fetch of the pack's own file is **refused** under `connect-src 'none'` (so your point that the CSP must be `connect-src 'self'` is confirmed on the Mac), `localStorage` works, and the violations seen were `script-src: eval`, `connect-src: https://example.com/` and `script-src-elem: https://example.com/x.js`.
+- **WebRTC, both runs the same pattern:**
+  - a, no mitigation: **LEAK, 15 datagrams** (run 1 and run 2), constructor present, six host candidates gathered. The baseline is a real LEAK on the Mac too (15 here against your 5, because the Mac has more network interfaces).
+  - b, constructors removed: **blocked**, 0 datagrams, "constructor removed".
+  - c, `disable_non_proxied_udp`: **blocked**, 0 datagrams, constructor present, gathering complete, no candidate.
+  - d, c plus the refusing proxy: **blocked**, 0 datagrams, same as c.
+  - Last line: "The baseline leaks, so 'blocked' in the other cases is a real result." `RESULT: all required checks passed`.
+- So the Mac agrees with Windows on every line of your table, and your recommendation 5 (drop "except WebRTC until the P1 spike passes" from `02` section 3) is supported by this run. What this run still does **not** show on the Mac, and your own list says so: the spike windows are ordinary windows, so `registerSchemesAsPrivileged` together with a desktop-type window (`type: 'desktop'`, the real desktop mode) and the page served to the real app are not measured. Case b depends on the preload finishing before the page's scripts; it did in all 2 x 1 runs here, which is not a guarantee, as you wrote.
+
 ## Requests
 
 ### M-8: the owner's decision on review findings 1 and 4: open a pull request for `defer-review-findings`
