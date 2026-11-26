@@ -81,3 +81,48 @@ html[data-mode='desktop'] #strip {
 html[data-mode='desktop'] #hud {
   display: none;
 }
+
+/* The dev kit (devKit.js): window mode with DESKTOP2_DEV=1 only, a tool and not part of the product. */
+#devkit {
+  position: fixed;
+  right: 6px;
+  top: 28px;
+  z-index: 6;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(14, 47, 85, 0.72);
+  color: #f4fbff;
+  font-size: 11px;
+  max-width: 250px;
+}
+
+#devkit .body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+#devkit .hidden {
+  display: none;
+}
+
+#devkit button,
+#devkit select,
+#devkit input {
+  font: inherit;
+  margin-right: 3px;
+}
+
+#devkit .head {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+#devkit .clock {
+  font-variant-numeric: tabular-nums;
+}
