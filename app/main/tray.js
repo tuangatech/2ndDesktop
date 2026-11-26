@@ -30,7 +30,6 @@ export function createTray({ trayDir, buildMenuTemplate }) {
       if (!tray.isDestroyed()) tray.setImage(windowsImage());
     };
     nativeTheme.on('updated', follow);
-    tray.once('destroyed', () => nativeTheme.off('updated', follow));
   }
 
   const show = async () => tray.popUpContextMenu(Menu.buildFromTemplate(await buildMenuTemplate()));

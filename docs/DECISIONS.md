@@ -74,4 +74,9 @@ Written 2026-11-23 from the README's lists. Earlier decisions are grouped by the
 | --- | --- | --- | --- |
 | DEC-45 | Review finding 1 (the Windows cover check reads only the foreground window, so a maximized window on the main display is missed while another monitor has focus, and two snapped windows never count) is **not done in 0.1**; it moves to **0.2**, the platform core: list the visible top-level windows of the primary display and reuse `coveredShare`, as the Mac does. It needs a Windows machine and hand checks (Win+D, snapped windows, a second monitor). Until then Windows keeps the foreground check, which is the safe direction (the tank may draw when it need not) | owner, Mac session | `docs/reviews/2026-11-25-host-security-review.md` finding 1, `platform/03` (0.2) |
 | DEC-46 | Review finding 4 (no Electron fuses: `ELECTRON_RUN_AS_NODE`, `--inspect` and a non-asar app path stay on) is **not done in 0.1 or 0.2**; it moves to **0.3**, the signed release: set the fuses with electron-builder's `electronFuses` and enable the asar integrity check, tested on a packaged build on both systems | owner, Mac session | `docs/reviews/2026-11-25-host-security-review.md` finding 4, `platform/03` (0.3) |
+
+## Round 10: the icon (2026-11-26)
+
+| Id | Decision | Owner or session | Where |
+| --- | --- | --- | --- |
 | DEC-47 | The app icon is a cream "2" on a dusk-sky rounded square (replaces the window-and-tree draft 2). The tray icon is the same "2" alone: a macOS template image (macOS draws it black or white by itself) and, on Windows, two files (dark "2" for a light taskbar, white "2" for a dark one) swapped when the system theme changes | owner (picked from eight samples), Windows session | `build/app-icon.svg`, `assets/tray/`, `app/main/tray.js` |
