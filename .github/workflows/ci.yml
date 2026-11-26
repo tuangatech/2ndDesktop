@@ -5,6 +5,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# The job only reads the repository: no write rights for the token, whatever the repository default is.
+permissions:
+  contents: read
+
 jobs:
   check:
     name: Check (${{ matrix.os }})
