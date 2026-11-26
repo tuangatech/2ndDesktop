@@ -80,3 +80,9 @@ Written 2026-11-23 from the README's lists. Earlier decisions are grouped by the
 | Id | Decision | Owner or session | Where |
 | --- | --- | --- | --- |
 | DEC-47 | The app icon is a cream "2" on a dusk-sky rounded square (replaces the window-and-tree draft 2). The tray icon is the same "2" alone: a macOS template image (macOS draws it black or white by itself) and, on Windows, two files (dark "2" for a light taskbar, white "2" for a dark one) swapped when the system theme changes | owner (picked from eight samples), Windows session | `build/app-icon.svg`, `assets/tray/`, `app/main/tray.js` |
+
+## Round 11: the scene switch (2026-11-26)
+
+| Id | Decision | Owner or session | Where |
+| --- | --- | --- | --- |
+| DEC-48 | At a scene switch the host does **not** call `serialize()` and save, as `platform/01` section 4 says. The page only answers that every save it sent has arrived (the saves and the answer go on one channel, in order), the main process then writes the waiting records and loads the page again. Reason: a scene saves each change as it happens, the tank wraps its state (`schemaVersion`, `savedAt`) and keeps a record it must not touch read-only, so a host that saved the bare `serialize()` could break a record or overwrite a newer one. Revisit when the host wraps the records itself (the scene contract, 0.2). A switch whose records cannot be written does not happen, and the old scene goes on | Windows session | `app/main/scene-switch.js`, `app/page/main.js` |

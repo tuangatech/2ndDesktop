@@ -89,11 +89,34 @@ export function settingsItems(settings, handlers, { withAbout = true } = {}) {
 }
 
 /**
+ * The Scenes submenu: one radio item per scene the player may have, the running one checked. It is shown only when
+ * there are two or more, so a build with the tank alone looks as it did before the scenes were switchable.
+ * @param {{scenes?: {id: string, name: string}[], activeScene?: string}} settings
+ * @param {{switchScene?: (id: string) => void}} handlers
+ * @returns {object[]}  zero or one menu items
+ */
+export function sceneSwitchItems(settings, handlers) {
+  const scenes = settings.scenes ?? [];
+  if (scenes.length < 2) return [];
+  return [
+    {
+      label: 'Scenes',
+      submenu: scenes.map((scene) => ({
+        label: scene.name,
+        type: 'radio',
+        checked: scene.id === settings.activeScene,
+        click: () => handlers.switchScene?.(scene.id),
+      })),
+    },
+  ];
+}
+
+/**
  * @param {ReturnType<typeof sanitizeSceneMenu>} sceneMenu  what the scene reported when the menu opened, or null
- * @param {Parameters<typeof settingsItems>[0] & {mode: 'desktop'|'window'}} settings
+ * @param {Parameters<typeof settingsItems>[0] & Parameters<typeof sceneSwitchItems>[0] & {mode: 'desktop'|'window'}} settings
  * @param {string|null} note  a one-line note, for example the desktop fallback message
- * @param {Parameters<typeof settingsItems>[1] & {action: (id: string) => void, setMode: (mode: string) => void,
- *          quit: () => void}} handlers
+ * @param {Parameters<typeof settingsItems>[1] & Parameters<typeof sceneSwitchItems>[1] & {action: (id: string) => void,
+ *          setMode: (mode: string) => void, quit: () => void}} handlers
  */
 export function buildTrayTemplate(sceneMenu, settings, note, handlers) {
   const items = [{ label: sceneMenu?.line ?? PRODUCT_NAME, enabled: false }];
@@ -106,8 +129,10 @@ export function buildTrayTemplate(sceneMenu, settings, note, handlers) {
         : { label: item.label, enabled: false },
     );
   }
+  const switchItems = sceneSwitchItems(settings, handlers);
   items.push(
     { type: 'separator' },
+    ...switchItems,
     settings.mode === 'desktop'
       ? { label: 'Show in a window', click: () => handlers.setMode('window') }
       : { label: 'Show on desktop', click: () => handlers.setMode('desktop') },
@@ -146,6 +171,7 @@ export function buildAppMenuTemplate(settings, handlers, { dev = false, sceneNam
     {
       label: sceneName ?? 'Scene',
       submenu: [
+        ...sceneSwitchItems(settings, handlers),
         settings.mode === 'desktop'
           ? { label: 'Show in a window', click: () => handlers.setMode('window') }
           : { label: 'Show on desktop', click: () => handlers.setMode('desktop') },

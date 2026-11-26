@@ -30,7 +30,8 @@ import { FALLBACK_NOTE, chooseStartMode, settingsForMode, settingsOnQuit } from 
 import { createLineLimiter, createLogFile } from './log-file.js';
 import { createSettingsStore } from './settings.js';
 import { createSceneBinding } from './scene-binding.js';
-import { chooseActiveScene, readSceneManifests } from './scene-registry.js';
+import { chooseActiveScene, listedScenes, readSceneManifests } from './scene-registry.js';
+import { SAVE_TIMEOUT_MS, createSceneSwitcher } from './scene-switch.js';
 import { createRecordStore, readJson } from './store.js';
 import { createTray } from './tray.js';
 import { createUsageLog, usageLines } from './usage-log.js';
@@ -467,7 +468,53 @@ function showAbout() {
   win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
 }
 
+// The scene switch (docs/platform/01 section 4): the old page saves, main writes the records, the choice goes to
+// settings.json, and the page loads again. The tray and the macOS menu call `switchScene`.
+function askPageToSave() {
+  const win = controller?.getWindow();
+  if (!win || win.isDestroyed()) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const done = (answered) => {
+      clearTimeout(timer);
+      ipcMain.removeListener('scene:saved', onSaved);
+      resolve(answered);
+    };
+    const onSaved = (event) => {
+      if (event.sender === win.webContents) done(true);
+    };
+    const timer = setTimeout(() => done(false), SAVE_TIMEOUT_MS);
+    ipcMain.on('scene:saved', onSaved);
+    win.webContents.send('scene:save-and-close');
+  });
+}
+const switcher = createSceneSwitcher({
+  current: chosenScene,
+  canChoose: (id) => listedScenes(sceneList, { dev: devScenes }).some((scene) => scene.id === id),
+  askSave: askPageToSave,
+  flush: () => records.flushAll(),
+  activate: (id) => settingsStore.setActiveScene(id),
+  reload: async () => {
+    // What the old scene reported is not the new scene's; the new page answers the next request.
+    lastSceneMenu = null;
+    allowedIds = new Set();
+    return (await controller?.reloadPage()) ?? false;
+  },
+  ready: () => Boolean(controller?.getWindow()) && !controller.isSwitching(),
+  log,
+});
+async function switchScene(id) {
+  const result = await switcher.switchTo(id);
+  if (result.ok) refreshAppMenu();
+  return result;
+}
+// Tests only (DESKTOP2_TEST=1): the end-to-end tests have no other way to choose a scene from outside the menu.
+if (process.env.DESKTOP2_TEST === '1') {
+  globalThis.__desktop2Test = { switchScene, menuTemplate: () => buildMenuTemplate() };
+}
+
 const menuSettings = () => ({
+  scenes: listedScenes(sceneList, { dev: devScenes }).map(({ id, name }) => ({ id, name })),
+  activeScene: chosenScene(),
   mode: controller?.getMode(),
   alwaysOnTop: readSettings().alwaysOnTop,
   sound: readSettings().sound,
@@ -480,6 +527,7 @@ const menuHandlers = () => ({
   setSetting,
   copyDiagnostics,
   about: showAbout,
+  switchScene: (id) => void switchScene(id),
 });
 
 async function buildMenuTemplate() {

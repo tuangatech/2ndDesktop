@@ -1,7 +1,9 @@
 // The player's settings (FR-36), kept in `settings.json` in the user data folder. Plain Node, so it is unit-tested.
-// Only the booleans below are changed through `set`; other keys in the file (for example `activeScene`) are kept.
+// Only the booleans below are changed through `set`; other keys in the file are kept. `activeScene` is read by
+// app/main/scene-registry.js (`chooseActiveScene`, which falls back for anything it does not know) and written by `setActiveScene`.
 import { CHOICES } from './display-mode.js';
 import { normalizeWindowBounds } from './placement.js';
+import { isSceneId } from './scene-id.js';
 import { readJson, writeJsonAtomic } from './store.js';
 
 export const DEFAULTS = Object.freeze({ alwaysOnTop: false, sound: true });
@@ -64,6 +66,13 @@ export function createSettingsStore({ file }) {
       const current = cache ?? load();
       if (entries.every(([key, value]) => current[key] === value)) return true;
       return save({ ...current, ...Object.fromEntries(entries) });
+    },
+    /** Remembers the scene that runs (`activeScene`). Returns false for anything that is not a scene id, or when the file cannot be written. */
+    setActiveScene(id) {
+      if (!isSceneId(id)) return false;
+      const current = cache ?? load();
+      if (current.activeScene === id) return true;
+      return save({ ...current, activeScene: id });
     },
     /** Remembers the window rectangle (x, y, width, height). Returns false for anything that is not a rectangle. */
     setWindow(bounds) {

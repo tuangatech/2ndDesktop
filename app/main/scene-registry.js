@@ -4,10 +4,10 @@
 // checks that both lists agree. Plain Node, so it is unit-tested.
 import fs from 'node:fs';
 import path from 'node:path';
+import { SCENE_ID_PATTERN } from './scene-id.js';
 
 // The id is also the folder name and the name of the scene's record file (docs/platform/01 section 8.2: lowercase and
-// dashes, 3 to 32 characters).
-const ID_PATTERN = /^[a-z][a-z0-9-]{2,31}$/;
+// dashes, 3 to 32 characters); the rule is in scene-id.js, shared with the record store and the settings.
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
 const MAX_NAME = 40;
 
@@ -31,7 +31,7 @@ export function checkManifest(raw, folder) {
     return { ok: false, problems: ['scene.json is not an object'] };
   }
   const problems = [];
-  if (typeof raw.id !== 'string' || !ID_PATTERN.test(raw.id)) {
+  if (typeof raw.id !== 'string' || !SCENE_ID_PATTERN.test(raw.id)) {
     problems.push(
       'id must be 3 to 32 characters: lowercase letters, digits and dashes, a letter first',
     );

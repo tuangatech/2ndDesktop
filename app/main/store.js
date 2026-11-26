@@ -3,6 +3,7 @@
 // Plain Node (no Electron), so it is unit-tested with a temporary folder.
 import fs from 'node:fs';
 import path from 'node:path';
+import { isSceneId } from './scene-id.js';
 
 const backupName = (file) => file.replace(/\.json$/, '.backup.json');
 
@@ -108,10 +109,9 @@ export function createDebouncedWriter(file, delayMs = 1000, { onError = () => {}
   };
 }
 
-const ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const MAX_RECORD_BYTES = 2 * 1024 * 1024;
 const MAX_KEPT_COPIES = 5;
-const validId = (id) => typeof id === 'string' && ID_PATTERN.test(id);
+const validId = isSceneId; // the one rule for a scene id (scene-id.js)
 
 /**
  * The records of the scenes (docs/03-platform-design.md section 5): one file per scene id in `dir`.
