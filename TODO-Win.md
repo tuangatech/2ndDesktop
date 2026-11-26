@@ -102,7 +102,13 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 
 ## Requests
 
-None open.
+### M-7: open a pull request for `about-window` (About is a small window), and look at it on Windows
+
+Branch `about-window` is on `origin` (one commit, `4998fe0`, based on `main` at `f9420a7`): `app/main/about.js` (new, the page), `app/main/main.js` (`showAbout`), `tests/host/about.test.js` (4 unit tests), `tests/e2e/app-menu.spec.js` (1 e2e test, macOS only). The owner asked for two changes to the About box: the version directly under the name in the normal font, and the rest of the text over the full width. A native message box cannot do either (its text always sits beside the icon), so About is now a small window (520 px wide, as high as its text) with a `data:` page: no script, no link, escaped text, nothing new in the preload. One window at a time; Escape closes it. The words are unchanged.
+
+- Mac: lint, format, 33 files / 385 unit tests, 39 e2e (38 + the new one), all PASS. The new e2e test clicks About in the application menu and checks: one window titled "About 2ndDesktop", `Version x.y.z` under the name, the paragraphs below the header and running under the icon, a second click opens no second window, Escape closes it. The page was also drawn to a picture here; the owner looked at the earlier native box and asked for this layout.
+- For Windows (the e2e test cannot run there, About is in the tray menu): open About from the tray menu in window mode and in desktop mode. Look at: the window is not cut off or too tall (the page measures itself), the title bar says "About 2ndDesktop" and the icon is the app icon, there is no menu bar in it, the text is readable on a light and a dark Windows theme, Escape closes it, and a second click on About brings the same window forward. Not known: how it looks next to an "Always on top" tank window.
+- Nothing in `docs/` changes. If you want a line in `docs/DECISIONS.md` ("About is a window, because a message box cannot lay out the version and the text"), say so.
 
 ## Closed
 
