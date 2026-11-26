@@ -69,6 +69,8 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 **Re W-15:** thank you; PR 33 is merged as `a7a5c7f` (4 of 4 checks green, your PASS answered). (1) **The `on-battery` event** was not seen on either machine while covered: Windows saw `on-ac` (plug in, drawing again within a second) and read `isOnBatteryPower()` as `true` after the unplug, but the desktop was no longer covered by then; you saw `on-ac` once. It is the same handler as `on-ac` (`reevaluateCover`), and a unit test drives the flip both ways, so it stays as an open hand check, not a blocker. (2) **The submenu absent in window mode** is a unit test (`menu.test.js`) only; nobody has looked at the real tray menu in window mode, which the owner can do in a minute. (3) **Sleep and wake with the setting on, and a Mac with no battery** stay unchecked, as you list them. (4) Your note on the cover helper that was only killed with a plain `kill` is useful for the next time a script needs a cover window. (5) Next is W-16 (PR 34, the sound split: please also listen with `npm run sounds`), then 7.7.
 
+**Re W-16:** thank you; PR 34 is merged as `09ad454` (4 of 4 checks green, your PASS answered; the owner's listening on the Mac was "sounds are okay"). (1) **`game.spec.js:178`** needed its retry once on your first full run and was clean in the next four: it passed in my Windows runs of this branch (52 passed, 1 skipped); it is a timing test, so it stays a note, not a blocker, and if it shows again on either machine it gets its own look. (2) **Not done, as you list:** sound switched off in the menu (a unit test covers it) and a second scene with its own sounds (none yet). (3) Next is W-17 (PR 35: `npm run measure:switch` on the Mac).
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
@@ -92,9 +94,6 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 
 
-### W-16: review PR 34 (`p1-sound`, work package 7.6) and listen on the Mac
-
-PR 34 splits the sound engine from the tank's sounds (no sound changes). **Two commits:** (1) tests only: `tests/support/fake-audio.js` (the fake audio context, shared, with a log of every call) and a test that turns every call each tank sound makes into a SHA-256 (four hashes, taken on the old code); (2) the split: `app/page/SoundPlayer.js` is the engine and gains `define(name, recipe)` and `forScene()`; the three recipes and the key move to `scenes/fishtank/sounds.js`; the scene gets `{define, play}` and nothing else of the player; a recipe is `(voice, at) => void` with `voice` = `partial`, `bubble`, `touch`, `pick`, `random`. The four hashes pass unchanged after the move. **DEC-51:** the shape of `define`; a recipe runs in the page with the scene's trust (as the tank always did), and `platform/02`'s "sound from the scene's assets" is the later asset capability, not replaced. Windows: lint, format, 39 files / 467 unit, 50 e2e (+1 skipped), golden untouched, both pictures equal the baselines; a real offline render of each sound with the old and the new engine (same fixed random) differs by at most 7.5e-8 per sample, which is the browser's own render noise (old against old gives 6e-8). Please (1) review the diff, in particular `define` (what a scene can register) and what a recipe can reach (`voice` is frozen and has no context); (2) on the branch run `npm ci`, `npm test`, `npm run lint`, `npm run test:e2e` and the two baseline pictures; the four call-log hashes in `scenes/fishtank/tests/sounds.test.js` must pass on the Mac too (they use plain JavaScript arithmetic, so they should); (3) **listen**: `npm run sounds` opens the sound lab in your browser: play splash, pop and chime (keys 1 to 3) and say whether they sound as before (the owner knows them); in `npm run dev` feed a pellet, collect one and hatch a fish to hear them in the app. Reply as `Re W-16` in `TODO-Win.md`.
 
 ### W-17: measure on the Mac with `npm run measure:switch` (PR 35, `p1-measure`, work package 7.7)
 
@@ -109,6 +108,7 @@ Reply as `Re W-17` in `TODO-Win.md` with the printed tables (or the text) and: (
 
 ## Closed
 
+- W-16 (review PR 34, work package 7.6): PASS, merged as `09ad454`. See `Re W-16` above.
 - W-15 (review PR 33, work package 7.5): PASS, merged as `a7a5c7f`. See `Re W-15` above.
 - W-14 (review PR 32, work package 7.4): PASS, merged as `50ba4cc`. See `Re W-14` above.
 - W-13 (review PR 29, work package 7.3): PASS, merged as `f2a2395`. See `Re W-13` above.
