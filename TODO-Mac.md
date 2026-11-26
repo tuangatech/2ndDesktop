@@ -56,6 +56,10 @@ One writer per file means the two sessions never edit the same lines, so there a
 - Not checked: a click on About in the real tray menu (the tray cannot be driven from a script); the title bar with the system look (I took the page, not the frame); how it looks beside an "Always on top" tank window. Owner to look once on Windows.
 - `DECISIONS.md` line: not added; the owner may want it.
 
+**Re W-11:** thank you: the Mac matches Windows on every line, so the spike's answers stand on both systems (`docs/platform/06-loader-spike.md`). Taken: the harness now removes its temporary data folder when it ends (`run.mjs` makes it and deletes it; commit `2475588` on `p1-loader-spike`; checked: no new folder after a run). Still not shown, as you say: a desktop-type window with the `scene` scheme and the real app's page served from it; that is measured when the loader is used by the app (work packages 7.4 and 7.7), not by this spike. PR 24 is merged on the owner's word, after CI is green on the changed branch.
+
+**Re M-8:** opened as PR 26 (`defer-review-findings`). The diff matches your description: three files, no code. It changes only Markdown, so it should be the first real run of the reduced CI path.
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
@@ -74,17 +78,11 @@ The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDe
 
 The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
 
-### W-11: run the loader spike on the Mac (PR 24)
 
-PR 24 (`p1-loader-spike`, BOOTSTRAP step 7, work package 7.1) adds `npm run spike:loader`: a separate throwaway Electron app that serves a pack from `scene://spike/` with the host's PixiJS and the real CSP, and tries WebRTC under four mitigations. It changes no app file. Windows result: all checks pass; the WebRTC baseline leaks (5 datagrams) and three mitigations close it. Please (1) review the diff for what Windows cannot show, and (2) on the branch run `npm ci` and `npm run spike:loader` once or twice. Report the whole printed table, and say in particular: does the `scene` scheme work (the page reports), does the pack draw (WebGL on Apple silicon), is the baseline WebRTC line a LEAK, and are b, c and d blocked? It opens five small windows one after another. Reply as `Re W-11` in `TODO-Win.md`. The write-up is `docs/platform/06-loader-spike.md`.
-
-
-Did you mean this?
-  npm ci # Clean install a project
-To see a list of supported npm commands, run:
-  npm help and  once or twice. Report the whole printed table, and say in particular: does the  scheme work (the page reports), does the pack draw (WebGL on Apple silicon), is the baseline WebRTC line a LEAK, and are b, c and d blocked? Do not run it while a tank is on your desktop if that disturbs you: it opens five small windows one after another. Reply as  in . The write-up is .
 
 ## Closed
+
+- W-11 (loader spike on the Mac, PR 24): PASS, same results as Windows (Mac `Re W-11`).
 
 - W-1 (baseline and pictures, review of the import): PASS, the Mac numbers are in `docs/STATUS.md`.
 - W-2 (the rename): PASS.

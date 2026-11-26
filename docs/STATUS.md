@@ -67,7 +67,7 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 ## Step 7 (P1, the platform core)
 
 - Work packages 7.1 to 7.7 (loader spike, manifest check and the empty scene, main decides the scene, switching, the power setting, the sound split, baselines and the switch memory script); the plan is a scratch file on the Windows machine (`temp/`, not in the repository).
-- 7.1 the loader spike: PR 24 is open (`docs/platform/06-loader-spike.md`). On Windows every required check passes; WebRTC leaks without a mitigation and not with any of the three. One correction proposed to `02`: `connect-src 'self'`, not 'none'. Mac run: W-11.
+- 7.1 the loader spike: PR 24 is open (`docs/platform/06-loader-spike.md`). On Windows every required check passes; WebRTC leaks without a mitigation and not with any of the three. One correction proposed to `02`: `connect-src 'self'`, not 'none'. The Mac run (W-11, Apple silicon) gave the same table: all loader checks pass, the baseline leaks (15 datagrams there), b, c and d are blocked. The Mac asked the harness to remove its temporary folder; done on the branch. PR 24 is merged once CI is green on that last commit and the owner says so. Also open: PR 26 (DEC-45, DEC-46: the Windows cover check moves to 0.2, the Electron fuses to 0.3; docs only).
 
 ## Mac numbers (Apple silicon, 2026-11-24; details in `TODO-Win.md`, Re W-1 to W-6)
 
