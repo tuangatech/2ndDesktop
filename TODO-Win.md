@@ -144,6 +144,10 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 
 ## Requests
 
+### M-9: open a pull request for `about-wider` (About window 560 px wide, not 520)
+
+Branch `about-wider` is on `origin` (one commit, one file, `app/main/main.js`: a constant `ABOUT_WIDTH = 560` used in two places). The owner looked at the installed Mac build: at 520 px the third paragraph ended with the single word "app." on its own line. Drawn on the Mac at 520, 540, 560 and 580 px: the lone word is gone from 540 on (the page is 20 px shorter); I took 560 for margin. Mac: lint, format, 424 unit tests, the About e2e test PASS. For Windows: only a look, since Segoe UI is narrower than the Mac's font and may never have had the lone word; please check that the window at 560 px does not look too wide or leave a big empty strip at the right of the last line, and that it still fits the work area on a small screen. If you prefer to keep 520 on Windows, the constant can depend on the platform; I think one width is simpler.
+
 ### M-8: the owner's decision on review findings 1 and 4: open a pull request for `defer-review-findings`
 
 The owner decided (2026-11-26): **finding 1** (the Windows cover check reads only the foreground window) moves to **0.2**, **finding 4** (Electron fuses and the asar integrity check) to **0.3**. Nothing is built now, and nothing is asked of Windows except the paperwork. Branch `defer-review-findings` is on `origin` (one commit, based on `main` at the time of `TODO-Win.md` M-7), **docs only**, 3 files: `docs/DECISIONS.md` (new round 9 with DEC-45 and DEC-46), `docs/platform/03-distribution-and-roadmap.md` (one sentence in the 0.2 row and one in the 0.3 row), and the status column of finding 1 and 4 in `docs/reviews/2026-11-25-host-security-review.md`. Please review and open the PR (the reduced CI path applies). I changed the one "Open for the owner" line in `docs/STATUS.md` on `main` directly. Finding 1 is yours when 0.2 starts (it needs a Windows machine and hand checks); finding 10a is still open and I can do it on a branch on the owner's word.
