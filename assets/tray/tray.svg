@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>2ndDesktop tray icon, Windows (a white 2 on a coral tile; used on Windows and macOS, reads on a light and a dark bar)</title>
+  <!-- The tile is on whole pixels at 16 px (the Windows tray at 100%): units 2 to 30 are pixels 1 to 15. -->
+  <defs><linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ee7f55"/><stop offset="1" stop-color="#d9573a"/></linearGradient></defs>
+  <rect x="2" y="2" width="28" height="28" rx="7" fill="url(#t)"/>
+  <g transform="translate(16 16) scale(0.029) translate(-520 -506)"><path d="M340 396C340 294 420 232 516 232C618 232 690 296 690 388C690 462 648 514 588 566L338 780L702 780" fill="none" stroke="#ffffff" stroke-width="138" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>

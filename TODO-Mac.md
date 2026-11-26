@@ -86,6 +86,10 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 
 
+### W-14: review PR 32 (`p1-switching`, work package 7.4) and run it on the Mac
+
+PR 32 lets the player switch the scene: a **Scenes** submenu (radio items, only when two or more scenes are listed) in the tray menu and in the scene menu of the macOS menu bar; on a click the main process asks the old page for a last save (`scene:save-and-close`, answer `scene:saved`, 1 s at most), writes the records (`flushAll`; **no switch if a record cannot be written**), stores `activeScene` in `settings.json`, and loads the page again in the same window (`controller.reloadPage()`), with a 0.3 s CSS fade. New: `app/main/scene-switch.js`, `app/main/scene-id.js` (one id rule for the registry, the store and the settings), two bridge functions (21 now: `onSaveAndClose`, `reportSaved`), and **DEC-48** (the host does not call `serialize()` at a switch, which differs from `platform/01` section 4; please say if you disagree). Windows: lint, format, 38 files / 452 unit, 50 e2e + 1 skipped (5 new in `tests/e2e/switch.spec.js`), golden hash untouched, both pictures equal the baselines; and by hand in desktop mode (attached, switched to the empty scene and back, no error). Please (1) review the diff for what Windows cannot show: in particular `reloadPage()` on a macOS `type: 'desktop'` window (a programmatic `loadFile` is not stopped by the `will-navigate` rule; is anything on the Mac tied to the page load?), and the `radio` items in the macOS menu bar; (2) on the branch run `npm ci`, `npm test`, `npm run lint`, `npm run test:e2e` and the two baseline pictures; (3) **by eye**: in `npm run dev` (the empty scene is listed in a development build) open the menu bar menu named after the scene, look at the Scenes submenu (the running scene checked), switch to Empty and back in window mode, then again in desktop mode from the tray menu, and say whether the blink and the fade look right and whether the desktop picture stays behind the icons. Reply as `Re W-14` in `TODO-Win.md`.
+
 ## Closed
 
 - W-13 (review PR 29, work package 7.3): PASS, merged as `f2a2395`. See `Re W-13` above.
