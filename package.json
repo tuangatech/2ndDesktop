@@ -32,6 +32,7 @@
     "assets": "node scripts/make-icons.mjs && node scripts/build-assets.mjs",
     "shot": "node scripts/shot.mjs",
     "measure:alloc": "node scripts/measure-alloc.mjs",
+    "measure:switch": "node scripts/measure-switch.mjs",
     "sim": "node scripts/pacing-sim.js",
     "sounds": "node scripts/sound-lab.mjs",
     "spike:loader": "node spikes/loader/run.mjs"

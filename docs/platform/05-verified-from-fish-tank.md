@@ -45,6 +45,24 @@ Method: the built app, a clean data folder, the same drawing resolution cap as t
 - **Two scenes cost almost nothing extra when loaded first:** the module loading before the renderer was +3 to +5 MB in window mode and no change in desktop mode (Mac, PR 40); the art move left the atlas **byte-identical**. A later scene that adds 3 to 5 MB is at the noise line, not a leak.
 - **Not measured:** 8-hour growth (NFR-4's "less than 20 MB over 8 hours"), memory after one hour on Windows, the active-window fps and CPU on Windows (NFR-3), start time on Windows, 4K, an integrated-graphics Windows laptop.
 
+### 3.1 Measured again on 2ndDesktop, and the 20 switches (work package 7.7, Windows W1; the Mac is W-17)
+
+Method: `npm run measure:switch` (`scripts/measure-switch.mjs`), the built app, a clean data folder, Electron 45.4.1, private bytes per process type from `app.getAppMetrics()`, the median of 5 readings a second apart, taken 30 s after the start; the frames are the PixiJS ticker for 20 s (gap = time between two frames; work = the scene's update and the drawing calls, not the GPU). One run each. `desktop` is the real attach behind the icons. The window is the default size (not the 480 x 320 of the old baseline).
+
+| State | Total (MB) | Browser / GPU / renderer / utility | Frames | Before (old baseline) |
+| --- | --- | --- | --- | --- |
+| `empty`, window | **187.6** | 40.7 / 94.1 / 40.9 / 11.8 | 58.3 fps, gap 17.2 ms, work 0.37 ms (95th 0.70) | 172 |
+| `empty`, desktop | **207.0** | 41.1 / 113.6 / 40.2 / 11.9 | 29.5 fps, gap 33.8 ms, work 0.49 ms (95th 0.70) | 196 |
+| tank (8 fish), window | **216.2** | 38.2 / 116.8 / 49.3 / 12.0 | 58.3 fps, gap 17.2 ms, work 0.64 ms (95th 1.00) | about 220 |
+| tank, desktop | **235.5** | 41.8 / 137.9 / 43.9 / 11.8 | 29.5 fps, gap 33.9 ms, work 0.77 ms (95th 1.10) | 229 |
+
+- **The tank adds** about 29 MB in both modes (216.2 - 187.6 and 235.5 - 207.0); the old note said 48 and 33. **Room for a scene** under 250 MB: about 62 MB (window) and 43 MB (desktop), measured on the empty scene; the old numbers were 78 and 54. The empty host reads **16 MB (window) and 11 MB (desktop) above the old baseline**; this is not explained (the window is bigger than the old one, the empty scene draws a flat fill, and the host has grown since). Single runs; if the next measurement is within 3 MB of this one, these are the baselines to compare with.
+- **The scene switch costs 99 ms** from the call to a ready page (largest 134 ms in 20 switches; window mode). The frames after 20 switches are the same as before (58.3 fps; work 0.68 ms before, 0.69 ms after).
+- **Twenty switches between the tank and `empty`** (started on the tank, window mode, 8 s settling): the renderer grew from 50.8 to 73.3 MB (total +23.3 MB); with 40 s settling +19.1 MB (total +21.7 MB); 60 switches +46.2 MB (total +48.8 MB). The browser, GPU and utility processes do not move. A reading taken right after a switch, with no settling, was up to 356 MB in total (the start is 221 MB).
+- **It is memory waiting for the garbage collector, not a leak.** A page reload alone gives the same: 40 reloads of the same scene (the main process reloads the page, no switch) grew the renderer by 33.9 MB and 40 switches by 41.0 MB, against 3.6 MB for 40 s of doing nothing. After a forced collection of the page (DevTools `HeapProfiler.collectGarbage`; `--gc 1`) the renderer is at +11.4 MB after 20 switches and **+3.7 MB after 100 switches** (total +11.4 MB, of which +7.5 MB are the browser and GPU processes, the early high stretch of section 3); 40 switches left +15.2 MB and 40 reloads +8.6 MB, so the leftover does not grow with the number of switches. Waiting 40 s did not give the memory back, so Chromium collects the old pages when it needs the memory, not on a timer.
+- **What it means:** a player who switches a few times will not see it; 20 quick switches hold about 20 MB more in the renderer until a collection. It does not break B-4 (the steady state), but a reader of the memory numbers (the watchdog of `02` section 7, a test) must not take the first minute after a burst of switches for the scene's size. If it ever matters, the host could ask the page for a collection after a switch; nothing is built for it.
+- **Not measured:** the Mac (W-17), frame time on the Mac, the real GPU memory (private bytes do not count it, section 4.5), more than one run per state.
+
 ## 4. What costs memory, and what was tried (Measured, do not retry)
 
 ### 4.1 The Mac: a fixed WebGL cost
