@@ -1,0 +1,10 @@
+{
+  "id": "empty",
+  "name": "Empty",
+  "version": "0.1.0",
+  "author": "2ndDesktop",
+  "license": { "code": "MIT" },
+  "schema": 1,
+  "atlas": null,
+  "dev": true
+}
