@@ -14,8 +14,12 @@ const bundleDir = process.argv
   .find((arg) => arg.startsWith('--bundle='))
   ?.slice('--bundle='.length);
 if (!bundleDir) throw new Error('missing --bundle=<folder with pixi.js>');
-// Never touch a real data folder.
-app.setPath('userData', fs.mkdtempSync(path.join(os.tmpdir(), '2nddesktop-spike-data-')));
+// Never touch a real data folder: run.mjs makes a temporary one and removes it when this app has ended.
+const dataDir = process.argv.find((arg) => arg.startsWith('--data='))?.slice('--data='.length);
+app.setPath(
+  'userData',
+  dataDir ?? fs.mkdtempSync(path.join(os.tmpdir(), '2nddesktop-spike-data-')),
+);
 
 // Privileged before the app is ready (docs/platform/01 section 8.6): `standard` and `secure` give the page a real
 // origin (scene://spike) and let `script-src 'self'` match it; `supportFetchAPI` lets the page fetch its own files.

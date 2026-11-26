@@ -27,11 +27,13 @@ await build({
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
 const extra = process.argv.slice(2).filter((arg) => arg.startsWith('--out='));
-const child = spawn(electron, [path.join(here, 'main.js'), `--bundle=${bundle}`, ...extra], {
-  stdio: 'inherit',
-  env,
-});
+const data = fs.mkdtempSync(path.join(os.tmpdir(), '2nddesktop-spike-data-'));
+const child = spawn(
+  electron,
+  [path.join(here, 'main.js'), `--bundle=${bundle}`, `--data=${data}`, ...extra],
+  { stdio: 'inherit', env },
+);
 child.on('exit', (code) => {
-  fs.rmSync(bundle, { recursive: true, force: true });
+  for (const folder of [bundle, data]) fs.rmSync(folder, { recursive: true, force: true });
   process.exit(code ?? 1);
 });
