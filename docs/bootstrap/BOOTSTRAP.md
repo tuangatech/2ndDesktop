@@ -148,7 +148,7 @@ It holds `settings.json`, `records/<scene>.json`, `diagnostics.json` and `deskto
   scenes/
     fishtank/           first scene; later regrouped into game/ view/ ui/ data/ assets/ tests/ (scenes/fishtank-migration.md)
     farmhouse/          0.2
-    _template/          copied by `npm run new-scene <id>` (0.2, P1)
+    (templates/scene/   at the repository root, copied by `npm run new-scene <id>`: DEC-52)
   shared/               rng.js, what every scene may import
   scripts/              build-assets, shot, make-icons, run-electron, measure-alloc, pacing-sim, sound-lab, koffi-universal
   spikes/               edit-mode (reference); loader spike (P1) goes here first

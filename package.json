@@ -31,6 +31,7 @@
     "attach:lab:swcomp": "npm run build && cross-env DESKTOP2_ATTACH_LAB=1 DESKTOP2_DEBUG=1 DESKTOP2_LAB_SECONDS=10 DESKTOP2_CHROMIUM_FLAGS=disable-gpu-compositing DESKTOP2_LAB_VARIANTS=base,layered,opaque,base+show,layered+show,opaque+show node scripts/run-electron.mjs .",
     "assets": "node scripts/make-icons.mjs && node scripts/build-assets.mjs",
     "shot": "node scripts/shot.mjs",
+    "new-scene": "node scripts/new-scene.mjs",
     "measure:alloc": "node scripts/measure-alloc.mjs",
     "measure:switch": "node scripts/measure-switch.mjs",
     "sim": "node scripts/pacing-sim.js",
