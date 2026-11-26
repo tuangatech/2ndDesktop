@@ -11,7 +11,11 @@
 //   npm run measure:switch                                   20 switches, starting on the tank, in a window
 //   npm run measure:switch -- --switches 0 --scene empty     a baseline: the empty scene alone, no switch
 //   npm run measure:switch -- --switches 0 --mode desktop    the tank alone attached to the real desktop
-// `desktop` really attaches the scene to the desktop (behind the icons) for the length of the run.
+// `desktop` really attaches the scene to the desktop (behind the icons) for the length of the run. The run sets
+// "When the desktop is covered" to "never pause" in its own throwaway settings: with the default a window over the
+// desktop (an editor, a terminal) pauses the scene, and the script would measure a paused scene (on the Mac: 146 MB
+// against 297 MB). The memory of the Utility process is higher 8 s after the start than after 30 s (it lets go of
+// start-up memory); compare runs with the same --settle.
 //
 // Which memory number: Windows prints private bytes per process type (what `docs/platform/05` calls the Windows
 // number); macOS prints the memory footprint (`footprint -p`, the number Activity Monitor shows), because Electron's
@@ -159,7 +163,10 @@ delete env.ELECTRON_RUN_AS_NODE;
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), '2nddesktop-measure-'));
 fs.writeFileSync(
   path.join(dataDir, 'settings.json'),
-  JSON.stringify({ activeScene: options.scene }),
+  JSON.stringify({
+    activeScene: options.scene,
+    ...(options.mode === 'desktop' ? { whenCovered: 'never' } : {}),
+  }),
 );
 
 const app = await electron.launch({
