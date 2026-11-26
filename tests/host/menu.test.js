@@ -4,6 +4,7 @@ import {
   buildTrayTemplate,
   sanitizeSceneMenu,
   sceneSwitchItems,
+  whenCoveredItems,
 } from '../../app/main/menu.js';
 import { menuItems, statusLine } from '../../scenes/fishtank/menu.js';
 
@@ -54,6 +55,7 @@ describe('the tray template with the items of the tank', () => {
       'Show in a window',
       'Launch at login',
       'Sound',
+      'When the desktop is covered',
       'Copy diagnostics',
       'About 2ndDesktop',
       'Quit',
@@ -402,5 +404,46 @@ describe('the Scenes submenu (work package 7.4)', () => {
     expect(names.indexOf('Scenes')).toBeLessThan(names.indexOf('Show on desktop'));
     const bar = buildAppMenuTemplate(settings, { setMode: vi.fn() });
     expect(labels(bar.find((m) => m.label === 'Scene').submenu)[0]).toBe('Scenes');
+  });
+});
+
+describe('the submenu "When the desktop is covered" (work package 7.5)', () => {
+  const desktop = { mode: 'desktop' };
+
+  it('is only there in desktop mode, the only mode with a cover check', () => {
+    expect(whenCoveredItems({ mode: 'window' }, {})).toEqual([]);
+    expect(labels(tray(base, { mode: 'window' }, null, handlers()))).not.toContain(
+      'When the desktop is covered',
+    );
+    expect(labels(tray(base, desktop, null, handlers()))).toContain('When the desktop is covered');
+  });
+
+  it('has the three words as radio items, with "Always pause" checked when nothing is stored', () => {
+    for (const whenCovered of [undefined, 'sometimes']) {
+      const [item] = whenCoveredItems({ ...desktop, whenCovered }, {});
+      expect(item.label).toBe('When the desktop is covered');
+      expect(item.submenu.map((i) => [i.label, i.type, i.checked])).toEqual([
+        ['Always pause', 'radio', true],
+        ['Pause on battery only', 'radio', false],
+        ['Never pause', 'radio', false],
+      ]);
+    }
+  });
+
+  it('checks the stored word, and sends the chosen word to the handler', () => {
+    const setWhenCovered = vi.fn();
+    const [item] = whenCoveredItems({ ...desktop, whenCovered: 'never' }, { setWhenCovered });
+    expect(item.submenu.map((i) => i.checked)).toEqual([false, false, true]);
+    item.submenu[1].click();
+    expect(setWhenCovered).toHaveBeenCalledWith('auto');
+  });
+
+  it('sits after Sound in the tray menu and in the scene menu of the macOS menu bar', () => {
+    const names = labels(tray(base, desktop, null, handlers()));
+    expect(names.indexOf('When the desktop is covered')).toBe(names.indexOf('Sound') + 1);
+    const bar = buildAppMenuTemplate(desktop, { setMode: vi.fn() });
+    const scene = labels(bar.find((m) => m.label === 'Scene').submenu);
+    expect(scene).toContain('When the desktop is covered');
+    expect(scene.indexOf('When the desktop is covered')).toBe(scene.indexOf('Sound') + 1);
   });
 });
