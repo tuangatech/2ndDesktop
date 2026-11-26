@@ -204,6 +204,52 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 - **Listened (the owner, on the Mac): "sounds are okay"**: the sound lab (`npm run sounds`, keys 1 to 3: splash, pop, chime) and in the app (feed, collect, hatch) sound as before.
 - Nothing to change before the merge. Not done: the sound with "Sound" switched off in the menu (a unit test covers it) and a second scene defining its own sounds (there is none yet).
 
+**Re W-17: PASS, with one point to fix** (`p1-measure` at `5685e98`, Mac, Apple silicon, Electron 45.4.1, Node 24, `npm ci` and `npm run build` run; scratch data folders only, nothing of the owner's)
+
+- **(a) The memory column reads real numbers, not `n/a`.** `footprint -p <pid>` prints `Footprint: 1888 KB (16384 bytes per page)` on the header line of the process, and the parser matches that form (KB checked directly on a shell; MB form is the same pattern). All four process types (Browser, GPU, Tab, Utility) gave a number in all 8 runs.
+- **Your runs 1 to 3** (`--switches 0 --settle 30 --seconds 20`; footprint in MB, median of 5):
+
+  | Run | Browser | GPU | Tab | Utility | total | Electron working set | frames |
+  |---|---|---|---|---|---|---|---|
+  | empty, window | 50.0 | 191.0 | 39.0 | 7.5 | **287.5** | 459.5 | 58.6 fps, work 0.35 ms |
+  | tank, window | 51.0 | 215.0 | 57.0 | 7.3 | **330.3** | 494.7 | 58.6 fps, work 0.60 ms |
+  | empty, desktop | 51.0 | 55.0 | 33.0 | 7.4 | **146.4** | 443.4 | none: scene paused |
+  | tank, desktop | 50.0 | 77.0 | 45.0 | 7.4 | **179.4** | 474.7 | none: scene paused |
+
+  **The two desktop rows are not comparable with yours.** The measuring run was covered by other windows (an editor and a terminal on the same display), and the default setting "When the desktop is covered" is "Always pause", so the scene was paused: the script printed "no frames: the scene is paused" and the GPU figure is the paused one (55 and 77 MB). That is the product working as designed, but it means the script measures a paused scene on any machine where a window covers the desktop. I reran both desktop runs with `settings.json` holding `"whenCovered": "never"` (a throwaway copy of the script with that one key added, removed again; `git status` clean):
+
+  | Run | Browser | GPU | Tab | Utility | total | Electron working set | frames |
+  |---|---|---|---|---|---|---|---|
+  | empty, desktop, never pause | 51.0 | 203.0 | 36.0 | 7.3 | **297.3** | 453.0 | 29.5 fps, work 0.34 ms |
+  | tank, desktop, never pause | 51.0 | 225.0 | 50.0 | 7.4 | **333.4** | 485.7 | 29.5 fps, work 0.69 ms |
+
+  The 29.5 fps is the same as your Windows figure, and the 30 fps cap holds.
+- **(b) Against the old Mac baselines of `docs/platform/05` section 3:**
+
+  | | old Mac | now | change |
+  |---|---|---|---|
+  | empty, window | 242 to 249 | 287.5 | about +40 |
+  | empty, desktop | 258 to 264 | 297.3 | about +35 |
+  | tank, window | 294 to 303 | 330.3 | about +30 |
+  | tank, desktop | 328 to 339 | 333.4 | inside the range |
+
+  The two tank figures are within or close to the old range and the empty host reads 35 to 40 MB higher. The empty host's rise is mostly the GPU process (191 and 203 MB), and the old figures were taken on an older Electron and an older host, so I cannot tell which change did it; no figure is near the Mac limit of 350 MB except the tank at 330 to 333, which is under it. The limit is for the whole app, so the tank on the Mac now has about 17 MB of room; worth knowing before 0.2 adds a second scene, but not a failure.
+- **(c) 20 switches (`npm run measure:switch`; the tank, window mode, 8 s after the start and after the last switch):**
+
+  | | before | after | change |
+  |---|---|---|---|
+  | footprint total | 367.5 | 343.4 | **-24.2** |
+  | footprint total, with `--gc 1` | 370.5 | 333.3 | **-37.2** |
+  | working set, no gc | 565.2 | 579.8 | +14.5 |
+  | working set, `--gc 1` | 568.0 | 570.6 | **+2.5** |
+
+  There is **no growth in the footprint** on the Mac; it falls because "before" is read 8 s after the start, when the first page has not yet let go of its start-up garbage (Tab 69 to 73 MB before, 56 to 66 after). The working set shows the pattern you saw on Windows: +14.5 MB without a forced collection, +2.5 MB with it. One reading after each 5 switches (466 to 481 total, not settled) shows no rise either (466.5, 479.4, 472.4 and 471.4, 481.3, 472.3). Frames before and after the switches: 58.6 fps both times, work 0.51 and 0.56 ms (the `--gc 1` run: 95th gap 24.1 ms after, against 17.7 before, a single run; the median did not move). **Switch to ready: median 97 ms (largest 105) and 96 ms (largest 111)**, the same as your 99 ms.
+- **(d) Review of `scripts/measure-switch.mjs`:**
+  1. **To fix (one line):** in `desktop` mode the script should write `whenCovered: 'never'` next to `activeScene` in the settings file it creates (and say so in its header). Otherwise on any machine where a window sits over the desktop it measures a paused scene (and on the Mac the table above shows how far off that is: 146 against 297 MB). If you prefer to keep the setting as it is, then at least print a line when the frames say "paused" and the mode is `desktop`, so nobody quotes the figure.
+  2. Small: `Utility` reads 15.5 MB in the switch runs (8 s after the start) and 7.4 MB in the settled runs (30 s); something there lets go after the start. Not a leak (it does not grow with the switches: 15.5 to 15.4), only worth knowing when comparing a run with `--settle 8` to one with `--settle 30`.
+  3. The rest reads fine: the temp data folder is removed, the app is closed in a `finally`, `--gc` and `--scene` are checked, and the `footprint` failure path gives `NaN` and `n/a` rather than an exception. The `docs/platform/05` text (section 3.1) about the working set reading about 190 MB higher than the footprint is true here too (459.5 against 287.5 is +172, 494.7 against 330.3 is +164, 565 against 367 is +198).
+- Nothing else to change before the merge. Not done: the `window` runs while the window is covered or in the background (the cover pause applies to the desktop only); a run longer than the 20 switches.
+
 
 ## Requests
 
