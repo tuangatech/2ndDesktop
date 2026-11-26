@@ -399,6 +399,9 @@ async function copyDiagnostics() {
   setTimeout(refreshAppMenu, 5100).unref();
 }
 
+// Wide enough that no paragraph ends with a single word on a line of its own (at 520 the Mac font left "app." alone).
+const ABOUT_WIDTH = 560;
+
 // One About window at a time (a second request brings it forward). Its page is built by about.js.
 let aboutWindow = null;
 
@@ -422,7 +425,7 @@ function showAbout() {
   const icon = nativeImage.createFromPath(appIconPath);
   const dark = nativeTheme.shouldUseDarkColors;
   const win = new BrowserWindow({
-    width: 520,
+    width: ABOUT_WIDTH,
     height: 360,
     useContentSize: true,
     show: false,
@@ -448,7 +451,7 @@ function showAbout() {
   win.webContents.once('did-finish-load', async () => {
     try {
       const height = await win.webContents.executeJavaScript('document.body.scrollHeight');
-      if (!win.isDestroyed()) win.setContentSize(520, Math.ceil(height));
+      if (!win.isDestroyed()) win.setContentSize(ABOUT_WIDTH, Math.ceil(height));
     } catch {
       // Keep the default height.
     }
