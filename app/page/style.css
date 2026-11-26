@@ -18,6 +18,15 @@ body {
   display: block;
 }
 
+/* A page loaded again for a scene switch shows the new scene with a short fade (0.3 s); a first start has none. */
+.switched #stage {
+  opacity: 0;
+}
+.switched.ready #stage {
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+}
+
 /* The strip belongs to window mode only; desktop mode shows no HTML at all (D31). */
 #strip {
   position: fixed;

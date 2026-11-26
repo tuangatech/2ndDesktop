@@ -119,6 +119,29 @@ describe('createSettingsStore', () => {
     expect(read.desktopAttempt).toBe('ok');
   });
 
+  it('remembers the active scene, keeps the other keys, and refuses what is not a scene id', () => {
+    const store = createSettingsStore({ file });
+    expect(store.set('sound', false)).toBe(true);
+    expect(store.setActiveScene('empty')).toBe(true);
+    expect(JSON.parse(fs.readFileSync(file, 'utf8'))).toMatchObject({
+      activeScene: 'empty',
+      sound: false,
+    });
+    expect(createSettingsStore({ file }).get().activeScene).toBe('empty');
+    for (const bad of ['../x', 'A', 'ab', '', null, 7, {}]) {
+      expect(store.setActiveScene(bad)).toBe(false);
+    }
+    expect(store.get().activeScene).toBe('empty');
+  });
+
+  it('does not write the file again for the scene that is already active', () => {
+    const store = createSettingsStore({ file });
+    store.setActiveScene('empty');
+    fs.utimesSync(file, new Date(1000), new Date(1000));
+    expect(store.setActiveScene('empty')).toBe(true);
+    expect(fs.statSync(file).mtimeMs).toBe(1000);
+  });
+
   it('starts with the defaults when the file is damaged', () => {
     fs.writeFileSync(file, '{not json');
     expect(createSettingsStore({ file }).get()).toEqual(DEFAULTS);

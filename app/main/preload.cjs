@@ -38,6 +38,11 @@ contextBridge.exposeInMainWorld('desktop2', {
   onSettingsChanged: (callback) => {
     ipcRenderer.on('settings:changed', (_event, settings) => callback(settings));
   },
+  // A scene switch (docs/platform/01 section 4): the main process asks for a last save, and the page says it is done.
+  onSaveAndClose: (callback) => {
+    ipcRenderer.on('scene:save-and-close', () => callback());
+  },
+  reportSaved: () => ipcRenderer.send('scene:saved'),
   onPause: (callback) => {
     ipcRenderer.on('scene:pause', (_event, paused) => callback(Boolean(paused)));
   },

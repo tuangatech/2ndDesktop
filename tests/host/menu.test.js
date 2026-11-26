@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildAppMenuTemplate, buildTrayTemplate, sanitizeSceneMenu } from '../../app/main/menu.js';
+import {
+  buildAppMenuTemplate,
+  buildTrayTemplate,
+  sanitizeSceneMenu,
+  sceneSwitchItems,
+} from '../../app/main/menu.js';
 import { menuItems, statusLine } from '../../scenes/fishtank/menu.js';
 
 const base = {
@@ -358,5 +363,44 @@ describe('sanitizeSceneMenu (what the main process lets through from a scene)', 
       diagnostics: null,
       items: [],
     });
+  });
+});
+
+describe('the Scenes submenu (work package 7.4)', () => {
+  const two = [
+    { id: 'fishtank', name: 'Fish tank' },
+    { id: 'empty', name: 'Empty' },
+  ];
+
+  it('is not there for one scene, so a build with the tank alone looks as before', () => {
+    expect(sceneSwitchItems({ scenes: [two[0]], activeScene: 'fishtank' }, {})).toEqual([]);
+    expect(sceneSwitchItems({}, {})).toEqual([]);
+    const settings = { mode: 'window', scenes: [two[0]], activeScene: 'fishtank' };
+    expect(labels(tray(base, settings, null, handlers()))).not.toContain('Scenes');
+  });
+
+  it('has one radio item per scene with the running scene checked', () => {
+    const [item] = sceneSwitchItems({ scenes: two, activeScene: 'empty' }, {});
+    expect(item.label).toBe('Scenes');
+    expect(item.submenu.map((i) => [i.label, i.type, i.checked])).toEqual([
+      ['Fish tank', 'radio', false],
+      ['Empty', 'radio', true],
+    ]);
+  });
+
+  it('sends the id of the chosen scene to the handler', () => {
+    const switchScene = vi.fn();
+    const [item] = sceneSwitchItems({ scenes: two, activeScene: 'fishtank' }, { switchScene });
+    item.submenu[1].click();
+    expect(switchScene).toHaveBeenCalledWith('empty');
+  });
+
+  it('sits in the tray menu above the mode switch, and in the scene menu of the macOS menu bar', () => {
+    const settings = { mode: 'window', scenes: two, activeScene: 'fishtank' };
+    const names = labels(tray(base, settings, null, handlers()));
+    expect(names.indexOf('Scenes')).toBeGreaterThan(-1);
+    expect(names.indexOf('Scenes')).toBeLessThan(names.indexOf('Show on desktop'));
+    const bar = buildAppMenuTemplate(settings, { setMode: vi.fn() });
+    expect(labels(bar.find((m) => m.label === 'Scene').submenu)[0]).toBe('Scenes');
   });
 });

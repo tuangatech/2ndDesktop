@@ -24,6 +24,8 @@ const lab = params.get('lab') === '1';
 const variant = params.get('variant') ?? '';
 const tag = params.get('tag') ?? '';
 document.documentElement.dataset.mode = mode;
+// A page that was loaded again for a scene switch fades in (style.css) instead of showing a hard cut.
+if (params.get('switched') === '1') document.documentElement.classList.add('switched');
 
 const api = window.desktop2;
 
@@ -148,6 +150,11 @@ async function boot() {
     }
   });
   api?.onAction((id) => scene.onMenu(id));
+  // A scene switch: the main process asks for a last save and waits for the answer. A scene saves each change as it happens
+  // (host.record.save; the tank does it at once and keeps a record it must not touch read-only), and every save has already
+  // been sent on this channel, so the answer says that main has them all. The host does not call serialize() here:
+  // it would save the bare state without the scene's own wrapper (schema and time) and could overwrite a read-only record.
+  api?.onSaveAndClose?.(() => api.reportSaved());
   // For screenshots and measurements (scripts/shot.mjs).
   if (debug || dev) window.__scene = { ...scene.debug, clock, fishtank: scene, app, sound };
 
@@ -266,6 +273,7 @@ async function boot() {
   window.addEventListener('unhandledrejection', (event) =>
     api?.reportError(String(event.reason?.stack ?? event.reason)),
   );
+  document.documentElement.classList.add('ready');
   window.__ready = true;
   api?.reportReady?.({ name: manifest.name });
 }

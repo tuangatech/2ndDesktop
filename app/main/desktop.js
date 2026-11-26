@@ -565,6 +565,17 @@ export function createDesktopController({
     getMode: () => mode,
     getWindow: () => win,
     isSwitching: () => switching,
+    /**
+     * Loads the page of the current window again, for a scene switch (docs/platform/01 section 4). The window, and on the
+     * desktop its attach, stay as they are; only the page inside changes. The page's own call to `scene:ready` follows,
+     * which sends the pause state again. A programmatic load is not stopped by the `will-navigate` rule above.
+     * Returns false when there is no window to load.
+     */
+    async reloadPage() {
+      if (!win || win.isDestroyed()) return false;
+      await loadRenderer(win, mode, { switched: '1' });
+      return true;
+    },
     isPaused: () => pauseReasons.size > 0,
     setPauseReason,
     /** The renderer of the current window finished starting (the safe start waits for it). */
