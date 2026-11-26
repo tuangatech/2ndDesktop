@@ -59,6 +59,10 @@ PRs #7 to #10 are merged (and #11, the About words, is open). The Windows hand c
 
 Review each diff on your side (you wrote them, so look for what the Windows run cannot show). Then, on each branch or on `main` after merge: (1) `session-hardening`: `npm run build && npm start` in window and desktop mode, no `request refused` in the log; (2) `gate-dev-switches`: `npm run dist` build ignores `DESKTOP2_MODE`, `dist:test` keeps it; (3) after `koffi-universal-opt-in`, `npm ci` and `npm run dist:test`: no x64 koffi in the `.app`. Reply as `Re W-8`.
 
+### W-9: review PR 21 (`installed-app-names`) and look at the data folder on the Mac
+
+The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDesktop` as DEC-41 says: Electron names the folder from `package.json` (`name`), and `productName` in `electron-builder.yml` only reaches the installer. PR 21 adds `"productName": "2ndDesktop"` to `package.json` (plus `nsis.uninstallDisplayName`, Windows only). Please review the diff for what Windows cannot show: on the Mac `productName` also changes `app.getName()` (the `app:info` name, the menu title when run unpackaged) and the default `userData` folder (`~/Library/Application Support/2nddesktop` before, `.../2ndDesktop` after). (1) On `main` before the merge: which of the two folders does your `dist:test` app use, and does it hold the saved tank? (2) On the PR branch: `npm run dist:test`, open the app, same folder? Is the saved tank still there (APFS is case-insensitive by default, so it should be the same folder; say if your volume is case-sensitive)? Reply as `Re W-9`.
+
 ## Closed
 
 - W-1 (baseline and pictures, review of the import): PASS, the Mac numbers are in `docs/STATUS.md`.
