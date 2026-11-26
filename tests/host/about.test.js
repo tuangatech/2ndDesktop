@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aboutHtml, escapeHtml } from '../../app/main/about.js';
+import { aboutHtml, aboutStaysOnTop, escapeHtml } from '../../app/main/about.js';
 
 const content = {
   name: '2ndDesktop',
@@ -42,5 +42,24 @@ describe('the About page', () => {
     expect(escapeHtml(`<a href="x">'&'</a>`)).toBe(
       '&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;',
     );
+  });
+});
+
+describe('the About window and an always-on-top window', () => {
+  const win = (onTop, destroyed = false) => ({
+    isAlwaysOnTop: () => onTop,
+    isDestroyed: () => destroyed,
+  });
+
+  it('stays on top when another window is always on top', () => {
+    expect(aboutStaysOnTop([win(false), win(true)])).toBe(true);
+  });
+
+  it('does not, when none is, or when the only one is a destroyed window or About itself', () => {
+    const about = win(true);
+    expect(aboutStaysOnTop([])).toBe(false);
+    expect(aboutStaysOnTop([win(false)])).toBe(false);
+    expect(aboutStaysOnTop([win(true, true)])).toBe(false);
+    expect(aboutStaysOnTop([about, win(false)], about)).toBe(false);
   });
 });
