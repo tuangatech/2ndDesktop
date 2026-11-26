@@ -54,6 +54,13 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 - Dependabot alert 1 (`minimatch`, medium, development scope via `electron-builder`; the fix is a major version) is open, for the owner to leave open or dismiss.
 - The reduced CI path (Markdown only) has not run on a real PR yet: PR 9 touched `CODEOWNERS`, which is not a `.md` file, so it ran in full, as it should.
 
+## Host and security review PRs (Mac review, 2026-11-25)
+
+- Review: `docs/reviews/2026-11-25-host-security-review.md` (PR 13). Merged after green CI on both runners: PR 14 (a scene reads and writes only its own record), PR 15 (an installed release ignores the `DESKTOP2_*` and `VITE_DEV_SERVER_URL` switches), PR 18 (log under 1 MB, lines cleaned, page lines limited), PR 19 (the page session refuses permissions and requests outside the app's files), PR 20 (`dist` no longer fetches the x64 koffi package; `dist:universal` does), PR 17 (CI token read-only), PR 13 (the review). On `main`: lint, format and 32 files / 381 unit tests pass.
+- Open: PR 16 (Copy diagnostics leaves out the install id); its first macOS job died for lack of a hosted runner (not code) and was re-run.
+- Windows checks passed (see `TODO-Mac.md`, Re M-6): both pictures unchanged, 38 e2e, no `request refused`, no user path in the log, `dist:test` keeps and `dist` ignores `DESKTOP2_USER_DATA`. The `session-policy` unit test was Mac-only (hard-coded `file:///app/...`); fixed in PR 19.
+- Open for the owner: review findings 1 (Windows cover check reads only the foreground window) and 4 (Electron fuses): in 0.1 or later? Finding 10a (single-instance lock before the data migration) can now be done, since the branches that touched the same lines are merged.
+
 ## Mac numbers (Apple silicon, 2026-11-24; details in `TODO-Win.md`, Re W-1 to W-6)
 
 - Same counts as Windows at every step: 341 and 38 at the import, 356 and 38 after the rename and the move (26 e2e in `scenes/fishtank/tests/`). Lint and format clean. `npm run dist:test` builds an unsigned arm64 dmg; the app starts from it, copies the saved tank from `fish-tank`, and leaves the old folder unchanged.
