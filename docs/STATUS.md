@@ -57,7 +57,8 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 ## Host and security review PRs (Mac review, 2026-11-25)
 
 - Review: `docs/reviews/2026-11-25-host-security-review.md` (PR 13). Merged after green CI on both runners: PR 14 (a scene reads and writes only its own record), PR 15 (an installed release ignores the `DESKTOP2_*` and `VITE_DEV_SERVER_URL` switches), PR 18 (log under 1 MB, lines cleaned, page lines limited), PR 19 (the page session refuses permissions and requests outside the app's files), PR 20 (`dist` no longer fetches the x64 koffi package; `dist:universal` does), PR 17 (CI token read-only), PR 13 (the review). On `main`: lint, format and 32 files / 381 unit tests pass.
-- Open: PR 16 (Copy diagnostics leaves out the install id); its first macOS job died for lack of a hosted runner (not code) and was re-run.
+- Merged by the owner: PR 16 (Copy diagnostics leaves out the install id) as `b08d4cc`; its first macOS job had died for lack of a hosted runner (not code) and was re-run. All of PR 13 to 20 are now merged.
+- Open: PR 21 (the installed app wrote to `%APPDATA%\2nddesktop`, not `2ndDesktop` as DEC-41 says, because Electron names the folder from `package.json`; adds `productName`, and an uninstall entry without the version). Mac review is W-9 in `TODO-Mac.md`.
 - Windows checks passed (see `TODO-Mac.md`, Re M-6): both pictures unchanged, 38 e2e, no `request refused`, no user path in the log, `dist:test` keeps and `dist` ignores `DESKTOP2_USER_DATA`. The `session-policy` unit test was Mac-only (hard-coded `file:///app/...`); fixed in PR 19.
 - Open for the owner: review findings 1 (Windows cover check reads only the foreground window) and 4 (Electron fuses): in 0.1 or later? Finding 10a (single-instance lock before the data migration) can now be done, since the branches that touched the same lines are merged.
 
@@ -72,7 +73,9 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 
 **Windows, by the owner on 2026-11-25 (`npm start` from `main`, unpackaged):** desktop mode on and off, PASS; a maximized window over the desktop pauses the tank and it resumes when restored, PASS; **Win+D (Show Desktop) does not pause it** (unlike F11 on the Mac), PASS; the new icon in the tray and on the taskbar, light and dark, PASS; the About box opens with the new icon (its text was the old one: that app was started before PR 8 merged; PR 11 rewrote it and is merged as `55834af`).
 
-Still open on Windows: a display change (unplug or change a display), the installed build (run the installer once, Start menu icon), launch at login. Open on the Mac: the menu bar and tray icon by eye, the Dock, the first open of a downloaded unsigned build, and the F11 pause (Mac session, W-7).
+**The installed build (owner, 2026-11-25, `npm run dist`, ran the installer):** PASS. It starts in desktop mode, the tray menu works, switching between window and desktop works, the Start menu finds it with the window-with-a-tree icon, About has the new text, and the uninstall works. Found: the data folder was `2nddesktop` and "Installed apps" showed "2ndDesktop 0.0.1" (PR 21). By design the uninstall keeps `%APPDATA%\2nddesktop` (saved tank, settings, and about 12 MB of Chromium caches). The installed size is 360 MB (the installer is 117 MB), normal for Electron. The Publisher is `author` (`tuangatech`), left as it is.
+
+Still open on Windows: a display change (unplug or change a display), launch at login (with the installed build). Open on the Mac: the menu bar and tray icon by eye, the Dock, the first open of a downloaded unsigned build, and the F11 pause (Mac session, W-7).
 
 ## Waiting for the owner
 
