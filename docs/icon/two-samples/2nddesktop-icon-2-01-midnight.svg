@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>2ndDesktop icon sample 1: midnight</title>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34487f"/><stop offset="1" stop-color="#18254a"/></linearGradient></defs>
+<rect x="64" y="64" width="896" height="896" rx="200" fill="url(#bg)"/>
+  <path d="M340 396C340 294 420 232 516 232C618 232 690 296 690 388C690 462 648 514 588 566L338 780L702 780" fill="none" stroke-width="120" stroke-linecap="round" stroke-linejoin="round" stroke="#f4efe6"/>
+</svg>

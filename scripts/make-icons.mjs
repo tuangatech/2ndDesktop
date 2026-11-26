@@ -16,7 +16,12 @@ function render(svgPath, outPath, size) {
 
 render('assets/tray/tray-template.svg', 'assets/tray/trayTemplate.png', 16);
 render('assets/tray/tray-template.svg', 'assets/tray/trayTemplate@2x.png', 32);
-render('assets/tray/tray-color.svg', 'assets/tray/tray.png', 32);
+// Windows has no template images: one drawing per taskbar theme (app/main/tray.js picks by the system theme).
+// The `@2x` file is picked by Electron on screens scaled to 150% and more.
+render('assets/tray/tray-on-light.svg', 'assets/tray/tray-on-light.png', 16);
+render('assets/tray/tray-on-light.svg', 'assets/tray/tray-on-light@2x.png', 32);
+render('assets/tray/tray-on-dark.svg', 'assets/tray/tray-on-dark.png', 16);
+render('assets/tray/tray-on-dark.svg', 'assets/tray/tray-on-dark@2x.png', 32);
 // App icon. `build/icon.png` (Windows, and what electron-builder converts to .ico) uses the whole canvas. macOS does
 // not shape icons itself, and its icon grid puts the rounded square at 824 of 1024 px, so the same drawing is
 // scaled down for `build/icon-mac.png` (converted to .icns). `assets/app-icon.png` is the 256 px copy the app loads

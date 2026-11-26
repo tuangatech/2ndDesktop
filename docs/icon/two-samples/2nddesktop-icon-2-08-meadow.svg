@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>2ndDesktop icon sample 8: meadow</title>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fb58a"/><stop offset="1" stop-color="#2f7a58"/></linearGradient></defs>
+<rect x="64" y="64" width="896" height="896" rx="200" fill="url(#bg)"/>
+  <path d="M64 760C260 690 420 770 600 730S860 690 960 720V760A200 200 0 0 1 760 960H264A200 200 0 0 1 64 760Z" fill="#2f7a58" fill-opacity="0.55"/>
+  <path d="M340 396C340 294 420 232 516 232C618 232 690 296 690 388C690 462 648 514 588 566L338 780L702 780" fill="none" stroke-width="122" stroke-linecap="round" stroke-linejoin="round" stroke="#fff4dc"/>
+  <path d="M700 232C730 180 790 160 836 176C830 230 780 270 722 262Z" fill="#9bdc9a"/>
+</svg>

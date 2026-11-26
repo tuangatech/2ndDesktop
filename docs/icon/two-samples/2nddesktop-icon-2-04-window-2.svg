@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>2ndDesktop icon sample 4: window-2</title>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34487f"/><stop offset="1" stop-color="#18254a"/></linearGradient>
+   <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3f4"/><stop offset="0.65" stop-color="#fcd9a8"/><stop offset="1" stop-color="#f7b79b"/></linearGradient>
+   <mask id="num"><rect width="1024" height="1024" fill="#000"/><path d="M340 396C340 294 420 232 516 232C618 232 690 296 690 388C690 462 648 514 588 566L338 780L702 780" fill="none" stroke-width="150" stroke-linecap="round" stroke-linejoin="round" stroke="#fff"/></mask></defs>
+<rect x="64" y="64" width="896" height="896" rx="200" fill="url(#bg)"/>
+  <g mask="url(#num)">
+    <rect width="1024" height="1024" fill="url(#sky)"/>
+    <circle cx="420" cy="330" r="46" fill="#fff4c9"/>
+    <path d="M200 650C340 590 450 640 580 650S760 620 860 600V860H200Z" fill="#86c7a0"/>
+    <path d="M200 730C360 690 520 750 860 700V860H200Z" fill="#4d9c7a"/>
+  </g>
+</svg>

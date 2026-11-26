@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>2ndDesktop icon sample 6: night glow</title>
+  <defs><radialGradient id="bg" cx="0.5" cy="0.45" r="0.75"><stop offset="0" stop-color="#1c2a3d"/><stop offset="1" stop-color="#070b14"/></radialGradient>
+   <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8fff8"/><stop offset="1" stop-color="#8fe9d4"/></linearGradient>
+   <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="30"/></filter></defs>
+<rect x="64" y="64" width="896" height="896" rx="200" fill="url(#bg)"/>
+  <g filter="url(#glow)"><path d="M340 396C340 294 420 232 516 232C618 232 690 296 690 388C690 462 648 514 588 566L338 780L702 780" fill="none" stroke-width="110" stroke-linecap="round" stroke-linejoin="round" stroke="#7fe8d0" stroke-opacity="0.9"/></g>
+  <path d="M340 396C340 294 420 232 516 232C618 232 690 296 690 388C690 462 648 514 588 566L338 780L702 780" fill="none" stroke-width="104" stroke-linecap="round" stroke-linejoin="round" stroke="url(#ink)"/>
+</svg>
