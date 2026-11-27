@@ -9,6 +9,5 @@
   "fps": 15,
   "atlas": null,
   "capabilities": { "data": ["weather@1"], "place": "coarse", "net": null },
-  "budget": { "memoryMB": 30 },
-  "dev": true
+  "budget": { "memoryMB": 30 }
 }
