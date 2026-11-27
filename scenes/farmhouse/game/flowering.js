@@ -3,7 +3,7 @@
 // about 4 days later for each degree of latitude further from the equator than Atlanta and the autumn ones earlier (a
 // rule of thumb to be tuned by eye, not a climate model); a southern city is shifted by half a year.
 
-import { HOME_LATITUDE, YEAR, northernDay } from './season.js';
+import { HOME_LATITUDE, MAX_SHIFT_DEGREES, YEAR, northernDay } from './season.js';
 import { smooth } from './hash.js';
 
 export const SPECIES = ['redbud', 'cherry', 'dogwood', 'peach'];
@@ -59,7 +59,11 @@ const bump = (day, [a, b, c, d]) => smooth((day - a) / (b - a)) * (1 - smooth((d
 export function floweringAt(species, dayOfYear, latitude = HOME_LATITUDE) {
   const spec = TREES[species];
   if (!spec) throw new Error(`no tree "${species}"`);
-  const shift = (Math.abs(latitude) - HOME_LATITUDE) * DAYS_PER_DEGREE;
+  const away = Math.max(
+    -MAX_SHIFT_DEGREES,
+    Math.min(MAX_SHIFT_DEGREES, Math.abs(latitude) - HOME_LATITUDE),
+  );
+  const shift = away * DAYS_PER_DEGREE;
   const day = northernDay(dayOfYear, latitude);
   const spring = day - shift; // a later spring is an earlier day on the table
   const autumn = day + shift; // an earlier autumn is a later day on the table

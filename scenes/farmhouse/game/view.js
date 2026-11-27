@@ -7,7 +7,8 @@ import { animalsAt } from './animals.js';
 import { smokeAmount, tripAllowed, truckAt, windowLights } from './clockRules.js';
 import { floweringAt, SPECIES } from './flowering.js';
 import { seasonAt, previewDay } from './season.js';
-import { previewWeather, snowCoverAt, weatherAt } from './weather.js';
+import { previewWeather, snowCoverAt, stormness, weatherAt } from './weather.js';
+import { smooth } from './hash.js';
 
 const DAY = 86_400_000;
 
@@ -62,7 +63,8 @@ export function slowAt({
     sun,
     lights: windowLights(ms, parts, sun, weather, seed),
     // Animals stand still at night and in a storm.
-    still: Math.max(nightness > 0.8 ? 1 : 0, weather.kind === 'storm' ? 1 : 0),
+    // Both are ramps (the night's `nightness` and the storm's wind), so they walk to their places and never jump.
+    still: Math.max(smooth((nightness - 0.5) / 0.4), stormness(weather)),
     tripAllowed: (startMs) => tripAllowed(startMs, sun, weather, snowCover),
   };
 }
@@ -75,6 +77,8 @@ export function motionAt(ms, parts, slow, { seed, hayStartedAt = null, bounds } 
     animals: animalsAt(ms, {
       seed,
       dayIndex: slow.when.dayIndex,
+      // The resting places change at noon, when they are out walking, not at midnight when they are standing in them.
+      restDay: dayIndexOf(parts) - (parts.minuteOfDay < 720 ? 1 : 0),
       still: slow.still,
       hayStartedAt,
       bounds,

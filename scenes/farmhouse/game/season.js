@@ -11,8 +11,11 @@ export const HALF_YEAR = 183;
 export const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
 /** Atlanta's latitude, the place the keys are written for. */
 export const HOME_LATITUDE = 33.7;
+/** The shifts of the tables for a place (cooler, later spring) use at most this many degrees of latitude away from Atlanta,
+ *  until the tables are fitted for other places (0.4). */
+export const MAX_SHIFT_DEGREES = 12;
 
-/** A day of the year folded into 1 to 365 (a leap day counts as the 365th). */
+/** A day of the year folded into 1 to 365 (day 366 of a leap year counts as day 1). */
 export const wrapDay = (day) => ((((Math.round(day) - 1) % YEAR) + YEAR) % YEAR) + 1;
 
 /** The day on the northern curve: a southern place is half a year later. */
