@@ -21,6 +21,10 @@ asarUnpack:
   - node_modules/@koromix/**
 mac:
   category: public.app-category.entertainment
+  # Ad-hoc signature, until 0.3 has a Developer ID. Without it electron-builder skips signing and leaves Electron's
+  # broken linker signature, and a downloaded copy opens as "damaged" with no Open Anyway (Re W-25). An ad-hoc
+  # signature protects nothing; it makes the bundle consistent, so the README's first-open steps work.
+  identity: '-'
   # Only English is shipped (the app has no other language); keeps the .app small.
   electronLanguages: en
   # The same drawing on the macOS icon grid (824 of 1024 px); build/icon.png is the Windows icon (npm run assets).
