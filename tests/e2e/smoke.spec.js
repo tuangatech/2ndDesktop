@@ -66,7 +66,7 @@ test('resizing many times keeps the number of textures on the graphics card the 
   }
 });
 
-// The decoded atlas image is closed once it is on the graphics card (scenes/fishtank/textures.js), so a lost graphics
+// The decoded atlas image is closed once it is on the graphics card (scenes/fishtank/view/textures.js), so a lost graphics
 // context has to start the page again instead of drawing from an image that is gone.
 test('a lost graphics context reloads the page, and the tank draws again', async () => {
   const { page, close } = await launch();

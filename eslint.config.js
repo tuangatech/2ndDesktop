@@ -30,8 +30,8 @@ export default [
   {
     files: ['app/page/**/*.js', 'scenes/**/*.js', 'templates/scene/**/*.js'],
     ignores: [
-      'scenes/*/rules.js',
-      'scenes/*/config.js',
+      'scenes/*/game/rules.js',
+      'scenes/*/game/config.js',
       'scenes/*/tests/**',
       'templates/scene/tests/**',
     ],
@@ -67,7 +67,7 @@ export default [
   },
   {
     // Pure rules and tuning: Node globals only, so a stray document or window is an error (a later server reuses them).
-    files: ['scenes/*/rules.js', 'scenes/*/config.js'],
+    files: ['scenes/*/game/rules.js', 'scenes/*/game/config.js'],
     languageOptions: { globals: globals.node },
   },
 ];

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FRONT_OVERLAP, computeLayout, layoutDecor, slotCountFor } from '../layout.js';
+import { FRONT_OVERLAP, computeLayout, layoutDecor, slotCountFor } from '../view/layout.js';
 
 const kinds = {
   'rock-large': { bubbleSource: true },

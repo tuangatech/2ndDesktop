@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { backdropShapes } from '../backdrop.js';
-import { computeLayout } from '../layout.js';
-import { visual } from '../visualConfig.js';
+import { backdropShapes } from '../view/backdrop.js';
+import { computeLayout } from '../view/layout.js';
+import { visual } from '../view/visualConfig.js';
 
 const layoutFor = (width, height) => computeLayout({ width, height });
 

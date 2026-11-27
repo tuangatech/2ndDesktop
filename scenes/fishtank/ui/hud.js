@@ -1,7 +1,7 @@
 // The HTML laid over the canvas in window mode (D7): the stash counter, toast messages and the fish label with
 // its rename box. Desktop mode shows no HTML at all (D31): the tray menu carries the same information.
-import { MAX_NAME_LENGTH, stageOf } from './rules.js';
-import { visual } from './visualConfig.js';
+import { MAX_NAME_LENGTH, stageOf } from '../game/rules.js';
+import { visual } from '../view/visualConfig.js';
 import './hud.css';
 
 const STAGE_NAMES = { fry: 'Fry', juvenile: 'Juvenile', adult: 'Adult' };
@@ -20,9 +20,9 @@ const MARKUP = `
 const BAD_NAME = `Use letters, numbers and spaces (up to ${MAX_NAME_LENGTH})`;
 
 /**
- * @param {{scene: import('./TankScene.js').TankScene,
- *          repository: import('./repo/TankRepository.js').TankRepository,
- *          config: typeof import('./config.js').config,
+ * @param {{scene: import('../view/TankScene.js').TankScene,
+ *          repository: import('../game/repo/TankRepository.js').TankRepository,
+ *          config: typeof import('../game/config.js').config,
  *          root: HTMLElement}} options  root: the element the host gives to the scene for HTML (host.ui.root)
  */
 export function createHud({ scene, repository, config, root }) {

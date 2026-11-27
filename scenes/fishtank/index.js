@@ -1,15 +1,15 @@
 // The one entry point of the fish tank (decisions D33, D50): the host calls `create(host)` and gets back a scene that
 // follows the contract in app/page/host.js. Everything outside this folder talks to the tank through it: the host
 // knows nothing of pellets, fish or the tank's tuning.
-import { TankScene } from './TankScene.js';
-import { createLocalRepository } from './repo/LocalTankRepository.js';
-import { applyTuning, config as baseConfig } from './config.js';
-import { createHud } from './hud.js';
-import { createDevPanel } from './devPanel.js';
+import { TankScene } from './view/TankScene.js';
+import { createLocalRepository } from './game/repo/LocalTankRepository.js';
+import { applyTuning, config as baseConfig } from './game/config.js';
+import { createHud } from './ui/hud.js';
+import { createDevPanel } from './ui/devPanel.js';
 import { menuItems, statusLine } from './menu.js';
 import { defineSounds } from './sounds.js';
-import decorData from './decor.json';
-import speciesData from './species.json';
+import decorData from './data/decor.json';
+import speciesData from './data/species.json';
 
 export const FISHTANK_ID = 'fishtank';
 

@@ -2,7 +2,7 @@
 // unit-tested; Fish.js only applies them. A reaction changes movement and never calls the repository.
 //
 // Times are in seconds of scene time, distances in pixels of the tank; `unit` is height / 320 (layout.js).
-import { makeRng } from '../../shared/rng.js';
+import { makeRng } from '../../../shared/rng.js';
 
 /** @typedef {'none'|'approach'|'follow'|'flee'} ReactionState */
 /** @typedef {{state: ReactionState, since: number, cooldownUntil: number}} Reaction */

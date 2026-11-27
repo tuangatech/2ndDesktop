@@ -1,5 +1,5 @@
 // Tunable numbers of the game rules (functional spec 7.1). Nothing else in the code base holds game numbers
-// (plan section 5). Visual numbers (bubbles, sway, decor) are in scenes/fishtank/visualConfig.js and are never
+// (plan section 5). Visual numbers (bubbles, sway, decor) are in scenes/fishtank/view/visualConfig.js and are never
 // needed by a server. Times are in milliseconds.
 
 const HOUR = 60 * 60 * 1000;

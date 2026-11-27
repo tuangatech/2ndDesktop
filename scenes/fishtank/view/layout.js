@@ -2,7 +2,7 @@
 // One unit is height / 320, so the default 480 x 320 window has a unit of 1 and every size and speed
 // in the scene is a number of units.
 
-import { makeRng } from '../../shared/rng.js';
+import { makeRng } from '../../../shared/rng.js';
 
 export const REFERENCE_HEIGHT = 320;
 export const DEFAULT_ASPECT = 1.5;
@@ -62,7 +62,7 @@ const GOLDEN = 0.6180339887498949;
  *
  * @param {number} seed
  * @param {number} aspect  width / height
- * @param {Record<string, {bubbleSource?: boolean}>} kinds  decoration kinds (scenes/fishtank/decor.json)
+ * @param {Record<string, {bubbleSource?: boolean}>} kinds  decoration kinds (scenes/fishtank/data/decor.json)
  * @param {Record<string, number>} [widths]  width of each kind in units at scale 1; with it, front rocks and
  *   corals that would stand in each other are moved to the back (see separateFront)
  * @returns {{items: Array<{id:number, kind:string, layer:'back'|'front', fx:number, fy:number, scale:number, flip:boolean, phase:number}>,

@@ -1,6 +1,6 @@
 // Visual numbers (decision D18): bubble timings, sway, decor placement. They are starting values for
 // the default 480 x 320 window, in units of height / 320 (see layout.js), and are tuned by eye.
-// The game economy lives in scenes/fishtank/config.js; the server never needs these.
+// The game economy lives in scenes/fishtank/game/config.js; the server never needs these.
 
 export const visual = {
   bubbles: {

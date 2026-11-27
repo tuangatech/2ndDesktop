@@ -3,7 +3,7 @@
 // Usage: npm run sim
 // A visit collects every waiting pellet, feeds every hungry fish until it is full, and hatches every egg.
 import { pathToFileURL } from 'node:url';
-import { config } from '../scenes/fishtank/config.js';
+import { config } from '../scenes/fishtank/game/config.js';
 import { makeRng } from '../shared/rng.js';
 import {
   collect,
@@ -16,7 +16,7 @@ import {
   settlePellets,
   settleState,
   stageOf,
-} from '../scenes/fishtank/rules.js';
+} from '../scenes/fishtank/game/rules.js';
 
 const HOUR = 60 * 60 * 1000;
 const SPECIES = ['tetra', 'guppy', 'angelfish'];
