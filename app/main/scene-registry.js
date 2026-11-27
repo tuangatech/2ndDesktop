@@ -38,8 +38,15 @@ export function checkManifest(raw, folder) {
   } else if (raw.id !== folder) {
     problems.push(`id "${raw.id}" is not the folder name "${folder}"`);
   }
-  if (!isPlainText(raw.name) || raw.name.trim() === '' || raw.name.length > MAX_NAME) {
-    problems.push(`name must be plain text of 1 to ${MAX_NAME} characters`);
+  // No `&`: the name goes into the tray and menu bar labels, where one `&` is dropped on macOS and makes the next letter
+  // an access key on Windows (Mac, Re W-20 addendum). `npm run new-scene` refuses it too.
+  if (
+    !isPlainText(raw.name) ||
+    raw.name.trim() === '' ||
+    raw.name.length > MAX_NAME ||
+    raw.name.includes('&')
+  ) {
+    problems.push(`name must be plain text of 1 to ${MAX_NAME} characters, without &`);
   }
   if (typeof raw.version !== 'string' || !VERSION_PATTERN.test(raw.version)) {
     problems.push('version must look like 0.1.0');

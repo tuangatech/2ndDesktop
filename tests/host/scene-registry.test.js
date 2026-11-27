@@ -52,6 +52,7 @@ describe('checkManifest', () => {
     ['an empty name', { name: '  ' }, /name must be/],
     ['a name of 41 characters', { name: 'x'.repeat(41) }, /name must be/],
     ['a name with a newline', { name: 'Mea\ndow' }, /name must be/],
+    ['a name with an ampersand', { name: 'Tom & Jerry' }, /without &/],
     ['a version without three parts', { version: '1.0' }, /version must/],
     ['a schema of 0', { schema: 0 }, /schema must/],
     ['a schema that is a string', { schema: '1' }, /schema must/],
