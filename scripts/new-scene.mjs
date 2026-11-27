@@ -9,7 +9,7 @@ import { pathToFileURL } from 'node:url';
 import { SCENE_ID_PATTERN } from '../app/main/scene-id.js';
 
 // The name goes into strings of the generated code, so it is plain: letters, digits, spaces and a few marks.
-const NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 .,&-]{0,39}$/;
+const NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 .,-]{0,39}$/;
 
 /** "my-garden" becomes "My garden". */
 export const nameFromId = (id) => {
@@ -42,7 +42,7 @@ export function scaffold({ root, id, name }) {
   const shownName = name ?? nameFromId(id);
   if (!NAME_PATTERN.test(shownName)) {
     throw new Error(
-      `"${shownName}" is not a name: 1 to 40 letters, digits, spaces and . , & - (it is written into the code)`,
+      `"${shownName}" is not a name: 1 to 40 letters, digits, spaces and . , - (it is written into the code)`,
     );
   }
   const templateDir = path.join(root, 'templates', 'scene');

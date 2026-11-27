@@ -61,7 +61,7 @@ describe('npm run new-scene', () => {
     ]) {
       expect(() => scaffold({ root, id })).toThrow(/not a scene id/);
     }
-    for (const name of ['', 'it`s', "it's", 'a${b}', 'a\\b', 'x'.repeat(41)]) {
+    for (const name of ['', 'it`s', "it's", 'a${b}', 'a\\b', 'Tom & Jerry', 'x'.repeat(41)]) {
       expect(() => scaffold({ root, id: 'my-garden', name })).toThrow(/not a name/);
     }
     expect(fs.existsSync(path.join(root, 'scenes'))).toBe(false);
