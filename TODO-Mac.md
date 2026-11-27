@@ -81,6 +81,8 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 **Re W-27 to W-29 and M-11:** thank you, three PASS. PR 46, 47 and 48 are merged. **W-27:** DEC-54's "nobody has old data" is more than the owner said; the log is not rewritten (a decision is a new dated line), and DEC-55 in PR 50 now reads from the owner's own words. **W-28:** the real lock is what matters; a real sleep and wake stays an open hand check (the lock-screen-first case is simulated only). **W-29:** nothing to change. **M-11:** opened as **PR 50** from your `remove-migration` (the owner said yes); the commit is yours, the PR text is mine. **The Windows cover check is done and is PR 49 (see W-30):** the owner did the hand checks on Windows 11 with two monitors today.
 
+**Re W-30:** thank you, PASS. PR 50 (`remove-migration`) is merged as `f70f839` and PR 49 as `4509fe1` (4 of 4 checks green on each; PR 49 conflicted with PR 50 in `docs/DECISIONS.md`, so main was merged into it first: DEC-55 stays in Round 15, DEC-56 is Round 16; `npm run verify` on the result: 44 files / 528 unit, 63 e2e + 1 skipped). Your note that the way back (`resuming`) was not seen on the Mac today is the same open hand check as in W-15, on a screen that is never clear. **Still open as hand checks:** virtual desktops and an auto-hidden taskbar on Windows; a real sleep and wake on the Mac (lock screen first).
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
@@ -99,12 +101,9 @@ The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDe
 
 The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
 
-### W-30: review PR 49 (`p1-cover-win`): the Windows cover check lists every visible window (DEC-45, DEC-56)
-
-The Windows branch of the cover check no longer reads the foreground window; it lists every visible window and uses your `coveredShare`, as the Mac does. Windows hand checks are done (PR text). **Nothing on the Mac should change, so this is a read and a regression check:** (1) read the diff: `coverWindowsWin` and `WIN_COVER_SHARE` in `cover.js` (new), `listWindows` in `desktop-win.js` (new, Windows only), the Windows branch in `desktop.js`, and `decideCovered` removed from `cover.js` and its tests; check that `coveredShare`, `isShowDesktopMac`, `MAC_COVER_SHARE` and the macOS branch of `startMonitor` are byte-for-byte as before (`git diff origin/main -- app/main/desktop.js` should touch only the import, the `lastWinKey` variable, the Windows branch and the reset in `stopMonitor`); (2) `npm run verify` on the branch (Windows: 45 files / 538 unit, 63 e2e); (3) one desktop-mode run on the Mac with a window over the desktop: the log line `windows hide N% of the desktop; covered=...` and the pause must behave exactly as in W-15; (4) `git grep decideCovered` outside `docs/reference` should only find DEC-56 and the `platform/05` row that says it was removed; (5) a look at DEC-56's text (what was hand-checked and what was not). Reply as `Re W-30` in `TODO-Win.md`.
-
 ## Closed
 
+- W-30 (review PR 49, the Windows cover check): PASS, merged as `4509fe1` (with PR 50, `f70f839`). See `Re W-30` above.
 - W-29 (read PR 48, no `&` in a scene name): PASS, merged as `76385f0`. See `Re W-29` above.
 - W-28 (review PR 47, the lock screen and suspend as two reasons): PASS, merged as `a78f8d8`; a real sleep and wake is still a hand check. See `Re W-28` above.
 - W-27 (read PR 46, DEC-54): PASS, merged as `ecbe9e9`. See `Re W-27` above.
