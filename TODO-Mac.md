@@ -131,6 +131,34 @@ Read `scenes/farmhouse/index.js`, `state.js`, `layout.js` and `game/view.js`; `n
 
 The spike result is in the PR body: SVG text through an `<img>` grew the page by about 30 MB per rebuild (74 MB at start, 165 MB after 6 rebuilds), so the art is drawn as canvas operations (`art/draw.js`, `art/raster.js`): 45 MB at start on Windows, 20 ms per rebuild. Please run `npm run measure:switch -- --switches 0 --scene farmhouse --gc 1` on the Mac (the script now accepts `--scene farmhouse`) and give the footprint, and look at `npm run shot -- farmhouse-s4 1600x900 window 2` with `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T12:00` (PR 53 adds those two variables; the branch has the script). Reply as `Re W-39`. The PRs 54 to 59 are stacked: they merge in order, each after green CI and your answer.
 
+### W-40: read PR 60 (`farmhouse-house`): the lawn, the house with its porch, lit windows, chimney smoke, the drive and the truck (S5, stacked on PR 59)
+
+Look at `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T12:00 npm run shot -- s5 1600x900 window 2` and the same at 23:30 (lit windows, lamp) against `scenes/farmhouse/design/farmhouse-autumn-preview.png`. Reply as `Re W-40`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 60`.
+
+### W-41: read PR 61 (`farmhouse-ground`): the trees, the grass, the field and the fence follow the season (S6a, stacked on PR 60)
+
+Shots with `__scene.fishtank.debug.preview({season:'spring'})` (and summer, winter) as the fifth argument of `npm run shot`: are the blossom, fruit, autumn colour and snow right? Reply as `Re W-41`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 61`.
+
+### W-42: read PR 62 (`farmhouse-animals`): the seven animals and Scatter hay (S6b, stacked on PR 61)
+
+Look at the animals on a retina screen (their size, the walk, the pose at rest) and try Scatter hay from the tray. Reply as `Re W-42`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 62`.
+
+### W-43: read PR 63 (`farmhouse-weather`): the sky, sun, moon, clouds, fog, rain, snow and the grade (S7, stacked on PR 62)
+
+The questions in the PR body: is the night dark enough or too dark, is the fog as thick as the concept? Reply as `Re W-43`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 63`.
+
+### W-44: read PR 64 (`farmhouse-modes`): Calendar and Fast season modes and the tray items (S8, stacked on PR 63)
+
+Try the tray items on the Mac: switch to Fast and back, cycle the previews; does the dip feel too slow? Reply as `Re W-44`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 64`.
+
+### W-45: read PR 65 (`farmhouse-fixes`): your three defects and two number points of `Re W-33 to W-39`, fixed (stacked on PR 64)
+
+Please read the diff of `game/view.js`, `game/clockRules.js` and `game/animals.js` and run `npx vitest run scenes/farmhouse/tests/continuity.test.js`; it fails on the old code with your 0.171. Left for the owner: the 35 minutes of sun time in Atlanta, the soft hill on a retina screen. Reply as `Re W-45`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 65`.
+
+### W-46: read PR 66 (`farmhouse-finish`): the farm house listed for players (dev flag removed), DEC-62 and the Windows measurements (S9, stacked on PR 65)
+
+Please measure the finished stack on the Mac, window and desktop: `npm run measure:switch -- --switches 20 --scene farmhouse --seconds 8 --settle 15`. Windows gives 224.7 MB and no growth over 20 switches; your W-39 estimate for the Mac was near 345 MB of 350. Reply as `Re W-46`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 66`.
+
 ## Closed
 
 - W-32 (read PR 52, the farm house design): PASS with six points, merged as `753e2f9`; the points are in PR 53 (W-33). See `Re W-32` above.
