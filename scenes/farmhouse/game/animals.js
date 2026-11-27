@@ -168,12 +168,15 @@ function haySpot(index) {
  * @returns {{id: string, kind: string, coat: string, x: number, depth: number, scale: number,
  *            facing: 'left'|'right', pose: 'walk'|'graze'|'stand'|'eat'}[]}
  */
-export function animalsAt(ms, { seed, dayIndex, still = 0, hayStartedAt = null, bounds = FIELD }) {
+export function animalsAt(
+  ms,
+  { seed, dayIndex, restDay = dayIndex, still = 0, hayStartedAt = null, bounds = FIELD },
+) {
   const seconds = ms / 1000;
   const rest = clamp(still, 0, 1);
   const hay = hayWeight(ms, hayStartedAt);
   const flock = wander(seed, FLOCK, 100, seconds);
-  const flockRest = restSpot(seed, { home: FLOCK.home }, 100, FLOCK.home, dayIndex);
+  const flockRest = restSpot(seed, { home: FLOCK.home }, 100, FLOCK.home, restDay);
   const flockAt = [
     lerp(flock.x, flockRest[0], smooth(rest)),
     lerp(flock.depth, flockRest[1], smooth(rest)),
@@ -191,7 +194,7 @@ export function animalsAt(ms, { seed, dayIndex, still = 0, hayStartedAt = null, 
     );
     let x = spec.flock ? flockAt[0] + spec.flock[0] + own.x : own.x;
     let depth = spec.flock ? flockAt[1] + spec.flock[1] + own.depth : own.depth;
-    const resting = restSpot(seed, spec, index, flockRest, dayIndex);
+    const resting = restSpot(seed, spec, index, flockRest, restDay);
     const toRest = smooth(rest);
     x = lerp(x, resting[0], toRest);
     depth = lerp(depth, resting[1], toRest);

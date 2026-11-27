@@ -6,7 +6,7 @@
 //
 // `kinds` are those of the `weather@1` data kind: clear, partly, cloudy, fog, drizzle, rain, snow, storm.
 
-import { HOME_LATITUDE, keyed, northernDay, seasonAt } from './season.js';
+import { HOME_LATITUDE, MAX_SHIFT_DEGREES, keyed, northernDay, seasonAt } from './season.js';
 import { lerp, smooth, unit } from './hash.js';
 
 export const KINDS = ['clear', 'partly', 'cloudy', 'fog', 'drizzle', 'rain', 'snow', 'storm'];
@@ -62,10 +62,24 @@ const LOOK = {
  *          `dayIndex` is a number that changes by one each day (days since some fixed date)
  */
 
+/**
+ * How much of a storm there is, 0 to 1. It follows the wind, which cross-fades between the blocks, so it goes up and down
+ * over the half hour of the change and never as a step (rain's wind is at most 0.55, a storm's at least 0.8).
+ * @param {{kind?: string, wind?: number}} weather
+ */
+export function stormness(weather) {
+  const wind = weather.wind ?? (weather.kind === 'storm' ? 0.9 : 0);
+  return smooth((wind - 0.6) / 0.25);
+}
+
 /** The mean temperature of a day at a place (degrees C), before the day's own variation. */
 export function meanTemperature(dayOfYear, latitude) {
   const day = northernDay(dayOfYear, latitude);
-  return keyed(day, MEAN) - (Math.abs(latitude) - HOME_LATITUDE) * COOLING_PER_DEGREE;
+  const away = Math.max(
+    -MAX_SHIFT_DEGREES,
+    Math.min(MAX_SHIFT_DEGREES, Math.abs(latitude) - HOME_LATITUDE),
+  );
+  return keyed(day, MEAN) - away * COOLING_PER_DEGREE;
 }
 
 /** The temperature (degrees C) at a time: the day's mean, a daily swing (coldest 06:00, warmest 15:00), a few degrees of

@@ -4,6 +4,7 @@
 // length the scene is right at once (R1).
 
 import { smooth, unit } from './hash.js';
+import { stormness } from './weather.js';
 
 const MIN = 60_000;
 const SEC = 1000;
@@ -40,10 +41,8 @@ const fade = (sinceMs) => smooth(sinceMs / FADE_MS);
  * @returns {Record<string, number>}
  */
 export function windowLights(ms, parts, sun, weather, seed = 0) {
-  const gloom =
-    weather.kind === 'storm'
-      ? 1
-      : smooth((weather.fog - 0.7) / 0.3) * (weather.kind === 'fog' ? 1 : 0);
+  // Both amounts cross-fade between the blocks of weather, so the windows light up over the half hour, never at once.
+  const gloom = Math.max(stormness(weather), smooth((weather.fog - 0.7) / 0.3));
   const midnight = ms - parts.minuteOfDay * MIN;
   const lights = {};
   for (const id of WINDOWS) {
