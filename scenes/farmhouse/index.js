@@ -7,6 +7,9 @@ import { canScatter, HAY } from './game/animals.js';
 import { motionAt, slowAt } from './game/view.js';
 import { DESIGN, coverFit, toDesign } from './layout.js';
 import { seen, startState } from './state.js';
+import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
+import { paletteKey } from './art/palette.js';
+import { rasterize, spriteOf } from './art/raster.js';
 
 /** The scene's own seed: the weather and the animals are the same on every machine and in every session. */
 const SEED = 20261127;
@@ -52,11 +55,11 @@ export default async function create(host) {
     layers[name] = layer;
     world.addChild(layer);
   }
-  // A plain sky and field until the art arrives (S4 onwards replace these two shapes).
-  const sky = new Graphics().rect(0, 0, DESIGN.width, 560).fill(0xaec6d4);
-  const field = new Graphics().rect(0, 560, DESIGN.width, DESIGN.height - 560).fill(0x7fa35a);
-  layers.sky.addChild(sky);
-  layers.field.addChild(field);
+  // A plain field until its art arrives (S6).
+  layers.field.addChild(
+    new Graphics().rect(0, 560, DESIGN.width, DESIGN.height - 560).fill(0x7fa35a),
+  );
+  layers.lawn.addChild(new Graphics().rect(0, 540, DESIGN.width, 30).fill(0x9aa862));
 
   let width = 1;
   let fit = coverFit(1, 1);
@@ -80,6 +83,9 @@ export default async function create(host) {
       : { xMin: 0, xMax: share(width - strip.width) };
   };
 
+  // The pictures of the landscape (below): `ready` is set once the first ones are drawn.
+  const art = { key: null, building: null, builds: 0, pieces: {}, disposed: false, ready: false };
+
   /** Works out the view of a moment: the slow part at most once a second of clock time, the motion every frame. */
   function refresh(force = false) {
     const ms = host.clock.now();
@@ -94,6 +100,7 @@ export default async function create(host) {
         seed: SEED,
       });
       slowFor = ms;
+      if (art.ready) checkLandscape();
       if (state.lastWeather !== slow.weather.kind || ms - savedAt >= SEEN_MS) {
         state = seen(state, ms, slow.weather.kind);
         savedAt = ms;
@@ -103,6 +110,51 @@ export default async function create(host) {
     motion = motionAt(ms, parts, slow, { seed: SEED, hayStartedAt, bounds: bounds() });
   }
   refresh(true);
+
+  // The landscape: the sky and the three mountain layers, each one picture painted from drawing operations (art/draw.js) and turned into one texture.
+  // The sky and the far ridge are drawn once; the mid ridge and the near hill are drawn again when the palette has moved
+  // (paletteKey: steps of the leaf, the colour and the snow), the old texture staying on screen until the new one is ready.
+  const home = { sky: layers.sky, far: layers.ridges, mid: layers.ridges, hill: layers.forest };
+  async function drawPiece(name, picture) {
+    const texture = await rasterize(picture, host.app.renderer);
+    if (art.disposed) {
+      texture.destroy(true);
+      return;
+    }
+    const old = art.pieces[name];
+    const sprite = spriteOf(picture, texture);
+    home[name].addChild(sprite);
+    if (name === 'mid') home.mid.setChildIndex(sprite, home.mid.children.length - 1);
+    art.pieces[name] = sprite;
+    if (old) {
+      old.parent?.removeChild(old);
+      old.destroy({ texture: true, textureSource: true });
+    }
+    art.builds++;
+  }
+  async function drawLandscape(all) {
+    const { season, snowCover } = slow;
+    art.key = paletteKey(season, snowCover);
+    if (all) {
+      await drawPiece('sky', skyPicture());
+      await drawPiece('far', farRidgePicture());
+    }
+    await drawPiece('mid', midRidgePicture(season, snowCover));
+    await drawPiece('hill', hillPicture(season, snowCover));
+  }
+  await drawLandscape(true);
+  art.ready = true;
+  /** Called once a second: draws the two palette pictures again when the colours have moved enough. */
+  function checkLandscape() {
+    if (art.building || art.disposed || paletteKey(slow.season, slow.snowCover) === art.key) return;
+    art.building = drawLandscape(false)
+      .catch((error) =>
+        host.log('farmhouse: the landscape was not drawn again: ' + (error?.message ?? error)),
+      )
+      .finally(() => {
+        art.building = null;
+      });
+  }
 
   const hayReady = () => canScatter(host.clock.now(), hayStartedAt);
 
@@ -149,7 +201,8 @@ export default async function create(host) {
     },
     serialize: () => ({ ...state }),
     dispose() {
-      root.destroy({ children: true });
+      art.disposed = true;
+      root.destroy({ children: true, texture: true, textureSource: true });
     },
     debug: {
       state: () => ({ ...state }),
@@ -158,6 +211,12 @@ export default async function create(host) {
       fit: () => ({ ...fit }),
       hay: () => ({ startedAt: hayStartedAt, eatSeconds: HAY.eat }),
       isVisible: () => visible,
+      // For tests and measurements: draw every picture again now, and how many pictures have been drawn.
+      rebuild: async () => {
+        await art.building;
+        await drawLandscape(true);
+      },
+      art: () => ({ builds: art.builds, key: art.key }),
       pointer: () => pointer,
     },
   };
