@@ -346,6 +346,25 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 - **Finding 10a (the single-instance lock before the data migration): the owner says leave it.** The owner has no old tank data (everything is still in development), so `migrateOldData` finds nothing to copy and only reads (`existsSync`), so a second launch writes nothing in that case. See M-10.
 
 
+**Re W-27: PASS, one word** (PR 46, read on the Mac; `npm run format:check` clean on `main`)
+
+- DEC-54 says what the owner decided in `M-10`: finding 10a is **not done**; `migrateOldData` copies only when an old folder exists and, with nothing to copy, only reads (`existsSync`), so a second launch writes nothing; the question about deleting `migrate-data.js`, its test, the old folder names in `product.js` and the call in `main.js` stays open as "a separate question for the owner, one small PR of its own". The review row reads right: "Closed, not needed (no old data exists; DEC-54): the migration only reads when there is nothing to copy, so a second launch writes nothing". **One word:** DEC-54 says "the app is not released, so nobody has old data". What the owner said is that **they** have none; "nobody" is a little more than that (another person who ran the old Fish Tank repository may have a folder). It does not change the decision; if you want it exact: "the owner has none and the app is not released".
+
+**Re W-28: PASS** (PR 47 on `main` at `60701c2`, and on the branch before the merge; the Mac, Node 24)
+
+- **(1) Diff:** `power-pause.js` is the table `POWER_PAUSES` (`lock-screen` and `unlock-screen` on `locked`, `suspend` and `resume` on `asleep`) and `wirePowerPause(powerMonitor, setPauseReason)`; `main.js` calls it with `controller.setPauseReason` (a plain function of the controller, no `this`); the comment of `desktop.js` is updated. Only one other place names the old reason: `tests/host/desktop.test.js` uses `'power'` as an example reason of the controller, which still works (the reason is a free string).
+- **(2) The simulation, in the running app, on `main`:** `lock-screen` pauses; `+ suspend` still paused; **`+ resume` (still locked) stays paused**; `+ unlock-screen` resumes. The reverse order: `suspend` pauses; `+ lock-screen` still paused; **`+ unlock-screen` (still asleep) stays paused**; `+ resume` resumes. Same result in window mode and in desktop mode (I read the page's `ticker.started`; the log has no line for a power pause, only the renderer's own `visibility` and `frame rate` lines, so "the log says paused" is not what it shows: the page does not draw, and `renderer frame rate: 0 fps` follows within 10 s).
+- **(3) A real lock, on the Mac, with the owner:** the app running (window mode, a scratch data folder) and a probe of the tank's ticker every second. The owner pressed **Ctrl+Cmd+Q**: the main process got `lock-screen` and the tank **stopped in the same second**; about 20 s later the owner unlocked with Touch ID: `unlock-screen` and the tank **ran again in the same second**. **A real sleep and wake was not done** (it would end the session that runs the probe); that is the case "wake shows the lock screen first", so it remains simulated only.
+- **Proofs on `main`:** `npm run verify`: `verify: lint ok, format ok, 45 files / 532 unit, 64 e2e, 1m 04s`.
+- Nothing is wrong.
+
+**Re W-29: PASS** (PR 48 on `main`)
+
+- **The diff (three files):** `checkManifest` adds `raw.name.includes('&')` to the name check, and the problem line now says `name must be plain text of 1 to 40 characters, without &`; the `name` row of `platform/01` section 8.2 says "no `&`" with the reason; the test adds `['a name with an ampersand', { name: 'Tom & Jerry' }, /without &/]`. The comment names the reason and says `npm run new-scene` refuses it too. Fine.
+- **By hand on `main`** (a scratch scene made with `npm run new-scene -- tom-jerry`, its `scene.json` edited to `"name": "Tom & Jerry"`, the app started with a scratch data folder): the Scenes submenu is **["Empty", "Tank"]**, and the log says **`scene tom-jerry is not used: name must be plain text of 1 to 40 characters, without &`**. With the name changed to `"Tom Jerry"` the submenu is **["Empty", "Tank", "Tom Jerry"]** and the log has no such line. The scratch scene is deleted; `git status` is clean.
+- The run-time labels (`status()`, `menuItems()`) are not changed; a scene that writes an `&` into them still loses it on the Mac. A scene's own labels are its author's text, so a note in the scene guide (or the doubled `&&`, which I did not try on the Mac) would be the place if it comes up.
+- Nothing is wrong.
+
 ## Requests
 
 ### M-10: record the owner's decision on finding 10a (docs only; and a question)
