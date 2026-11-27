@@ -1,13 +1,13 @@
-// The lawn, the stone house with its porch, the drive and the old farm truck (docs/scenes/farmhouse.md section 5, items
-// 4, 6 and 8; the concept picture docs/scenes/farmhouse/farmhouse-autumn-preview.png is the look). Pure, like
+// The stone house with its porch, the drive and the old farm truck (docs/scenes/farmhouse.md section 5, items
+// 6 and 8; the concept picture docs/scenes/farmhouse/farmhouse-autumn-preview.png is the look). Pure, like
 // landscape.js: a seed (and the snow) in, a list of drawing operations out (draw.js). The lit windows, the smoke and the
 // truck's movement are the scene's, drawn over these pictures (`WINDOW_RECTS`, `DOOR_GLASS`, `CHIMNEY_TOP`, `TRUCK`).
 //
 // The house was drawn for a picture 1600 wide with the house at x 810: `X` moves everything to the middle of the design.
 import { makeRng } from '../../../shared/rng.js';
 import { DESIGN } from '../layout.js';
-import { FOG, mix, n } from './colour.js';
-import { band, gradient, makePicture } from './draw.js';
+import { mix, n } from './colour.js';
+import { gradient, makePicture } from './draw.js';
 import { SNOW } from './palette.js';
 
 const W = DESIGN.width;
@@ -46,35 +46,6 @@ export const DOOR_GLASS = Object.freeze({ x: 802 + X, y: 509, w: 24, h: 14 });
 export const CHIMNEY_TOP = Object.freeze({ x: 944 + X, y: 308 });
 /** The glass colours, lit and unlit. */
 export const GLASS = Object.freeze({ lit: '#efd9a0', litLow: '#d9b66c', dark: '#8fa3a6' });
-
-/** The lawn between the forest and the field: a gradient, soft stripes, a ragged edge and a veil of fog. */
-export function lawnPicture(seed = 4) {
-  const rng = makeRng(seed);
-  const ops = [rect(0, 540, W, 130, gradient(540, 670, '#a3ad68', '#8ea05a'))];
-  for (let i = 0; i < Math.round(40 * (W / 1600)); i++) {
-    ops.push({
-      t: 'ellipse',
-      x: n(rng.range(0, W)),
-      y: n(rng.range(556, 650)),
-      rx: n(rng.range(60, 240)),
-      ry: n(rng.range(5, 14)),
-      fill: pick(rng, ['#b0b46f', '#86985a', '#9aa862']),
-      alpha: 0.4,
-    });
-  }
-  for (let x = -40; x < W + 60; x += 46) {
-    ops.push({
-      t: 'ellipse',
-      x: n(x + rng.range(-10, 10)),
-      y: n(rng.range(538, 548)),
-      rx: n(rng.range(46, 80)),
-      ry: n(rng.range(9, 16)),
-      fill: pick(rng, ['#a3ad68', '#9aa862', '#8fa05b']),
-    });
-  }
-  ops.push(rect(0, 520, W, 50, band(520, 570, FOG, 0.28)));
-  return makePicture({ y: 500, height: 170, resolution: 1 }, ops);
-}
 
 /**
  * The house: stone walls, the second floor with its shutters, the porch, the roof, the chimney and the bushes along the
