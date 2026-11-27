@@ -136,5 +136,5 @@ Only 0.1 and 0.2 are the plan. Everything after 0.3 is design notes, not backlog
 | What can a scene do, sandbox, data, network, secrets, review, error report? | `platform/02-security-data-and-network.md` |
 | Releases, updates, the catalog, licensing, versions and phases? | `platform/03-distribution-and-roadmap.md` |
 | What is reused from Fish Tank, and what was already measured? | `platform/04-reuse-from-fish-tank.md`, `platform/05-verified-from-fish-tank.md` |
-| Each scene | `scenes/fishtank.md`, `farmhouse.md`, `desk.md`, `stretch.md`; `fishtank-migration.md` |
+| Each scene | `scenes/fishtank/DESIGN.md`, `scenes/farmhouse.md`, `desk.md`, `stretch.md`; `fishtank-migration.md` |
 | Why a thing is the way it is | `DECISIONS.md` |

@@ -11,3 +11,6 @@ build/
 # prettier would fail a PR over the other session's file.
 TODO-Mac.md
 TODO-Win.md
+
+# Scene design documents are written like the ones in docs/ (prose and wide tables), not by Prettier.
+scenes/*/DESIGN.md

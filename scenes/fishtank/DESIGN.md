@@ -1,6 +1,6 @@
 # Scene: Fish tank (`fishtank`)
 
-Status: Draft v0.1, 2026-11-23. The first scene and the default one. It is built and working in the old Fish Tank repository (Phase 1 done, Step 1b moved it behind the scene contract); this document is its `DESIGN.md` for the new repository. Platform documents: `../platform/01` to `03`. Numbers in brackets such as (FR-22) point to the old functional specification, which is not carried over.
+Status: built; the first scene and the default one. This is the scene's `DESIGN.md` (it was `docs/scenes/fishtank.md` until 2026-11-26). Platform documents: `../../docs/platform/01` to `03`. Numbers in brackets such as (FR-22) point to the old functional specification, which is kept in `../../docs/reference/` (see its README).
 
 ## 1. Summary and vibe
 

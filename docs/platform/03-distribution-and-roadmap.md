@@ -241,7 +241,7 @@ Copyright is not a problem: the owner holds the copyright of the code and the ar
 | `electron/preload.cjs` | `app/main/` | **Rewrite** to the narrow bridge of document 2 section 4 (today's bridge was written for one trusted page) |
 | `renderer/main.js`, `scenes.js`, `art.js`, `host.js`, `drawing.js`, `reloadGuard.js`, `SoundPlayer.js` | `app/page/` | Keep; `host.js` (the typedefs) becomes the contract source of truth. Add the CSP and `pixi.js/unsafe-eval` import, `scene://` loading, the capabilities in `host` |
 | `shared/rng.js` | `shared/` | Keep |
-| `scenes/fishtank/` | `scenes/fishtank/` | Keep as the first scene; add `DESIGN.md` from `docs/scenes/fishtank.md`; the Phase 3 and 4 server ideas are dropped |
+| `scenes/fishtank/` | `scenes/fishtank/` | Keep as the first scene; add `DESIGN.md` (done: moved from `docs/scenes/fishtank.md`); the Phase 3 and 4 server ideas are dropped |
 | `scripts/` (`build-assets.mjs`, `gen-decor-art.mjs`, `shot.mjs`, `pacing-sim.js`, `measure-alloc.mjs`, `sound-lab.mjs`, `make-icons.mjs`, `koffi-universal.mjs`, `run-electron.mjs`, `seeded-random.mjs`) | `scripts/` | Keep. `build-assets` becomes per scene; `shot` takes a scene id |
 | `spikes/edit-mode/` | `spikes/` | Keep as reference |
 | `tests/unit`, `tests/e2e` | `tests/` | Keep (the golden test is the proof that the move changed nothing). Add the contract test for every scene, the capability test, the sandbox tests |
