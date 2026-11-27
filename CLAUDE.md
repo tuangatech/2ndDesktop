@@ -27,7 +27,7 @@ A living scene on the desktop of Windows and macOS (Electron + PixiJS v8, plain 
 
 ## Commands
 
-`npm ci`, `npm run dev`, `npm run build && npm start`, `npm test`, `npm run lint`, `npm run format:check`, `npm run test:e2e` (builds first), `npm run shot -- <name> <WxH> <window|desktop> <seconds>`, `npm run measure:switch` (memory and frame time of a scene, and 20 scene switches), `npm run assets`. Use `npm start` and `npm run dev`, never bare `electron`. Environment variables start with `DESKTOP2_`; `DESKTOP2_SCENE_OPTIONS` holds JSON for the scene, for example `{"fish":8}`. The page bridge is `window.desktop2`, and the debug and test global is `window.__scene` (`?debug=1`). If `node_modules/electron/dist` is missing after `npm ci`, run `node node_modules/electron/install.js` once.
+`npm ci`, `npm run dev`, `npm run build && npm start`, `npm test`, `npm run lint`, `npm run format:check`, `npm run test:e2e` (builds first), `npm run verify` (lint, format, unit and e2e in one command, one summary line; `-- --quick` leaves out the e2e), `npm run shot -- <name> <WxH> <window|desktop> <seconds>`, `npm run measure:switch` (memory and frame time of a scene, and 20 scene switches), `npm run assets`. Use `npm start` and `npm run dev`, never bare `electron`. Environment variables start with `DESKTOP2_`; `DESKTOP2_SCENE_OPTIONS` holds JSON for the scene, for example `{"fish":8}`. The page bridge is `window.desktop2`, and the debug and test global is `window.__scene` (`?debug=1`). If `node_modules/electron/dist` is missing after `npm ci`, run `node node_modules/electron/install.js` once.
 
 ## Proofs after every PR (BOOTSTRAP 7.3)
 
