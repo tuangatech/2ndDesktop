@@ -7,6 +7,7 @@
 //   {t: 'rect', x, y, w, h, fill, rx?}
 //   {t: 'ellipse', x, y, rx, ry, fill}               (x, y the centre)
 //   {t: 'path', d, fill?, stroke?, width?, cap?}      (d is SVG path text, drawn with Path2D)
+//   {t: 'glow', x, y, rx, ry, colour, alpha}          (a soft oval patch that fades out at its edge)
 //   {t: 'clip', x, y, rx, ry, ops}                    (the operations inside, only where the ellipse is)
 // and on any of them alpha?, and stroke? and width? on a rect or an ellipse.
 // A fill is a '#rrggbb' colour or a vertical gradient {y0, y1, stops: [[offset, '#rrggbb', alpha], ...]}.
@@ -104,6 +105,18 @@ export function paint(ctx, ops) {
         ctx.lineCap = op.cap ?? 'butt';
         ctx.stroke(path);
       }
+    } else if (op.t === 'glow') {
+      // A soft round patch of one colour that fades to nothing at its edge; rx and ry make it an oval.
+      ctx.save();
+      ctx.translate(op.x, op.y);
+      ctx.scale(op.rx, op.ry);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+      g.addColorStop(0, rgba(op.colour, op.alpha));
+      g.addColorStop(0.5, rgba(op.colour, op.alpha * 0.55));
+      g.addColorStop(1, rgba(op.colour, 0));
+      ctx.fillStyle = g;
+      ctx.fillRect(-1, -1, 2, 2);
+      ctx.restore();
     } else if (op.t === 'clip') {
       // The operations inside are drawn only where the ellipse is.
       ctx.save();

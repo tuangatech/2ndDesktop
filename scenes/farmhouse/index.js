@@ -9,6 +9,8 @@ import { DESIGN, coverFit, toDesign, visibleDesign } from './layout.js';
 import { seen, startState } from './state.js';
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
 import { animalPicture, coatKey, hayPicture } from './art/animals.js';
+import { skyColours, skyKey, timeOfDay, fallingAt } from './game/sky.js';
+import { createWeatherView } from './weatherView.js';
 import { paletteKey } from './art/palette.js';
 import {
   BACK_TREES,
@@ -83,6 +85,8 @@ export default async function create(host) {
   let fit = coverFit(1, 1);
   let visible = true;
   let pointer = null;
+  // A tray preview of a season or a kind of weather lasts for the session and is never saved.
+  const preview = { season: null, kind: null };
   let hayStartedAt = null; // when "Scatter hay" was last used; lasts for the session, never saved
   let slow = null;
   let slowFor = -Infinity;
@@ -128,6 +132,8 @@ export default async function create(host) {
         nightness: host.time.nightness(ms),
         latitude: latitude(),
         seed: SEED,
+        previewSeason: preview.season,
+        previewKind: preview.kind,
       });
       slowFor = ms;
       if (art.ready) checkLandscape();
@@ -154,7 +160,7 @@ export default async function create(host) {
       g.rect(r.x, r.y + r.h * 0.42, r.w, 3).fill(0xefe9da);
     }
     g.visible = false;
-    layers.house.addChild(g);
+    layers.grade.addChild(g); // over the grade, so that the windows stay bright at night
     return g;
   };
   for (const [id, r] of Object.entries(WINDOW_RECTS)) lights[id] = lightOf(r, true);
@@ -179,6 +185,7 @@ export default async function create(host) {
 
   // The animals: one texture for each coat (five for seven animals), one box for each animal (placed, mirrored and scaled
   // by depth) holding a body that tilts to graze, and the hay under them.
+  let weatherView = null; // made once the first pictures are drawn
   const herd = new Map(); // id -> {box, body, tilt}
   const hay = { sprite: null, key: 'hay' };
   const animalTextures = new Map();
@@ -236,6 +243,18 @@ export default async function create(host) {
     truckBox.scale.x = truck.facing === 'right' ? -1 : 1;
     truckBox.position.set(TRUCK.x + centre + truck.x * (edgeX - TRUCK.x), TRUCK.y);
     placeAnimals(dt);
+    if (weatherView) {
+      const ms = host.clock.now();
+      const petals = Math.max(0, ...Object.values(slow.trees).map((tree) => tree.petals));
+      weatherView.update({
+        ms,
+        dt,
+        slow,
+        tod: timeOfDay(ms, slow.sun, slow.nightness),
+        falling: fallingAt(slow.weather, slow.season, slow.snowCover, petals),
+        pointer: pointer ? toDesign(fit, pointer.x, pointer.y) : null,
+      });
+    }
   }
   applyMotion();
 
@@ -270,7 +289,7 @@ export default async function create(host) {
     const sprite = spriteOf(picture, texture);
     home[name].addChild(sprite);
     if (name === 'mid') home.mid.setChildIndex(sprite, home.mid.children.length - 1);
-    if (name === 'drive' || name === 'house' || name === 'field')
+    if (name === 'sky' || name === 'drive' || name === 'house' || name === 'field')
       home[name].setChildIndex(sprite, 0); // under the truck, the lights, the placeholders
     art.pieces[name] = sprite;
     if (old) {
@@ -318,13 +337,17 @@ export default async function create(host) {
       const state = BACK_TREES.includes(tree) ? { ...season } : { ...slow.trees[tree.id] };
       keys[name] = BACK_TREES.includes(tree) ? key : treeKey(state, snowCover);
     }
-    return { key, keys };
+    const tod = timeOfDay(slow.ms, slow.sun, slow.nightness);
+    return { key, keys, sky: skyKey(tod, slow.weather), tod };
   };
   async function drawLandscape(all) {
     const { season, snowCover } = slow;
     const now = wanted();
+    if (all || now.sky !== art.skyKey) {
+      art.skyKey = now.sky;
+      await drawPiece('sky', skyPicture(skyColours(now.tod, slow.weather)));
+    }
     if (all) {
-      await drawPiece('sky', skyPicture());
       await drawPiece('far', farRidgePicture());
       await drawPiece('drive', drivePicture());
       await drawPiece('truck', truckPicture());
@@ -351,13 +374,18 @@ export default async function create(host) {
     }
   }
   await drawLandscape(true);
+  weatherView = createWeatherView({ renderer: host.app.renderer, layers, seed: SEED });
   art.ready = true;
   applyMotion(); // the animals are in their places from the first frame
   /** Called once a second: draws again what has moved enough. */
   function checkLandscape() {
     if (art.building || art.disposed) return;
     const now = wanted();
-    if (now.key === art.key && trees.every(({ name }) => art.treeKeys[name] === now.keys[name])) {
+    if (
+      now.key === art.key &&
+      now.sky === art.skyKey &&
+      trees.every(({ name }) => art.treeKeys[name] === now.keys[name])
+    ) {
       return;
     }
     art.building = drawLandscape(false)
@@ -432,6 +460,15 @@ export default async function create(host) {
         await art.building;
         await drawLandscape(true);
       },
+      // For tests and shots: pin a season and/or a kind of weather (null to let go), settled at once.
+      preview: (next = {}) => {
+        preview.season = next.season ?? null;
+        preview.kind = next.kind ?? null;
+        refresh(true);
+        applyMotion();
+        if (art.ready) checkLandscape();
+        return art.building;
+      },
       art: () => ({ builds: art.builds, key: art.key, treeKeys: { ...art.treeKeys } }),
       // What is on show now: the alpha of each lit window, the smoke, and the truck.
       shown: () => ({
@@ -439,6 +476,7 @@ export default async function create(host) {
           Object.entries(lights).map(([id, g]) => [id, g.visible ? g.alpha : 0]),
         ),
         smoke: smoke.visible ? motion.smoke : 0,
+        weather: weatherView?.debug(),
         hay: hay.sprite?.visible ? hay.sprite.alpha : 0,
         animals: [...herd].map(([id, v]) => ({
           id,
