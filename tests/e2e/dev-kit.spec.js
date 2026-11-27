@@ -21,7 +21,29 @@ async function withKit(scene, env = { DESKTOP2_DEV: '1' }) {
   };
 }
 
+// The window of a test is small, so the panel starts closed (COLLAPSE_BELOW); this opens it like a click on "dev kit".
+async function openKit(page) {
+  const kit = page.locator('#devkit');
+  if (await kit.locator('.body.hidden').count()) await kit.locator('.head').click();
+  return kit;
+}
+
 test.describe('the dev kit', () => {
+  test('starts closed in a small window and opens with a click on its title', async () => {
+    const run = await withKit('empty');
+    try {
+      const kit = run.page.locator('#devkit');
+      await expect(kit.locator('.head')).toBeVisible();
+      await expect(kit.locator('.body')).toBeHidden();
+      await kit.locator('.head').click();
+      await expect(kit.locator('.body')).toBeVisible();
+      await kit.locator('.head').click();
+      await expect(kit.locator('.body')).toBeHidden();
+    } finally {
+      await run.close();
+    }
+  });
+
   test('is not there in a normal run', async () => {
     const run = await withKit('empty', { DESKTOP2_DEBUG: '1' });
     try {
@@ -46,7 +68,7 @@ test.describe('the dev kit', () => {
   test('moves the clock of any scene, and the scene settles as after a pause', async () => {
     const run = await withKit('empty');
     try {
-      const kit = run.page.locator('#devkit');
+      const kit = await openKit(run.page);
       await expect(kit).toBeVisible();
       const read = () => run.page.evaluate(() => window.__scene.clock.now());
       const a = await read();
@@ -70,7 +92,7 @@ test.describe('the dev kit', () => {
   test('sets the clock to a date and time, and runs it faster without a jump', async () => {
     const run = await withKit('empty');
     try {
-      const kit = run.page.locator('#devkit');
+      const kit = await openKit(run.page);
       await kit.getByLabel('Set the clock').fill('2026-12-21T06:30');
       const expected = new Date(2026, 11, 21, 6, 30).getTime();
       const now = await run.page.evaluate(() => window.__scene.clock.now());
@@ -95,7 +117,7 @@ test.describe('the dev kit', () => {
   test('cuts the stage to a shape and the scene is resized to it', async () => {
     const run = await withKit('empty');
     try {
-      const kit = run.page.locator('#devkit');
+      const kit = await openKit(run.page);
       const size = () =>
         run.page.evaluate(() => [
           window.__scene.app.screen.width,
@@ -128,7 +150,7 @@ test.describe('the dev kit', () => {
   test('pauses the scene as if the desktop were covered, and resumes it', async () => {
     const run = await withKit('empty');
     try {
-      const kit = run.page.locator('#devkit');
+      const kit = await openKit(run.page);
       const visible = () => run.page.evaluate(() => window.__scene.isVisible());
       expect(await visible()).toBe(true);
       await kit.getByLabel('paused (as if covered)').check();
@@ -145,7 +167,7 @@ test.describe('the dev kit', () => {
     try {
       await expect(run.page.locator('#devkit')).toBeVisible();
       await expect(run.page.locator('#dev')).toBeVisible();
-      await run.page.locator('#devkit').getByRole('button', { name: '+1 h' }).click();
+      await (await openKit(run.page)).getByRole('button', { name: '+1 h' }).click();
     } finally {
       await run.close();
     }

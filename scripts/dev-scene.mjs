@@ -1,7 +1,9 @@
 // Runs one scene in an ordinary window with the dev kit (app/page/devKit.js): `npm run dev:scene -- <id>`.
 // It is `npm run dev` (Vite and Electron, the page reloads on save) with three things set:
 //   - the scene: a settings.json that names it, in its own data folder, so the player's own tank and records are never
-//     touched and the scene's record is kept from one run to the next (delete the folder to start from nothing);
+//     touched; the scene's record is kept from one run to the next for as long as the system keeps its temp folder
+//     (macOS clears it after about three days of not being used and at some restarts, so treat it as a scratch folder:
+//     lose it at any time, delete it to start from nothing; the script prints where it is);
 //   - window mode, and DESKTOP2_DEV=1, which shows the dev kit (clock, shape of the stage, pause) and, in the tank, its own panel;
 //   - nothing else: the scene sees the same host as in the product.
 // The data folder is <temp>/2nddesktop-dev-scene/<id>.

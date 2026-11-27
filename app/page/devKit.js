@@ -31,6 +31,9 @@ export const JUMPS = [
 ];
 export const SPEEDS = [1, 60, 600, 3600];
 
+/** A window narrower than this (css px) starts with the panel closed; the click on "dev kit" opens it. */
+export const COLLAPSE_BELOW = 700;
+
 /**
  * The biggest rectangle of a shape that fits in the viewport.
  * @param {number|null} ratio  width / height, or null to fill the viewport
@@ -70,6 +73,8 @@ export function createDevKit({ app, stage, clock, onJump, setPaused }) {
   const body = document.createElement('div');
   body.className = 'body';
   head.addEventListener('click', () => body.classList.toggle('hidden'));
+  // The window of a run is small (480 x 320): open, the panel would cover half of it and the scene's own buttons.
+  if (window.innerWidth < COLLAPSE_BELOW) body.classList.add('hidden');
   panel.append(head, body);
 
   const row = (...children) => {
