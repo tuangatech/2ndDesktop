@@ -2,12 +2,13 @@
 // through the real day, the season and the weather. This file is the scene's skeleton: the layers in their order, the
 // fit to the screen, the record and the tray; the art of each layer is drawn by the steps that follow (P2 plan S4 to S7).
 // Everything the scene shows is a function of the clock (R1), computed by the pure rules in `game/`.
-import { Container, Graphics } from 'pixi.js';
-import { canScatter, HAY } from './game/animals.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
+import { canScatter, HAY, hayWeight, HERD } from './game/animals.js';
 import { motionAt, slowAt } from './game/view.js';
 import { DESIGN, coverFit, toDesign, visibleDesign } from './layout.js';
 import { seen, startState } from './state.js';
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
+import { animalPicture, coatKey, hayPicture } from './art/animals.js';
 import { paletteKey } from './art/palette.js';
 import {
   BACK_TREES,
@@ -92,12 +93,16 @@ export default async function create(host) {
   const latitude = () => host.place.get().latitude;
   /** The part of the field's width the animals keep out of: the strip of desktop icons (rule R6), in design shares. */
   const bounds = () => {
-    const strip = host.safeArea.get().iconStrip;
-    if (!strip) return { xMin: 0, xMax: 1 };
+    // The animals keep to the part of the field that is on the screen (about an animal's length in from each side), and out of the
+    // strip of desktop icons.
     const share = (screenX) => Math.max(0, Math.min(1, toDesign(fit, screenX, 0).x / DESIGN.width));
-    return strip.side === 'left'
-      ? { xMin: share(strip.width), xMax: 1 }
-      : { xMin: 0, xMax: share(width - strip.width) };
+    const margin = 140 / DESIGN.width;
+    let xMin = Math.min(0.4, share(0) + margin);
+    let xMax = Math.max(0.6, share(width) - margin);
+    const strip = host.safeArea.get().iconStrip;
+    if (strip?.side === 'left') xMin = Math.max(xMin, share(strip.width));
+    else if (strip) xMax = Math.min(xMax, share(width - strip.width));
+    return { xMin, xMax };
   };
 
   // The pictures of the landscape (below): `ready` is set once the first ones are drawn.
@@ -172,9 +177,40 @@ export default async function create(host) {
   const truckBox = new Container(); // the truck, moved and mirrored by the scene
   layers['drive-truck'].addChild(truckBox);
 
+  // The animals: one texture for each coat (five for seven animals), one box for each animal (placed, mirrored and scaled
+  // by depth) holding a body that tilts to graze, and the hay under them.
+  const herd = new Map(); // id -> {box, body, tilt}
+  const hay = { sprite: null, key: 'hay' };
+  const animalTextures = new Map();
+  const FIELD_Y = 690; // the fence line of the field and how far down it reaches (the concept's numbers)
+  const FIELD_DEPTH = 185;
+  const fieldY = (depth) => FIELD_Y + depth * FIELD_DEPTH;
+  const TILT = { stand: 0, walk: 0, graze: 0.2, eat: 0.32 };
+  function placeAnimals(dt) {
+    const t = host.clock.now() / 1000;
+    motion.animals.forEach((a, i) => {
+      const view = herd.get(a.id);
+      if (!view) return;
+      const { box, body } = view;
+      box.position.set(a.x * DESIGN.width, fieldY(a.depth));
+      box.scale.set(a.scale * (a.facing === 'right' ? 1 : -1), a.scale);
+      layers.animals.setChildIndex(box, 1 + i); // far ones first
+      const want = TILT[a.pose] ?? 0;
+      view.tilt += (want - view.tilt) * Math.min(1, dt * 5);
+      const walking = a.pose === 'walk';
+      body.rotation = view.tilt + (walking ? Math.sin(t * 6 + i) * 0.025 : 0);
+      body.position.y = (walking ? -Math.abs(Math.sin(t * 6 + i)) * 2.5 : 0) - 50;
+    });
+    const w = hayWeight(host.clock.now(), hayStartedAt);
+    if (hay.sprite) {
+      hay.sprite.visible = w > 0.01;
+      hay.sprite.alpha = Math.min(1, w * 4);
+    }
+  }
+
   /** Puts the lights, the smoke and the truck where the view of this moment says. */
   let edgeX = DESIGN.width + 200;
-  function applyMotion() {
+  function applyMotion(dt = 0) {
     for (const [id, g] of Object.entries(lights)) {
       const light = slow.lights[id] ?? 0;
       g.visible = light > 0.01;
@@ -199,6 +235,7 @@ export default async function create(host) {
     truckBox.pivot.x = centre;
     truckBox.scale.x = truck.facing === 'right' ? -1 : 1;
     truckBox.position.set(TRUCK.x + centre + truck.x * (edgeX - TRUCK.x), TRUCK.y);
+    placeAnimals(dt);
   }
   applyMotion();
 
@@ -242,6 +279,36 @@ export default async function create(host) {
     }
     art.builds++;
   }
+  /** The five coat textures and the seven animals (drawn once: an animal only moves, it never changes). */
+  function drawAnimals() {
+    if (art.disposed) return;
+    const hayPic = hayPicture();
+    hay.sprite = spriteOf(hayPic, rasterize(hayPic, host.app.renderer));
+    hay.sprite.position.set(HAY.spot[0] * DESIGN.width, fieldY(HAY.spot[1]));
+    hay.sprite.visible = false;
+    layers.animals.addChild(hay.sprite);
+    art.builds++;
+    for (const spec of HERD) {
+      const key = coatKey(spec);
+      const picture = animalPicture(spec.kind, spec.coat);
+      if (!animalTextures.has(key)) {
+        animalTextures.set(key, rasterize(picture, host.app.renderer));
+        art.builds++;
+      }
+      const sprite = new Sprite(animalTextures.get(key));
+      sprite.position.set(picture.x, picture.y + 50); // the body's pivot is 50 above the hooves
+      sprite.width = picture.width;
+      sprite.height = picture.height;
+      const body = new Container();
+      body.pivot.set(0, 0);
+      body.position.set(0, -50);
+      body.addChild(sprite);
+      const box = new Container();
+      box.addChild(body);
+      layers.animals.addChild(box);
+      herd.set(spec.id, { box, body, tilt: 0 });
+    }
+  }
   /** What the pictures should look like now: the key of the palette group and of each tree. */
   const wanted = () => {
     const { season, snowCover } = slow;
@@ -261,6 +328,7 @@ export default async function create(host) {
       await drawPiece('far', farRidgePicture());
       await drawPiece('drive', drivePicture());
       await drawPiece('truck', truckPicture());
+      drawAnimals();
     }
     if (all || now.key !== art.key) {
       art.key = now.key;
@@ -284,6 +352,7 @@ export default async function create(host) {
   }
   await drawLandscape(true);
   art.ready = true;
+  applyMotion(); // the animals are in their places from the first frame
   /** Called once a second: draws again what has moved enough. */
   function checkLandscape() {
     if (art.building || art.disposed) return;
@@ -313,9 +382,9 @@ export default async function create(host) {
       world.position.set(fit.x, fit.y);
     },
     // The scene is a function of the clock: nothing is added up here (the host does not cap `dt` for us).
-    update() {
+    update(dt = 0) {
       refresh();
-      applyMotion();
+      applyMotion(Math.min(dt, 0.1));
     },
     setVisible(value) {
       visible = value;
@@ -370,6 +439,13 @@ export default async function create(host) {
           Object.entries(lights).map(([id, g]) => [id, g.visible ? g.alpha : 0]),
         ),
         smoke: smoke.visible ? motion.smoke : 0,
+        hay: hay.sprite?.visible ? hay.sprite.alpha : 0,
+        animals: [...herd].map(([id, v]) => ({
+          id,
+          x: v.box.position.x,
+          y: v.box.position.y,
+          scale: v.box.scale.y,
+        })),
         truck: {
           visible: truckBox.visible,
           x: truckBox.position.x,

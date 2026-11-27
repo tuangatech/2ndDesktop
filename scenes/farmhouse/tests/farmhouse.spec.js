@@ -58,11 +58,19 @@ test.describe('the farm house scene', () => {
       expect(['spring', 'summer', 'autumn', 'winter']).toContain(info.season);
       expect(info.animals).toBe(7);
       // The pictures are drawn once: sky, far ridge, drive, truck, mid ridge, hill, lawn, house, field, fence (10) and eight trees.
-      expect(info.art.builds).toBe(18);
+      expect(info.art.builds).toBe(18 + 1 + 5); // and the hay and five coats
       // What is on show follows the view: each window's light, the smoke and the truck.
       for (const [id, light] of Object.entries(info.view.slow.lights)) {
         expect(info.shown.lights[id]).toBeCloseTo(light > 0.01 ? light : 0, 5);
       }
+      // The seven animals are on show where the view puts them, bigger when nearer, and the hay is not out.
+      expect(info.shown.animals).toHaveLength(7);
+      for (const a of info.shown.animals) {
+        const want = info.view.motion.animals.find((m) => m.id === a.id);
+        expect(a.x).toBeCloseTo(want.x * 2100, 3);
+        expect(a.scale).toBeCloseTo(want.scale, 5);
+      }
+      expect(info.shown.hay).toBe(0);
       expect(info.shown.truck.visible).toBe(info.view.motion.truck.visible);
       await expect.poll(() => fs.existsSync(recordOf(dir)), { timeout: 10_000 }).toBe(true);
       const saved = JSON.parse(fs.readFileSync(recordOf(dir), 'utf8'));
@@ -85,6 +93,18 @@ test.describe('the farm house scene', () => {
         return { after: scene.menuItems()[0], started: scene.debug.hay().startedAt !== null };
       });
       expect(result.started).toBe(true);
+      // A few seconds in, the animals are walking to the hay and it is on show.
+      await run.page.waitForTimeout(3000);
+      const later = await run.page.evaluate(() => {
+        const scene = window.__scene.fishtank;
+        scene.update(0);
+        return {
+          hay: scene.debug.shown().hay,
+          poses: scene.debug.view().motion.animals.map((a) => a.pose),
+        };
+      });
+      expect(later.hay).toBeGreaterThan(0);
+      expect(later.poses.every((pose) => pose === 'walk')).toBe(true);
       expect(result.after).toEqual({
         id: 'hay',
         label: 'Scatter hay (wait a moment)',
