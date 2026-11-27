@@ -21,6 +21,8 @@ import { launch, makeDataDir } from './helpers.js';
 //   - 30 more resizes do not add textures (a gradient texture made again on every resize leaked memory in the tank);
 //   - `update()` takes less than a frame (the 95th percentile is printed; the budgets of `01` section 11 are measured
 //     with `npm run measure:switch`, not here, because a CI runner has no real GPU).
+// `resume(gapMs)` is optional in the contract (01 section 8): a scene without it is resumed with nothing to call.
+// Run it with `npm run test:e2e` (it builds first); a direct `npx playwright test` needs `npm run build` before it.
 // Not checked yet: that a scene paused for an hour and resumed has the same state as one that ran the hour (the scenes
 // of today do not change with the clock; the farm house will, and gets the check with it), and the capabilities (none
 // exist before 0.4).
