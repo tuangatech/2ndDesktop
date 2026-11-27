@@ -60,7 +60,7 @@ function number(api, dict, key, fallback) {
 }
 
 /**
- * The windows on screen in the current Space, front to back, described for decideCoveredMac().
+ * The windows on screen in the current Space, front to back, described for coveredShare() (cover.js).
  * Bounds are in points with the origin at the top left of the primary display, as in Electron's `screen`.
  * @returns {Array<{pid:number, layer:number, alpha:number, bounds:{x:number, y:number, width:number, height:number}}>}
  */

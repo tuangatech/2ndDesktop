@@ -140,7 +140,7 @@ function placeWindow(api, hwnd, parent, insertAfter, rect, flags) {
   if (insets.left || insets.top || insets.right || insets.bottom) put(compensate(rect, insets));
 }
 
-/** The window under the foreground, described for decideCovered(). Returns null if there is none. */
+/** The window under the foreground, for the edit-mode spike (spikes/edit-mode); the cover check uses listWindows(). Null if there is none. */
 export function describeForeground() {
   const api = loadApi();
   const hwnd = big(api.GetForegroundWindow());
