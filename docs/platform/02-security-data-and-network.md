@@ -35,6 +35,8 @@ Not defended against (stated plainly): a vulnerability in Chromium itself (we ke
 
 ## 3. The sandbox, concretely
 
+**Status (DEC-57, 2026-11-27):** designed and proven by the loader spike (`06-loader-spike.md`), **not built**. It is built after the farm house and before Developer mode (0.5) or any scene from outside. Until then the bundled scenes are trusted and run from the app's own folder, with the page and bridge limits of section 4 (built in work package 8.5).
+
 The Electron security checklist says to enable the sandbox in every renderer, not to expose Electron APIs to untrusted content, to avoid `file://` in favour of custom protocols, to set a restrictive Content-Security-Policy, and to set the permission handlers ([Electron security guide](https://www.electronjs.org/docs/latest/tutorial/security)). The scene page follows all of it:
 
 | Layer | Setting |

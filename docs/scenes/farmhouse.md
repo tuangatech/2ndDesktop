@@ -24,7 +24,7 @@ Reference: a photograph the owner supplied (not in the repository, used for comp
   - Weather: Live, Simulated, and a preview list (Clear, Cloudy, Fog, Rain, Snow, Storm). A preview lasts for the session and is not saved.
   - Season: Auto, or a preview of a month. Not saved.
   - Optional, the owner decides: "Scatter hay", a small daily visit like feeding the fish, which makes the animals gather for a minute. It has no rules and no consequence.
-- **Host settings pages** (from the manifest options): the place (a typed city, the time zone, or an IP lookup), the hemisphere (Auto from the place, or North, South), "Weather: live or simulated".
+- **Host settings pages** (from the manifest options; **0.4**, DEC-57: in 0.2 there is no settings page, so the weather and season previews are the tray items above and the hemisphere comes from the time zone): the place (a typed city, the time zone, or an IP lookup), the hemisphere (Auto from the place, or North, South), "Weather: live or simulated".
 - **Window mode:** the same picture in a window; clicking an animal gives a small reaction (optional).
 
 ## 4. Rules and state
