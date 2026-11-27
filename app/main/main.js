@@ -38,15 +38,8 @@ import { createRecordStore, readJson } from './store.js';
 import { createTray } from './tray.js';
 import { createUsageLog, usageLines } from './usage-log.js';
 import { startSampler } from './sampler.js';
-import { migrateOldData } from './migrate-data.js';
 import { createRequestFilter, installSessionPolicy } from './session-policy.js';
-import {
-  APP_ID,
-  DEV_DATA_FOLDER,
-  OLD_DATA_FOLDER,
-  OLD_DEV_DATA_FOLDER,
-  PRODUCT_NAME,
-} from './product.js';
+import { APP_ID, DEV_DATA_FOLDER, PRODUCT_NAME } from './product.js';
 
 // A small log that testers can send back (Step 1 desktop attach test). It stays under 1 MB (one old file is kept) and
 // every line loses the home folder and the user name when it is written (the stack of an error holds a path). It is
@@ -88,15 +81,8 @@ const isDev = Boolean(devUrl) || !app.isPackaged;
 // Development runs use their own data folder, so they never touch a real save (tech design 14.4).
 if (process.env.DESKTOP2_USER_DATA) {
   app.setPath('userData', process.env.DESKTOP2_USER_DATA);
-} else {
-  if (isDev) app.setPath('userData', path.join(app.getPath('appData'), DEV_DATA_FOLDER));
-  // The first start after the rename copies the saved tank and the settings from the old product's folder (a copy,
-  // never a move). A run with its own data folder (tests, screenshots) never does.
-  migrateOldData({
-    oldDir: path.join(app.getPath('appData'), isDev ? OLD_DEV_DATA_FOLDER : OLD_DATA_FOLDER),
-    newDir: app.getPath('userData'),
-    log: (message) => log(message),
-  });
+} else if (isDev) {
+  app.setPath('userData', path.join(app.getPath('appData'), DEV_DATA_FOLDER));
 }
 app.setAppUserModelId(APP_ID);
 

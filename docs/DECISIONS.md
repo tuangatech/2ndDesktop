@@ -112,6 +112,7 @@ Written 2026-11-23 from the README's lists. Earlier decisions are grouped by the
 | Id | Decision | Owner or session | Where |
 | --- | --- | --- | --- |
 | DEC-54 | Finding 10a ("take the single-instance lock before the data migration") is **not done**. `migrateOldData` copies only when an old Fish Tank folder exists, and none exists (the app is not released, so nobody has old data); with nothing to copy it only reads (`existsSync`), so a second launch at the same instant writes nothing. Whether to delete the migration itself (`app/main/migrate-data.js`, its test, the old folder names in `app/main/product.js`, the call in `main.js`) is a separate question for the owner: it would be one small PR of its own. | Owner, 2026-11-27 (relayed by the Mac session, `M-10`) | `docs/reviews/2026-11-25-host-security-review.md` (finding 10a), `app/main/migrate-data.js` |
+| DEC-55 | The one-time copy of the old Fish Tank data (`app/main/migrate-data.js`, its test, `OLD_DATA_FOLDER` and `OLD_DEV_DATA_FOLDER` in `app/main/product.js`, the call in `main.js`) is **deleted**. It exists for data that nobody has: the app is not released and the owner has no old folder. This also removes what finding 10a was about, so DEC-54 stays as written. If old data ever has to be carried over, it is written again for that case. | Owner, 2026-11-27 (relayed by the Mac session) | `app/main/main.js`, `app/main/product.js` |
 
 ## Round 16: the Windows cover check (2026-11-27)
 
