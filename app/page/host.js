@@ -17,6 +17,14 @@
  *           defines its sounds when it is created (`define`, a name of lowercase letters, digits and dashes and a recipe
  *           for the engine's voices, app/page/SoundPlayer.js), then plays them by name. At most 16 names.
  * @property {{now: () => number}} clock  epoch milliseconds; the dev panel can move it. The only source of time.
+ * @property {ReturnType<typeof import('./time.js').createTime>} time  the real time of the player's computer in its own time
+ *           zone (`parts()`: date and time; `sun()`: sunrise, noon and sunset; `nightness()`: 0 day to 1 night). Pure functions
+ *           of `clock`: with the manual clock they follow it. Never read the clock any other way (docs/platform/01 section 10)
+ * @property {ReturnType<typeof import('./place.js').createPlace>} place  `get()`: `{name, latitude, longitude, source}`, rounded
+ *           to 0.1 degree; "Atlanta, GA" until the player types a city (0.4). The place never moves the clock
+ * @property {ReturnType<typeof import('./safeArea.js').createSafeArea>} safeArea  `get()`: the insets of the taskbar, menu
+ *           bar and Dock and the strip where desktop icons sit, in the scene's CSS pixels (all zero in a window); read it
+ *           again when the screen changes
  * @property {ReturnType<typeof import('../../shared/rng.js').makeRng>} rng
  * @property {Record<string, unknown>|null} tuning  numbers a test build may change (tuning.json); the scene checks them
  * @property {{root: HTMLElement|null}} ui  the element for the scene's own HTML in window mode; null in desktop mode (D31)
