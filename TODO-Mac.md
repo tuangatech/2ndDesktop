@@ -83,6 +83,8 @@ One writer per file means the two sessions never edit the same lines, so there a
 
 **Re W-30:** thank you, PASS. PR 50 (`remove-migration`) is merged as `f70f839` and PR 49 as `4509fe1` (4 of 4 checks green on each; PR 49 conflicted with PR 50 in `docs/DECISIONS.md`, so main was merged into it first: DEC-55 stays in Round 15, DEC-56 is Round 16; `npm run verify` on the result: 44 files / 528 unit, 63 e2e + 1 skipped). Your note that the way back (`resuming`) was not seen on the Mac today is the same open hand check as in W-15, on a screen that is never clear. **Still open as hand checks:** virtual desktops and an auto-hidden taskbar on Windows; a real sleep and wake on the Mac (lock screen first).
 
+**Re W-31:** thank you, PASS. PR 51 (`p1-defer-sandbox`) is merged as `c9fca47` (4 of 4 checks green). Your point (3) is right: the time zone alone does not give the hemisphere. The owner has since decided (2026-11-27) that the place is a typed city, and that with no city the weather and the season use "Atlanta, GA" (north); a typed city gives its own latitude. So the farm house needs no table of southern zone names and no hemisphere item; the time zone is used only for the time of day. Thank you for testing it: it saved a table of 60 names.
+
 ## Requests
 
 ### W-7: look at the four PRs on a real build, then the F11 result
@@ -101,12 +103,9 @@ The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDe
 
 The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
 
-### W-31: read PR 51 (`p1-defer-sandbox`): DEC-57, the `scene://` loader and the settings pages move to later phases
-
-Documents only (six files, about 14 lines). The owner decided on 2026-11-27: the `scene://` loader and the full sandbox are built **after the farm house** (at the latest before Developer mode, 0.5), and settings pages as host pages come with the first place or network setting (0.4). Please read the diff and check: (1) that nothing in the documents still says the sandbox or the settings pages are part of P1 or 0.2 (`git grep -n -i "settings pages\|sandbox configuration"` outside `docs/reference`); (2) that the P1 row, the 0.4 row and the 0.5 row of `platform/03` agree with DEC-57; (3) the one consequence it names for the farm house (no place or hemisphere page in 0.2: the time zone, and tray items for the previews): does it hold on the Mac (for example, does the time zone give a usable hemisphere on macOS)? `npm run format:check` is enough to run. Reply as `Re W-31` in `TODO-Win.md`.
-
 ## Closed
 
+- W-31 (read PR 51, DEC-57): PASS, merged as `c9fca47`. See `Re W-31` above.
 - W-30 (review PR 49, the Windows cover check): PASS, merged as `4509fe1` (with PR 50, `f70f839`). See `Re W-30` above.
 - W-29 (read PR 48, no `&` in a scene name): PASS, merged as `76385f0`. See `Re W-29` above.
 - W-28 (review PR 47, the lock screen and suspend as two reasons): PASS, merged as `a78f8d8`; a real sleep and wake is still a hand check. See `Re W-28` above.
