@@ -29,6 +29,9 @@ const SWP_SHOWWINDOW = 0x0040;
 const HWND_BOTTOM = 1;
 const WS_EX_LAYERED = 0x00080000;
 const DWMWA_CLOAKED = 14;
+const DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+const GW_HWNDNEXT = 2;
+const MAX_WINDOWS = 1000;
 const LWA_ALPHA = 2;
 const SWP_NOZORDER = 0x0004;
 
@@ -86,6 +89,12 @@ function loadApi() {
     DwmGetWindowAttribute: dwmapi.func(
       'int32_t __stdcall DwmGetWindowAttribute(uintptr_t hwnd, uint32_t attr, _Out_ int32_t *value, uint32_t size)',
     ),
+    // The same call for an attribute that is a rectangle (the visible frame, without the invisible resize border).
+    DwmGetWindowRect: dwmapi.func(
+      'int32_t __stdcall DwmGetWindowAttribute(uintptr_t hwnd, uint32_t attr, _Out_ RECT *value, uint32_t size)',
+    ),
+    GetTopWindow: user32.func('uintptr_t __stdcall GetTopWindow(uintptr_t hwnd)'),
+    GetWindow: user32.func('uintptr_t __stdcall GetWindow(uintptr_t hwnd, uint32_t cmd)'),
   };
   return cached;
 }
@@ -131,7 +140,7 @@ function placeWindow(api, hwnd, parent, insertAfter, rect, flags) {
   if (insets.left || insets.top || insets.right || insets.bottom) put(compensate(rect, insets));
 }
 
-/** The window under the foreground, described for decideCovered(). Returns null if there is none. */
+/** The window under the foreground, for the edit-mode spike (spikes/edit-mode); the cover check uses listWindows(). Null if there is none. */
 export function describeForeground() {
   const api = loadApi();
   const hwnd = big(api.GetForegroundWindow());
@@ -149,6 +158,42 @@ export function describeForeground() {
     pid: pid[0],
     rect: windowRect(api, hwnd),
   };
+}
+
+/**
+ * Every top-level window, front to back, described for coverWindowsWin() (cover.js). Only hidden windows are skipped
+ * here (they are the many); the rest of the filtering is in the pure function, where it is tested. The rectangle is the
+ * visible frame from DWM (what is drawn), not GetWindowRect, which on Windows 10 and 11 includes an invisible resize
+ * border of about 8 pixels around a maximized window; in physical pixels, as the display rectangle of the caller.
+ * No window title is read.
+ */
+export function listWindows() {
+  const api = loadApi();
+  const windows = [];
+  let hwnd = big(api.GetTopWindow(0));
+  for (let i = 0; hwnd !== 0n && i < MAX_WINDOWS; i++) {
+    if (api.IsWindowVisible(hwnd)) {
+      const pid = [0];
+      api.GetWindowThreadProcessId(hwnd, pid);
+      const cloaked = [0];
+      api.DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, cloaked, 4);
+      const frame = {};
+      const framed = api.DwmGetWindowRect(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, frame, 16) === 0;
+      windows.push({
+        visible: true,
+        iconic: Boolean(api.IsIconic(hwnd)),
+        cloaked: cloaked[0] !== 0,
+        className: className(api, hwnd),
+        pid: pid[0],
+        exStyle: Number(api.GetWindowLongPtrW(hwnd, GWL_EXSTYLE)) >>> 0,
+        rect: framed
+          ? { left: frame.left, top: frame.top, right: frame.right, bottom: frame.bottom }
+          : windowRect(api, hwnd),
+      });
+    }
+    hwnd = big(api.GetWindow(hwnd, GW_HWNDNEXT));
+  }
+  return windows;
 }
 
 function findDesktopParent(api, progman) {

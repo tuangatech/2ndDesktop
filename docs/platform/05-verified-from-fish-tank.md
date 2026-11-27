@@ -144,7 +144,7 @@ Chromium on W1 used the Intel UHD adapter (vendor 0x8086), not the NVIDIA card, 
 
 | System | What reports "covered" |
 | --- | --- |
-| Windows | The foreground check in `app/main/desktop-win.js` (`decideCovered`, unit-tested); pauses when a window is maximized over the desktop. Minimizing the window itself: `visibilityState` becomes hidden |
+| Windows | Measured with the foreground check of the old project (`decideCovered`, removed in 0.2: DEC-56 lists every visible window instead, as the Mac does); paused when a window was maximized over the desktop. Minimizing the window itself: `visibilityState` becomes hidden |
 | macOS, a **full-screen** window in its own Space | **Chromium reports the desktop window hidden** by itself (about 0.1% CPU while paused). This is not a "full-screen detector" of ours |
 | macOS, a window that only **fills the screen** (Finder, a maximized editor) | **Chromium does not report it**: the tank kept drawing at 30 fps and 1.3% CPU. Our own check reads the CoreGraphics window list and pauses when other apps' windows hide **96% of the work area**, every 2 seconds; with a maximized editor it paused within 2 seconds (0.3 to 0.5% CPU) and Show Desktop resumed it within 2 seconds |
 

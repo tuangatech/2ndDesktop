@@ -1,5 +1,7 @@
-// Pure decision: does a window cover the desktop of the primary display? (tech design 3.8, FR-22)
-// decideCovered is for Windows (the caller fills `win` from Win32 calls), decideCoveredMac for macOS. No side effects.
+// Pure decisions: does something cover the desktop of the primary display? (tech design 3.8, FR-22)
+// Both systems list every window on screen and ask `coveredShare` how much of the primary display's work area they hide
+// together: macOS through CoreGraphics (desktop-mac.js), Windows through the Win32 window list (desktop-win.js,
+// `coverWindowsWin` below, DEC-45). No side effects.
 
 const SHELL_CLASSES = new Set([
   'Progman',
@@ -12,39 +14,49 @@ const SHELL_CLASSES = new Set([
 // How much of the display a window must span to count as "as large as the display".
 const EDGE_SLACK = 2;
 
+// Windows: share of the primary display's work area (the screen without the taskbar) that other windows must hide
+// together before the tank counts as covered. The same 0.96 as the Mac, for the small gaps between snapped windows;
+// to be tuned by hand on a real snap layout (the log prints the share).
+export const WIN_COVER_SHARE = 0.96;
+
+// Extended window styles that mark a window that is not a normal app window: a tool window (palettes, the Alt-Tab
+// list), a window that never takes the focus (overlays, toasts) and a click-through window (screen overlays).
+const WS_EX_TRANSPARENT = 0x00000020;
+const WS_EX_TOOLWINDOW = 0x00000080;
+const WS_EX_NOACTIVATE = 0x08000000;
+const NOT_A_NORMAL_WINDOW = WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
+
 /**
- * @param {object|null} win  { visible, iconic, cloaked, zoomed, className, pid, rect: {left, top, right, bottom} }
- * @param {{left:number, top:number, right:number, bottom:number}} primary  physical pixels
+ * Windows: the top-level windows that can hide the desktop, in the shape `coveredShare` takes. Left out: our own
+ * windows, the shell (desktop, taskbar), windows that are hidden, minimized or cloaked (a window on another virtual
+ * desktop or a suspended app is cloaked), and windows that are not normal app windows (see NOT_A_NORMAL_WINDOW).
+ * The caller fills `windows` from the Win32 window list (desktop-win.js), in physical pixels.
+ * @param {Array<{visible:boolean, iconic:boolean, cloaked:boolean, className:string, pid:number, exStyle:number,
+ *   rect:{left:number, top:number, right:number, bottom:number}}>} windows
  * @param {number} selfPid
- * @returns {boolean}
+ * @returns {Array<{pid:number, layer:number, alpha:number, className:string,
+ *   bounds:{x:number, y:number, width:number, height:number}}>}
  */
-export function decideCovered(win, primary, selfPid) {
-  if (!win) return false;
-  if (win.pid === selfPid) return false;
-  if (SHELL_CLASSES.has(win.className)) return false;
-  if (!win.visible || win.iconic || win.cloaked) return false;
-
-  const { left, top, right, bottom } = win.rect;
-  const centerX = (left + right) / 2;
-  const centerY = (top + bottom) / 2;
-  const onPrimary =
-    centerX >= primary.left &&
-    centerX < primary.right &&
-    centerY >= primary.top &&
-    centerY < primary.bottom;
-  if (!onPrimary) return false;
-
-  if (win.zoomed) return true;
-
-  return (
-    left <= primary.left + EDGE_SLACK &&
-    top <= primary.top + EDGE_SLACK &&
-    right >= primary.right - EDGE_SLACK &&
-    bottom >= primary.bottom - EDGE_SLACK
-  );
+export function coverWindowsWin(windows, selfPid) {
+  const kept = [];
+  for (const w of windows) {
+    if (w.pid === selfPid) continue;
+    if (SHELL_CLASSES.has(w.className)) continue;
+    if (!w.visible || w.iconic || w.cloaked) continue;
+    if ((w.exStyle & NOT_A_NORMAL_WINDOW) !== 0) continue;
+    const { left, top, right, bottom } = w.rect;
+    kept.push({
+      pid: w.pid,
+      layer: 0,
+      alpha: 1,
+      className: w.className,
+      bounds: { x: left, y: top, width: right - left, height: bottom - top },
+    });
+  }
+  return kept;
 }
 
-/** Electron rectangles are {x, y, width, height}; decideCovered() wants {left, top, right, bottom}. */
+/** Electron rectangles are {x, y, width, height}; the share code works with {left, top, right, bottom}. */
 export function rectToEdges(rect) {
   return { left: rect.x, top: rect.y, right: rect.x + rect.width, bottom: rect.y + rect.height };
 }
@@ -55,10 +67,10 @@ export function rectToEdges(rect) {
 export const MAC_COVER_SHARE = 0.96;
 
 /**
- * macOS: share (0 to 1) of the primary display's work area that normal, visible windows of other processes
- * hide together (FR-22). The tank counts as covered at MAC_COVER_SHARE or more. Unlike decideCovered() this
- * looks at every window on screen, not only the front one, so two windows side by side count too. The caller
- * fills `windows` from CGWindowListCopyWindowInfo (app/main/desktop-mac.js).
+ * Share (0 to 1) of the primary display's work area that normal, visible windows of other processes hide together
+ * (FR-22). The tank counts as covered at MAC_COVER_SHARE (macOS) or WIN_COVER_SHARE (Windows) or more. It looks at
+ * every window on screen, not only the front one, so two windows side by side count too. The caller fills `windows`
+ * from CGWindowListCopyWindowInfo (app/main/desktop-mac.js) or from `coverWindowsWin` (Windows, physical pixels).
  * @param {Array<{pid:number, layer:number, alpha:number, bounds:{x:number, y:number, width:number, height:number}}>} windows
  *   on-screen windows, in points, with the origin at the top left of the primary display (as Electron's screen)
  * @param {{x:number, y:number, width:number, height:number}} workArea  screen.getPrimaryDisplay().workArea
