@@ -49,4 +49,16 @@ describe('the bridge between the page and the main process', () => {
     const inMain = [...new Set(all(main, /ipcMain\.(?:on|handle)\(\s*'([^']+)'/g))];
     expect(inMain.sort()).toEqual(fromPage.sort());
   });
+
+  it('puts every channel that writes a line of text from the page behind the rate limiter', () => {
+    // 20 lines a second, 02 section 4. `diag:activity` writes no text (it only counts a minute of use).
+    const lines = ['diag:error', 'diag:fps', 'diag:note', 'diag:visibility'];
+    const diag = all(main, /ipcMain\.on\(\s*'(diag:[^']+)'/g).filter(
+      (name) => name !== 'diag:activity',
+    );
+    expect(diag.sort()).toEqual(lines);
+    for (const channel of lines) {
+      expect(main).toMatch(new RegExp(`ipcMain\\.on\\(\\s*'${channel}',\\s*limited\\(`));
+    }
+  });
 });

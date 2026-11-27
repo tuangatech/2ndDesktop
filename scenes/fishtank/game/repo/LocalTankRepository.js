@@ -1,4 +1,4 @@
-// The Phase 1 repository: the tank state lives here, the rules in scenes/fishtank/rules.js change it, and every change
+// The Phase 1 repository: the tank state lives here, the rules in scenes/fishtank/game/rules.js change it, and every change
 // is saved (D8). Nothing here touches Electron or the disk: `storage` is { load(), save(record) }, which in the
 // app talks to the main process and in tests is a fake (plan 5B).
 import * as rules from '../rules.js';
@@ -119,7 +119,7 @@ export function migrate(record) {
  * original is never lost (it is the only copy once the next save has replaced the backup).
  * @param {{storage: {load: () => Promise<{status: string, data?: object}>, save: (record: object) => void,
  *                    keepCopy?: (record: object) => void},
- *          clock: {now: () => number}, rng: ReturnType<typeof import('../../../shared/rng.js').makeRng>,
+ *          clock: {now: () => number}, rng: ReturnType<typeof import('../../../../shared/rng.js').makeRng>,
  *          config: typeof import('../config.js').config, speciesIds: string[]}} options
  */
 export function createLocalRepository({ storage, clock, rng, config, speciesIds }) {

@@ -13,7 +13,7 @@ import {
   separationForce,
   speedScale,
   wallForce,
-} from '../steering.js';
+} from '../view/steering.js';
 
 const area = { x: 10, y: 20, width: 400, height: 200 };
 

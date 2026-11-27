@@ -69,8 +69,8 @@ All of it lives behind `host` in the scene page (document 1, section 8). Each ca
 
 | Call | Check | Capability |
 | --- | --- | --- |
-| `ready()`, `log(level, text)` | log rate-limited (20 lines per second), 300 characters, control characters removed | none |
-| `record.load()`, `record.save(state)` | the path is chosen by the main process from the active scene id; JSON only; at most 1 MB; at most one write per second | none |
+| `ready()`, `log(level, text)` | log rate-limited (20 lines per second), 2000 characters (a stack trace does not fit in 300), control characters removed | none |
+| `record.load()`, `record.save(state)` | the path is chosen by the main process from the active scene id; JSON only; at most 2 MB; at most one write per second | none |
 | `status()` and `menuItems()`, answered when the host asks as the menu opens (nothing is pushed; document 1, section 10.1) | plain text, at most 60 characters per label, at most 12 items, ids are opaque strings; the main process remembers the ids it offered | none |
 | `assets.load(path)` | inside the scene's own folder only | none |
 | `data.get(kind)` and updates | only kinds in the manifest | `data` |
@@ -81,6 +81,15 @@ All of it lives behind `host` in the scene page (document 1, section 8). Each ca
 | Inbound events | pause, resume, resize, pointer, menu id, data, option | none |
 
 Nothing in the bridge reaches the operating system, a file outside the scene's folder, or a token.
+
+**As built (work package 8.5, checked against the code).** The table is the API a scene sees (`host`); the page of the host reaches the main process through `window.desktop2` (`app/main/preload.cjs`), 21 functions that `tests/host/bridge.test.js` pins by name, so a new one needs a deliberate edit of that list. What is true today:
+
+- **No call names a scene.** Records, `app:info` and the scene's lines are answered for the scene the main process assigned to the page (`scene-binding.js`); a page cannot read or write another scene's record. `getSettings` gives only the sound switch.
+- **Records:** JSON only, at most 2 MB (the table said 1 MB; the code says 2 MB), one write a second through the debounced writer, and a copy of a record that had to be repaired is kept next to it by the main process, at most 5.
+- **Menu:** `sanitizeSceneMenu` cuts labels to 60 characters, 12 items, ids checked; only an id of the last menu is forwarded back (`allowedIds`).
+- **Lines of text from the page** (`diag:error`, `diag:note`, `diag:visibility`, `diag:fps`): 20 a second per channel (a test checks that every one goes through the limiter), cut and cleaned in the main process by `pageLine` (2000 characters, control characters and new lines become spaces, so a page cannot write a line that looks like the app's own); a frame rate that is not a finite number is dropped. The preload also cuts the text, but the main process does not rely on that.
+- **Who is asking:** `scene:ready`, `diag:activity`, `scene:menu` and `scene:saved` are accepted only from the scene's window. The other calls (`diag:*`, `window:*`, `menu:open`, `settings:get`, `app:info`) do not check the sender, because today only one page has the bridge. **The `scene://` work (8.6) must add the check** (and a bridge that gives a sandboxed scene frame only the calls of the table), before any scene that is not bundled can load.
+- **Not built yet** (they come with their features, 0.4): capabilities and consent (section 5), `assets.load`, `data`, `place`, `net`, `ui` and the sound-after-a-player-action rule.
 
 ## 5. Capabilities and consent
 

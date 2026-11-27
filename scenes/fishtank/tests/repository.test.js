@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { config } from '../config.js';
+import { config } from '../game/config.js';
 import { makeRng } from '../../../shared/rng.js';
 import {
   SCHEMA_VERSION,
   createLocalRepository,
   migrate,
   repairState,
-} from '../repo/LocalTankRepository.js';
+} from '../game/repo/LocalTankRepository.js';
 
 const H = 60 * 60 * 1000;
 const T0 = 1_790_000_000_000;

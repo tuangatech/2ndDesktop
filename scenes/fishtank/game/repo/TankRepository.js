@@ -1,7 +1,7 @@
 // The repository interface (tech design 3.4). The game code never touches files or the network directly: it
 // calls these methods. Phase 1 has `LocalTankRepository`; Phase 3 adds a remote one with the same methods.
 //
-// Every action returns the result object of scenes/fishtank/rules.js: `{ ok: true, state, ... }` or
+// Every action returns the result object of scenes/fishtank/game/rules.js: `{ ok: true, state, ... }` or
 // `{ ok: false, reason }`, where reason is one of stash_full, none_available, stash_empty, fish_full,
 // unknown_fish, no_egg, tank_full, bad_name.
 

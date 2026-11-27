@@ -59,7 +59,7 @@ A dropped pellet sinks for about 6 seconds from the top to the sand and sways a 
 
 Everything that changes over time is computed from `host.clock`: pellets that appeared while the app was closed, fullness decay, drowsiness, and the catch-up at the next start. The pacing was checked with a simulator (`npm run sim`: 30 days, several visit patterns): a player who visits daily at the same hour reaches the adult stage on day 10, one who visits at different hours after about 14 visits.
 
-**Record** (`records/fishtank.json`, `schemaVersion` 1; the fields are in the old `scenes/fishtank/repo/` and `rules.js`): the fish (species, seed, name, growth points, fullness and its time stamp, created at, last fed), the pellets (floating count and its time stamp, the stash), the eggs and the total fed, the decoration seed, and `savedAt`. The record id never changes, so that the owner's saved tank loads in the new repository. The scene keeps its own "your record was damaged" lines and draws them itself.
+**Record** (`records/fishtank.json`, `schemaVersion` 1; the fields are in the old `scenes/fishtank/game/repo/` and `game/rules.js`): the fish (species, seed, name, growth points, fullness and its time stamp, created at, last fed), the pellets (floating count and its time stamp, the stash), the eggs and the total fed, the decoration seed, and `savedAt`. The record id never changes, so that the owner's saved tank loads in the new repository. The scene keeps its own "your record was damaged" lines and draws them itself.
 
 **Dropped from the old plan:** accounts, saving on a server, friends, visiting other tanks, hearts, Explore. The new platform is one player on one computer.
 

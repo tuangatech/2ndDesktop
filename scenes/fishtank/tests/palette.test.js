@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import species from '../species.json';
-import { hslToHex, hueShiftFor, mixColor, paletteFor } from '../palette.js';
+import species from '../data/species.json';
+import { hslToHex, hueShiftFor, mixColor, paletteFor } from '../view/palette.js';
 
 describe('palette', () => {
   it('converts HSL to hex', () => {

@@ -4,7 +4,7 @@
 // The scene shows the tank that the repository holds and sends the player's actions to it: it never decides a
 // number (D1). Clicks, tray actions and the feed loop all end in the same repository calls.
 import { Container, FillGradient, Graphics, Sprite, TilingSprite } from 'pixi.js';
-import { eggsAvailable } from './rules.js';
+import { eggsAvailable } from '../game/rules.js';
 import { BubbleEmitter, BubbleSystem } from './Bubbles.js';
 import { EggField } from './Egg.js';
 import { Fish } from './Fish.js';
@@ -29,8 +29,8 @@ export const MESSAGES = {
 export class TankScene {
   /**
    * @param {{textures: Record<string, import('pixi.js').Texture>, decor: Record<string, object>, species: object}} art
-   * @param {import('./repo/TankRepository.js').TankRepository} repository  already loaded
-   * @param {typeof import('./config.js').config} config
+   * @param {import('../game/repo/TankRepository.js').TankRepository} repository  already loaded
+   * @param {typeof import('../game/config.js').config} config
    */
   constructor(art, repository, config) {
     this.art = art;
@@ -134,7 +134,7 @@ export class TankScene {
     repository.subscribe((event) => this.syncAll(event));
   }
 
-  /** @param {import('./repo/TankRepository.js').TankEvent} [event]  what changed, when known */
+  /** @param {import('../game/repo/TankRepository.js').TankEvent} [event]  what changed, when known */
   syncAll(event) {
     this.syncFish(event);
     this.syncPellets();
@@ -175,7 +175,7 @@ export class TankScene {
 
   /**
    * Makes the fish match the repository: new records get a fish, removed ones lose it, points follow.
-   * @param {import('./repo/TankRepository.js').TankEvent} [event]
+   * @param {import('../game/repo/TankRepository.js').TankEvent} [event]
    */
   syncFish(event) {
     if (!this.layout) return;

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PATTERNS, simulate } from '../../../scripts/pacing-sim.js';
 import { makeRng } from '../../../shared/rng.js';
 
-// The promises of functional spec 7.2. A change to scenes/fishtank/config.js that breaks them fails the build.
+// The promises of functional spec 7.2. A change to scenes/fishtank/game/config.js that breaks them fails the build.
 const run = (name, seed = 1) => simulate(PATTERNS[name](30, makeRng(seed)), { seed });
 
 describe('pacing promises', () => {

@@ -1,6 +1,6 @@
 // Fish colors (FR-13): a palette per stage, shifted a little by the fish's seed so no two fish match
 // exactly, and the same fish always looks the same.
-import { makeRng } from '../../shared/rng.js';
+import { makeRng } from '../../../shared/rng.js';
 
 /** HSL (degrees, percent, percent) to a 0xRRGGBB number. */
 export function hslToHex(h, s, l) {

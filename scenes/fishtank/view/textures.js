@@ -1,8 +1,8 @@
 // The tank's own textures: the one made in code, and the scale of its atlas. The host loads the atlas itself (D40,
 // app/page/art.js) and hands it to the scene as `host.art`.
 import { Texture } from 'pixi.js';
-import atlasData from '../../assets/spritesheets/fishtank.json';
-import { makeRng } from '../../shared/rng.js';
+import atlasData from '../../../assets/spritesheets/fishtank.json';
+import { makeRng } from '../../../shared/rng.js';
 
 /** Art is rendered at this many times its size in the default window (scripts/build-assets.mjs). */
 export const ART_SCALE = atlasData.meta.artScale;

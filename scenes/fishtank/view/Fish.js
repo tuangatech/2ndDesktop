@@ -2,8 +2,8 @@
 // Three MeshRope layers (tail and fins, body, accent stripe) share one array of points, so each can take its
 // own tint. A sine wave runs along the points from head to tail; the whole fish pitches towards its direction.
 import { Container, MeshRope, Point } from 'pixi.js';
-import { makeRng } from '../../shared/rng.js';
-import { sizeOf, stageOf } from './rules.js';
+import { makeRng } from '../../../shared/rng.js';
+import { sizeOf, stageOf } from '../game/rules.js';
 import { mixColor, paletteFor } from './palette.js';
 import { NO_REACTION, chooseReaction, personalityOf, reactionVelocity } from './pointer.js';
 import {

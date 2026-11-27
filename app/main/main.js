@@ -28,7 +28,7 @@ import {
 import { buildAppMenuTemplate, buildTrayTemplate, sanitizeSceneMenu } from './menu.js';
 import { createCrashRestart, RESTARTED_ARG, restartCommandLine } from './crash-restart.js';
 import { FALLBACK_NOTE, chooseStartMode, settingsForMode, settingsOnQuit } from './display-mode.js';
-import { createLineLimiter, createLogFile } from './log-file.js';
+import { createLineLimiter, createLogFile, pageLine } from './log-file.js';
 import { createSettingsStore } from './settings.js';
 import { createSceneBinding } from './scene-binding.js';
 import { chooseActiveScene, listedScenes, readSceneManifests } from './scene-registry.js';
@@ -718,12 +718,8 @@ app.whenReady().then(async () => {
   ipcMain.on('diag:activity', (event) => {
     if (event.sender === controller.getWindow()?.webContents) usage.activity();
   });
-  ipcMain.on('diag:visibility', (_event, state) => log(`renderer visibility: ${state}`));
-  ipcMain.on('diag:fps', (_event, fps) => {
-    log(`renderer frame rate: ${fps} fps`);
-    usage.frameRate(fps);
-  });
-  // Lines from the page are limited to 20 a second each (docs/platform/02 section 4); a count of the lines left out follows.
+  // Lines from the page are limited to 20 a second each (docs/platform/02 section 4); a count of the lines left out
+  // follows. What a page sends is cut and cleaned here (`pageLine`), whatever the preload did.
   const limited = (handler) => {
     const limit = createLineLimiter();
     return (...args) => {
@@ -734,15 +730,28 @@ app.whenReady().then(async () => {
     };
   };
   ipcMain.on(
+    'diag:visibility',
+    limited((_event, state) => log(`renderer visibility: ${pageLine(state, 20)}`)),
+  );
+  ipcMain.on(
+    'diag:fps',
+    limited((_event, fps) => {
+      if (typeof fps !== 'number' || !Number.isFinite(fps)) return;
+      log(`renderer frame rate: ${fps} fps`);
+      usage.frameRate(fps);
+    }),
+  );
+  ipcMain.on(
     'diag:error',
-    limited((_event, text) => {
+    limited((_event, raw) => {
+      const text = pageLine(raw, 2000);
       log(`renderer error: ${text}`);
       usage.error(`renderer: ${text}`);
     }),
   );
   ipcMain.on(
     'diag:note',
-    limited((_event, text) => log(`renderer: ${String(text).slice(0, 2000)}`)),
+    limited((_event, text) => log(`renderer: ${pageLine(text, 2000)}`)),
   );
 
   if (process.env.DESKTOP2_ATTACH_LAB === '1') {
