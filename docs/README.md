@@ -26,7 +26,7 @@ Written 2026-11-23 from the Fish Tank project and moved into this repository on 
 ## Scenes (3 design documents, each the future `DESIGN.md` of its folder, plus one migration document)
 
 - `scenes/fishtank-migration.md`: moving the built tank into 2ndDesktop: what must not change, the recommended folder structure, the changes it needs for the new contract, the art pipeline, the tests and the steps.
-- `scenes/fishtank.md`: built; the first scene.
+- `scenes/fishtank/DESIGN.md` (in the scene's own folder): built; the first scene.
 - `scenes/farmhouse.md`: a proposal: a farm house under a forested mountain with the real season and weather.
 - `scenes/stretch.md`: a proposal: guided 2 to 3 minute desk workouts of 20-second intervals (front view, then side view, a counter, a timer ring and an "up next" banner) in a small always-on-top window with a drawn instructor; the player can also loop one chosen exercise; the first scene that is started by the player instead of living on the desktop (needs "session scenes" from the platform, `platform/01` section 13, item 5).
 - `scenes/desk.md`: a proposal: a cozy desk with a window, a lamp and a laptop that shows tasks.

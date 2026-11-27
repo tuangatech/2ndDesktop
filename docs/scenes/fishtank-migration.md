@@ -1,6 +1,6 @@
 # Scene: Fish tank, moving it into 2ndDesktop (reuse and folder structure)
 
-Status: Draft v0.1, 2026-11-23. The scene's design is in `fishtank.md` (its future `DESIGN.md`); this document is about the **code and files**: what is reused as it is, what must change to meet the new contract, and the recommended folder structure. The host side is in `../platform/04-reuse-from-fish-tank.md`; read its section 2 (three commits, each green) first.
+Status: Draft v0.1, 2026-11-23. The scene's design is in `scenes/fishtank/DESIGN.md` (it was `docs/scenes/fishtank.md`); this document is about the **code and files**: what is reused as it is, what must change to meet the new contract, and the recommended folder structure. The host side is in `../platform/04-reuse-from-fish-tank.md`; read its section 2 (three commits, each green) first.
 
 Facts come from the fish-tank checkout at `main`, commit `9d18c90`.
 
@@ -8,7 +8,7 @@ Facts come from the fish-tank checkout at `main`, commit `9d18c90`.
 
 1. **The scene id `fishtank` and the record file `records/fishtank.json` with `schema` 1**, so the owner's saved tank still loads (the data-folder question is in the platform document, section 5).
 2. **The game numbers** in `config.js` and the visual numbers in `visualConfig.js`: the pacing was checked by a simulator (`npm run sim`) and the look by hand.
-3. **The layer order** of the scene (`fishtank.md`, section 5).
+3. **The layer order** of the scene (`DESIGN.md` of the tank, section 5).
 4. **The golden state hash** (`scenes/fishtank/tests/golden.spec.js`): the hash of `serialize()` plus the scene graph after a scripted session must be the same before and after every step of the move. If it changes, something moved that should not have; the answer is never to record a new hash.
 5. **The reproducible screenshot** (`npm run shot`): the same picture before and after.
 
@@ -40,7 +40,7 @@ The platform asks for very little (document 1, section 8.1): `scene.json`, `inde
 scenes/fishtank/
   scene.json            the manifest (section 5)
   index.js              create(host): the one entry point, unchanged in shape
-  DESIGN.md             = docs/scenes/fishtank.md
+  DESIGN.md             (done: moved from docs/scenes/fishtank.md)
   LICENSES.md           the license of the art and the sounds (all original, MIT)
   menu.js               tray status line and items (pure)
   sounds.js             the three sound recipes: splash, pop, chime (from app/page/SoundPlayer.js)
@@ -140,7 +140,7 @@ Proposed for the new contract (fields of document 1, section 8.2; the `atlas` ro
 - `name` is "Fish tank" (today "Tank", which the macOS menu bar shows as a menu title; check that the longer name fits there).
 - `authors`: the old file says `"Fish Tank"`, which is not a person; the owner's name is a decision (the license text needs a copyright holder anyway).
 - `license.art` becomes `license.assets` (the new field name). The art is original and AI-assisted; the note about it is in document 3, section 5.
-- `fps: 30` matches today's 30 fps desktop cap (`fishtank.md`, section 7); `budget.memoryMB: 33` is the measured cost on Windows, 70 on macOS: the field takes one number, so the open point is whether it is the worse of the two. Document 1, section 7.2 decides.
+- `fps: 30` matches today's 30 fps desktop cap (`DESIGN.md` of the tank, section 7); `budget.memoryMB: 33` is the measured cost on Windows, 70 on macOS: the field takes one number, so the open point is whether it is the worse of the two. Document 1, section 7.2 decides.
 - `options` is empty for now; "Reduced effects" and "Day and night lighting" arrive with Phase 2.
 - `capabilities` is empty: the tank needs **no consent dialog**, which is the point of keeping it the default scene.
 
