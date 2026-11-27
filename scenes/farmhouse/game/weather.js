@@ -201,3 +201,22 @@ export function snowCoverAt(seed, when, latitude = HOME_LATITUDE) {
   }
   return cover;
 }
+
+/**
+ * The weather a tray preview pins (Clear, Cloudy, Fog, Rain, Snow, Storm ...): the look of a kind with the temperature
+ * the simulation gave, and snow only as cold as snow needs. Not saved.
+ * @param {string} kind  one of KINDS
+ * @param {number} temperature
+ */
+export function previewWeather(kind, temperature) {
+  const look = LOOK[kind];
+  if (!look) throw new Error(`no weather kind "${kind}"`);
+  return {
+    kind,
+    cloud: look.cloud,
+    precipitation: look.rain,
+    fog: look.fog,
+    wind: look.wind,
+    temperature: kind === 'snow' ? Math.min(temperature, 0) : temperature,
+  };
+}

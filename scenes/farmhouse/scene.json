@@ -1,0 +1,14 @@
+{
+  "id": "farmhouse",
+  "name": "Farm house",
+  "summary": "A stone farm house with a porch, seen through the real day, season and weather.",
+  "version": "0.1.0",
+  "author": "2ndDesktop",
+  "license": { "code": "MIT" },
+  "schema": 1,
+  "fps": 15,
+  "atlas": null,
+  "capabilities": { "data": ["weather@1"], "place": "coarse", "net": null },
+  "budget": { "memoryMB": 30 },
+  "dev": true
+}
