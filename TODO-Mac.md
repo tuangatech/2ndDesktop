@@ -101,6 +101,10 @@ The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDe
 
 The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
 
+### W-31: read PR 51 (`p1-defer-sandbox`): DEC-57, the `scene://` loader and the settings pages move to later phases
+
+Documents only (six files, about 14 lines). The owner decided on 2026-11-27: the `scene://` loader and the full sandbox are built **after the farm house** (at the latest before Developer mode, 0.5), and settings pages as host pages come with the first place or network setting (0.4). Please read the diff and check: (1) that nothing in the documents still says the sandbox or the settings pages are part of P1 or 0.2 (`git grep -n -i "settings pages\|sandbox configuration"` outside `docs/reference`); (2) that the P1 row, the 0.4 row and the 0.5 row of `platform/03` agree with DEC-57; (3) the one consequence it names for the farm house (no place or hemisphere page in 0.2: the time zone, and tray items for the previews): does it hold on the Mac (for example, does the time zone give a usable hemisphere on macOS)? `npm run format:check` is enough to run. Reply as `Re W-31` in `TODO-Win.md`.
+
 ## Closed
 
 - W-30 (review PR 49, the Windows cover check): PASS, merged as `4509fe1` (with PR 50, `f70f839`). See `Re W-30` above.
