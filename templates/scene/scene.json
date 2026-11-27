@@ -1,0 +1,10 @@
+{
+  "id": "__ID__",
+  "name": "__NAME__",
+  "version": "0.1.0",
+  "author": "your name",
+  "license": { "code": "MIT" },
+  "schema": 1,
+  "atlas": null,
+  "dev": true
+}
