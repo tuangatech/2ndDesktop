@@ -22,6 +22,23 @@ More scenes are ideas for later; see [`docs/scenes/`](docs/scenes/) and the road
 - **Private:** no account, no telemetry, no server. Your saved progress stays on your computer. The app sends nothing by itself: a bug report is text you copy from the tray menu and post yourself.
 - **Offline first.** By design, a scene that wants the network must ask through the app, with your consent (scenes from outside come later; today there is no network use).
 
+## Trying a build that is not signed yet
+
+Until version 0.3 a build that is shared with a few testers is not signed, so each system warns once, the first time it is opened. The warning is expected; it does not mean the file is damaged. Open the file only if you got it from the person who made it.
+
+**Windows 10 or 11.** Run the installer. If it says "Windows protected your PC", click **More info**, then **Run anyway**. The app installs for the current user, adds a Start menu entry and shows an icon in the tray.
+
+**macOS 13 or later, Apple silicon.** Open the disk image and drag 2ndDesktop to Applications, then open it from Applications.
+
+1. macOS says "2ndDesktop" Not Opened (Apple could not verify that it is free of malware). Click **Done**.
+2. Open **System Settings**, then **Privacy & Security**, and scroll down to the **Security** section.
+3. Under the line saying "2ndDesktop" was blocked, click **Open Anyway**.
+4. A second question appears with its own **Open Anyway** button. Click it, then enter your password or use Touch ID. The app opens by itself.
+
+This is needed once. Right-clicking the app and choosing Open no longer works on recent versions of macOS. An Intel Mac is not supported.
+
+**Where the saved progress is, and how to remove everything.** The saved tank and the settings are in `%APPDATA%\2ndDesktop` on Windows and `~/Library/Application Support/2ndDesktop` on a Mac. To remove the app, uninstall it from Apps (Windows) or drag it to the Bin (Mac); the folder stays until you delete it yourself. Nothing is sent anywhere: the app has no account and no telemetry.
+
 ## Run it from source
 
 You need Node 24 (`.nvmrc`; the repository pins it in `engines`, so on a machine whose default Node is newer, run `fnm use` or `nvm use` first) and npm. On a Mac the app runs on Apple silicon, macOS 13 or later.
