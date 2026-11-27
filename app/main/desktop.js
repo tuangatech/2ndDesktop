@@ -5,11 +5,11 @@
 
 import { BrowserWindow, app, screen } from 'electron';
 import {
+  coverWindowsWin,
   coveredShare,
-  decideCovered,
   isShowDesktopMac,
   MAC_COVER_SHARE,
-  rectToEdges,
+  WIN_COVER_SHARE,
 } from './cover.js';
 import { WINDOW_RULES, fitWindowToDisplays, sizeLimitsFor } from './placement.js';
 
@@ -83,7 +83,7 @@ export function createDesktopController({
   let quitting = false;
   let quietStart = startedAtLogin;
   let covered = false;
-  let lastForegroundKey = '';
+  let lastWinKey = '';
   // Why the tank is paused (FR-22): 'cover' (a window covers the desktop), 'hidden' (window mode: minimized
   // or hidden), 'locked' (screen locked) and 'asleep' (suspended; app/main/power-pause.js). The renderer is told only when
   // "paused or not" changes.
@@ -435,16 +435,27 @@ export function createDesktopController({
         }
         let nowCovered = false;
         try {
-          const foreground = win32.describeForeground();
-          nowCovered = decideCovered(foreground, rectToEdges(primaryRect()), process.pid);
-          // Written only when the foreground window changes, so the log shows why a pause did or did not happen.
-          const key = foreground
-            ? `${foreground.className}|${foreground.pid}|${foreground.zoomed}|${foreground.visible}|${foreground.rect.left},${foreground.rect.top},${foreground.rect.right},${foreground.rect.bottom}`
-            : 'none';
-          if (key !== lastForegroundKey) {
-            lastForegroundKey = key;
+          // Every visible window of the primary display, as on the Mac (DEC-45): the share of the work area (the
+          // screen without the taskbar) that they hide together, in physical pixels.
+          const workArea = screen.dipToScreenRect(null, screen.getPrimaryDisplay().workArea);
+          const windows = coverWindowsWin(win32.listWindows(), process.pid);
+          const share = coveredShare(windows, workArea, process.pid);
+          nowCovered = share >= WIN_COVER_SHARE;
+          // Written when the share moves by a tenth or the decision changes, with the big windows (class and size,
+          // never a title), so the log shows why a pause did or did not happen.
+          const key = `${Math.floor(share * 10)}|${nowCovered}`;
+          if (key !== lastWinKey) {
+            lastWinKey = key;
+            const total = workArea.width * workArea.height;
+            const big = windows
+              .filter((w) => w.bounds.width * w.bounds.height >= 0.1 * total)
+              .slice(0, 4)
+              .map(
+                (w) =>
+                  `${w.className} ${w.bounds.width}x${w.bounds.height}@${w.bounds.x},${w.bounds.y}`,
+              );
             log(
-              `foreground: ${key} primary=${JSON.stringify(primaryRect())} covered=${nowCovered}`,
+              `windows hide ${Math.round(share * 100)}% of the desktop; covered=${nowCovered}${big.length ? ` (${big.join('; ')})` : ''}`,
             );
           }
         } catch (error) {
@@ -512,6 +523,7 @@ export function createDesktopController({
     monitor = null;
     covered = false;
     lastShareLogged = -1;
+    lastWinKey = '';
     pauseReasons.delete('cover');
   }
 

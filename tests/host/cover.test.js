@@ -1,81 +1,130 @@
 import { describe, expect, it } from 'vitest';
 import {
   MAC_COVER_SHARE,
+  WIN_COVER_SHARE,
+  coverWindowsWin,
   coveredShare,
-  decideCovered,
   isShowDesktopMac,
   rectToEdges,
 } from '../../app/main/cover.js';
 
-const primary = { left: 0, top: 0, right: 2560, bottom: 1600 };
-const base = {
-  visible: true,
-  iconic: false,
-  cloaked: false,
-  zoomed: false,
-  className: 'Chrome_WidgetWin_1',
-  pid: 100,
-  rect: { left: 100, top: 100, right: 800, bottom: 600 },
-};
-const make = (patch) => ({ ...base, ...patch });
+describe('the Windows cover check (docs/platform/03, DEC-45)', () => {
+  // A 2560 x 1440 primary display with a 48-pixel taskbar at the bottom, and a second display to its right.
+  const workArea = { x: 0, y: 0, width: 2560, height: 1392 };
+  const raw = (left, top, right, bottom, patch = {}) => ({
+    visible: true,
+    iconic: false,
+    cloaked: false,
+    className: 'Chrome_WidgetWin_1',
+    pid: 100,
+    exStyle: 0,
+    rect: { left, top, right, bottom },
+    ...patch,
+  });
+  const share = (windows) => coveredShare(coverWindowsWin(windows, 1), workArea, 1);
+  const covered = (windows) => share(windows) >= WIN_COVER_SHARE;
 
-describe('decideCovered', () => {
-  it('is false without a foreground window', () => {
-    expect(decideCovered(null, primary, 1)).toBe(false);
+  it('is not covered with no windows, or with a small one', () => {
+    expect(share([])).toBe(0);
+    expect(covered([raw(100, 100, 800, 600)])).toBe(false);
   });
 
-  it('is false for a small window', () => {
-    expect(decideCovered(base, primary, 1)).toBe(false);
+  it('is covered by a maximized window (its visible frame fills the work area)', () => {
+    expect(covered([raw(0, 0, 2560, 1392)])).toBe(true);
   });
 
-  it('is true for a maximized window on the primary display', () => {
-    const win = make({ zoomed: true, rect: { left: -8, top: -8, right: 2568, bottom: 1560 } });
-    expect(decideCovered(win, primary, 1)).toBe(true);
+  it('is covered by a full-screen window that also hides the taskbar', () => {
+    expect(covered([raw(0, 0, 2560, 1440)])).toBe(true);
   });
 
-  it('is true for a full-screen window that is not flagged as maximized', () => {
-    const win = make({ rect: { left: 0, top: 0, right: 2560, bottom: 1600 } });
-    expect(decideCovered(win, primary, 1)).toBe(true);
+  it('is covered by two snapped windows side by side, also with small gaps', () => {
+    expect(covered([raw(0, 0, 1280, 1392), raw(1280, 0, 2560, 1392)])).toBe(true);
+    expect(covered([raw(4, 4, 1276, 1388), raw(1284, 4, 2556, 1388)])).toBe(true);
   });
 
-  it('ignores the shell windows and the taskbar', () => {
-    for (const className of ['Progman', 'WorkerW', 'Shell_TrayWnd', 'Shell_SecondaryTrayWnd']) {
-      const win = make({ className, zoomed: true });
-      expect(decideCovered(win, primary, 1)).toBe(false);
+  it('is not covered by one window on the left half, or two overlapping small ones', () => {
+    expect(covered([raw(0, 0, 1280, 1392)])).toBe(false);
+    expect(covered([raw(0, 0, 1400, 900), raw(300, 200, 1500, 1000)])).toBe(false);
+  });
+
+  it('sees a maximized window on the primary display whatever has the focus (the old finding)', () => {
+    // The list is front to back: a window on the second display is in front, the maximized one behind it.
+    expect(covered([raw(2560, 0, 4480, 1032), raw(0, 0, 2560, 1392)])).toBe(true);
+  });
+
+  it('does not count a maximized window that is only on the second display', () => {
+    expect(covered([raw(2560, 0, 4480, 1032)])).toBe(false);
+  });
+
+  it('counts only the part of a window that is on the primary display', () => {
+    expect(share([raw(1280, 0, 3840, 1392)])).toBeCloseTo(0.5, 5);
+  });
+
+  it('is not covered after Show Desktop (Win+D): every window is minimized', () => {
+    expect(
+      covered([raw(0, 0, 2560, 1392, { iconic: true }), raw(0, 0, 1280, 1392, { iconic: true })]),
+    ).toBe(false);
+  });
+
+  it('leaves out hidden, minimized and cloaked windows (another virtual desktop, a suspended app)', () => {
+    expect(coverWindowsWin([raw(0, 0, 2560, 1392, { visible: false })], 1)).toEqual([]);
+    expect(coverWindowsWin([raw(0, 0, 2560, 1392, { iconic: true })], 1)).toEqual([]);
+    expect(coverWindowsWin([raw(0, 0, 2560, 1392, { cloaked: true })], 1)).toEqual([]);
+  });
+
+  it('leaves out the shell: the desktop, the taskbar and the icon layer', () => {
+    for (const className of [
+      'Progman',
+      'WorkerW',
+      'Shell_TrayWnd',
+      'Shell_SecondaryTrayWnd',
+      'SHELLDLL_DefView',
+    ]) {
+      expect(covered([raw(0, 0, 2560, 1440, { className })])).toBe(false);
     }
   });
 
-  it('ignores our own window', () => {
-    expect(decideCovered(make({ zoomed: true, pid: 7 }), primary, 7)).toBe(false);
+  it('leaves out our own windows', () => {
+    expect(coverWindowsWin([raw(0, 0, 2560, 1392, { pid: 1 })], 1)).toEqual([]);
   });
 
-  it('ignores minimized, hidden and cloaked windows', () => {
-    expect(decideCovered(make({ zoomed: true, iconic: true }), primary, 1)).toBe(false);
-    expect(decideCovered(make({ zoomed: true, visible: false }), primary, 1)).toBe(false);
-    expect(decideCovered(make({ zoomed: true, cloaked: true }), primary, 1)).toBe(false);
+  it('leaves out windows that are not normal app windows: tool windows, no-activate overlays, click-through overlays', () => {
+    const WS_EX_TRANSPARENT = 0x20;
+    const WS_EX_TOOLWINDOW = 0x80;
+    const WS_EX_NOACTIVATE = 0x08000000;
+    for (const exStyle of [
+      WS_EX_TRANSPARENT,
+      WS_EX_TOOLWINDOW,
+      WS_EX_NOACTIVATE,
+      0x00080000 | WS_EX_TOOLWINDOW,
+    ]) {
+      expect(covered([raw(0, 0, 2560, 1392, { exStyle })])).toBe(false);
+    }
+    // A layered window is an ordinary app window (many apps use the style); only the flags above exclude one.
+    expect(covered([raw(0, 0, 2560, 1392, { exStyle: 0x00080000 })])).toBe(true);
   });
 
-  it('ignores a maximized window on another display', () => {
-    const win = make({ zoomed: true, rect: { left: 2560, top: 0, right: 4480, bottom: 1080 } });
-    expect(decideCovered(win, primary, 1)).toBe(false);
+  it('keeps the class name and the process for the log, and the size as bounds', () => {
+    expect(coverWindowsWin([raw(10, 20, 110, 220)], 1)).toEqual([
+      {
+        pid: 100,
+        layer: 0,
+        alpha: 1,
+        className: 'Chrome_WidgetWin_1',
+        bounds: { x: 10, y: 20, width: 100, height: 200 },
+      },
+    ]);
   });
 });
 
 describe('rectToEdges', () => {
-  it('turns an Electron rectangle into edges that decideCovered understands', () => {
-    const primary = rectToEdges({ x: 0, y: 0, width: 2561, height: 1601 });
-    expect(primary).toEqual({ left: 0, top: 0, right: 2561, bottom: 1601 });
-    // The maximized window seen on the test machine, with the taskbar leaving the bottom short.
-    const maximized = {
-      visible: true,
-      iconic: false,
-      cloaked: false,
-      zoomed: true,
-      className: 'Chrome_WidgetWin_1',
-      pid: 1,
-      rect: { left: -11, top: -11, right: 2571, bottom: 1539 },
-    };
-    expect(decideCovered(maximized, primary, 99)).toBe(true);
+  it('turns an Electron rectangle into edges', () => {
+    expect(rectToEdges({ x: 0, y: 0, width: 2561, height: 1601 })).toEqual({
+      left: 0,
+      top: 0,
+      right: 2561,
+      bottom: 1601,
+    });
   });
 });
 
