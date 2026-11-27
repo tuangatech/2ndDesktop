@@ -106,3 +106,9 @@ Written 2026-11-23 from the README's lists. Earlier decisions are grouped by the
 | Id | Decision | Owner or session | Where |
 | --- | --- | --- | --- |
 | DEC-53 | The dev kit is a **panel of the host page** in window mode with `DESKTOP2_DEV=1` (`app/page/devKit.js`), not a separate fake host. The scene runs on the real host (real PixiJS, record, tray), so what is seen is what ships; the panel moves only what the host gives a scene: the clock (`host.clock` is now `app/page/clock.js`, with `jump`, `set`, `setSpeed`; `clock.offset += ms` of the tank's panel and tests keeps working), the size the stage is cut to, and a pause. `npm run dev:scene -- <id>` is `npm run dev` with the scene named in a data folder of its own. Weather, place and data controls come with their features (0.4). | Windows session (work package 8.4), owner agreed the panel in the app's dev mode | `app/page/devKit.js`, `clock.js`, `scripts/dev-scene.mjs`, `platform/01` section 12 |
+
+## Round 15: finding 10a of the host and security review (2026-11-27)
+
+| Id | Decision | Owner or session | Where |
+| --- | --- | --- | --- |
+| DEC-54 | Finding 10a ("take the single-instance lock before the data migration") is **not done**. `migrateOldData` copies only when an old Fish Tank folder exists, and none exists (the app is not released, so nobody has old data); with nothing to copy it only reads (`existsSync`), so a second launch at the same instant writes nothing. Whether to delete the migration itself (`app/main/migrate-data.js`, its test, the old folder names in `app/main/product.js`, the call in `main.js`) is a separate question for the owner: it would be one small PR of its own. | Owner, 2026-11-27 (relayed by the Mac session, `M-10`) | `docs/reviews/2026-11-25-host-security-review.md` (finding 10a), `app/main/migrate-data.js` |
