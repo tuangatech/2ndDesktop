@@ -46,6 +46,23 @@ export function createLogFile({ file, maxBytes = MAX_LOG_BYTES, clean = (text) =
 }
 
 /**
+ * Text from the page, made fit for one log line: anything that is not text becomes empty, control characters (a new
+ * line would let a page write a line that looks like the app's own) become spaces, and the rest is cut to `max`.
+ * The main process does this itself; it does not rely on the page or the preload having done it
+ * (docs/platform/02 section 4).
+ * @param {unknown} value
+ * @param {number} max  characters
+ * @returns {string}
+ */
+export function pageLine(value, max) {
+  if (typeof value !== 'string') return '';
+  return Array.from(value.slice(0, max), (c) => {
+    const code = c.charCodeAt(0);
+    return code < 32 || code === 127 ? ' ' : c;
+  }).join('');
+}
+
+/**
  * Lets at most `perSecond` lines through in each second and counts the rest, so a page that talks a lot cannot fill the
  * log or the disk (docs/platform/02 section 4: 20 lines a second).
  * @param {{perSecond?: number, now?: () => number}} [options]
