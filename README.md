@@ -30,10 +30,10 @@ Until version 0.3 a build that is shared with a few testers is not signed, so ea
 
 **macOS 13 or later, Apple silicon.** Open the disk image and drag 2ndDesktop to Applications, then open it from Applications.
 
-1. macOS says "2ndDesktop" Not Opened (it could not check it for malware). Click **Done**.
+1. macOS says "2ndDesktop" Not Opened (Apple could not verify that it is free of malware). Click **Done**.
 2. Open **System Settings**, then **Privacy & Security**, and scroll down to the **Security** section.
-3. Next to the line about 2ndDesktop being blocked, click **Open Anyway**, and enter your password or use Touch ID.
-4. Open 2ndDesktop again, and click **Open Anyway** in the new question.
+3. Under the line saying "2ndDesktop" was blocked, click **Open Anyway**.
+4. A second question appears with its own **Open Anyway** button. Click it, then enter your password or use Touch ID. The app opens by itself.
 
 This is needed once. Right-clicking the app and choosing Open no longer works on recent versions of macOS. An Intel Mac is not supported.
 
