@@ -26,8 +26,8 @@ export const dayIndexOf = (parts) =>
  * @param {number} input.seed
  * @param {string|null} [input.previewSeason]  a tray preview of a season (not saved)
  * @param {string|null} [input.previewKind]  a tray preview of a weather kind (not saved)
- * @param {{dayOfYear: number, dayIndex: number}|null} [input.fast]  the fast date (game/fast.js) in Fast mode: the season
- *        and the weather follow it instead of the real date
+ * @param {{dayOfYear: number}|null} [input.fast]  the fast date (game/fast.js) in Fast mode: the season, the mean
+ *        temperature and the snow follow it instead of the real date (the weather's seed stays the real day)
  */
 export function slowAt({
   ms,
@@ -43,7 +43,9 @@ export function slowAt({
   const dayOfYear = previewSeason
     ? previewDay(previewSeason, latitude)
     : (fast?.dayOfYear ?? parts.dayOfYear);
-  const dayIndex = fast && !previewSeason ? fast.dayIndex : dayIndexOf(parts);
+  // The weather always follows the real day and its four-hour blocks, so it changes as often as in Calendar mode and
+  // cross-fades the same way; Fast mode moves only the season, the mean temperature and so the snow with the fast date.
+  const dayIndex = dayIndexOf(parts);
   const when = { dayIndex, dayOfYear, minuteOfDay: parts.minuteOfDay };
   const simulated = weatherAt(seed, when, latitude);
   const weather = previewKind ? previewWeather(previewKind, simulated.temperature) : simulated;

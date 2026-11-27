@@ -87,7 +87,7 @@ describe('the sky and the grade', () => {
     const a = skyKey({ night: 0, golden: 0 }, clear);
     expect(skyKey({ night: 0.01, golden: 0.02 }, clear)).toBe(a);
     expect(skyKey({ night: 0.5, golden: 0 }, clear)).not.toBe(a);
-    expect(skyKey({ night: 0, golden: 0 }, { ...clear, kind: 'storm' })).not.toBe(a);
+    expect(skyKey({ night: 0, golden: 0 }, { ...clear, kind: 'storm', wind: 0.9 })).not.toBe(a);
   });
 
   it('leaves the picture alone at midday in clear weather and darkens it at night and in a storm', () => {

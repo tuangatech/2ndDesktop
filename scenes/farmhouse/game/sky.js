@@ -2,6 +2,7 @@
 // Pure, no Pixi and no clock: the moment, the sun and the weather go in, plain numbers and colours come out, and the
 // scene only draws them. So every look of the sky can be tested without a screen.
 import { lerp, smooth, unit } from './hash.js';
+import { stormness } from './weather.js';
 
 const MIN = 60_000;
 const DAY = 86_400_000;
@@ -79,7 +80,7 @@ export function skyColours(tod, weather) {
   const out = [0, 1].map((i) => {
     let c = blend(SKY.day[i], SKY.golden[i], tod.golden * 0.85);
     c = blend(c, SKY.grey[i], clamp01(weather.cloud * 0.8));
-    c = blend(c, SKY.storm[i], weather.kind === 'storm' ? 0.7 : 0);
+    c = blend(c, SKY.storm[i], 0.7 * stormness(weather));
     return blend(c, SKY.night[i], tod.night);
   });
   return { top: out[0], bottom: out[1] };
@@ -92,7 +93,7 @@ export const skyKey = (tod, weather) =>
     step(tod.night, 0.05),
     step(tod.golden, 0.1),
     step(weather.cloud, 0.1),
-    weather.kind === 'storm' ? 1 : 0,
+    step(stormness(weather), 0.1),
   ].join('.');
 
 /**
@@ -107,7 +108,7 @@ export function gradeAt(tod, weather, dim = 0) {
   colour = multiply(colour, blend('#ffffff', '#7581ab', tod.night));
   colour = multiply(colour, blend('#ffffff', '#ffdcb4', tod.golden * 0.7 * (1 - tod.night)));
   colour = multiply(colour, blend('#ffffff', '#d4dadc', clamp01(weather.cloud) * 0.45));
-  if (weather.kind === 'storm') colour = multiply(colour, '#bcc3c8');
+  colour = multiply(colour, blend('#ffffff', '#bcc3c8', stormness(weather)));
   colour = multiply(colour, blend('#ffffff', '#4a4f5c', dim * 0.55));
   return { multiply: colour, haze: clamp01(weather.cloud) * 0.08 };
 }
@@ -118,13 +119,14 @@ export function gradeAt(tod, weather, dim = 0) {
  * @returns {number}  0 to 1
  */
 export function lightningDim(ms, weather, seed = 0) {
-  if (weather.kind !== 'storm') return 0;
+  const storm = stormness(weather);
+  if (storm === 0) return 0;
   const SLOT = 18_000;
   const slot = Math.floor(ms / SLOT);
   if (unit(seed, slot, 41) > 0.6) return 0;
   const at = slot * SLOT + unit(seed, slot, 42) * (SLOT - 2000);
   const t = (ms - at) / 1100;
-  return t < 0 || t > 1 ? 0 : Math.sin(Math.PI * t) ** 2;
+  return t < 0 || t > 1 ? 0 : storm * Math.sin(Math.PI * t) ** 2;
 }
 
 /**
@@ -136,12 +138,14 @@ export function lightningDim(ms, weather, seed = 0) {
  * @param {number} petals  0 to 1, the most falling blossom of the flowering trees
  */
 export function fallingAt(weather, season, snowCover, petals) {
-  const wet = weather.kind === 'rain' || weather.kind === 'drizzle' || weather.kind === 'storm';
   const leafFall = Math.max(0, season.turn - 0.2) * Math.min(1, season.leaf * 4) * (1 - snowCover);
-  const calm = wet || weather.kind === 'snow' ? 0.3 : 1;
+  // What falls is the amount of precipitation, which cross-fades between the blocks of weather, shared between snow and
+  // rain by `snowShare`, which cross-fades with it: a storm that gives way to clear sky rains out, and nothing steps.
+  const snowShare = weather.snowShare ?? (weather.kind === 'snow' ? 1 : 0);
+  const calm = weather.precipitation > 0.05 ? 0.3 : 1;
   return {
-    rain: wet ? Math.round(weather.precipitation * 420) : 0,
-    snow: weather.kind === 'snow' ? Math.round(weather.precipitation * 320 + 40) : 0,
+    rain: Math.round(weather.precipitation * 420 * (1 - snowShare)),
+    snow: Math.round(weather.precipitation * 360 * snowShare),
     leaves: Math.round(60 * leafFall * calm),
     petals: Math.round(50 * clamp01(petals) * calm),
   };

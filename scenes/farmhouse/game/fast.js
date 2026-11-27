@@ -32,10 +32,9 @@ const MONTH_START = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 export const fastElapsed = (ms, startedAt) =>
   (Math.max(0, ms - startedAt) / DAY_MS) * FAST_DAYS_PER_DAY;
 
-/** The fast date: the day of the year (1 to 365) and a number that goes up by one with each fast day, for the weather. */
+/** The fast date: the day of the year (1 to 365). The weather's seed stays the real day (see `slowAt`). */
 export function fastDate(ms, startedAt) {
-  const elapsed = fastElapsed(ms, startedAt);
-  return { dayOfYear: wrapDay(1 + Math.floor(elapsed)), dayIndex: Math.floor(elapsed) };
+  return { dayOfYear: wrapDay(1 + Math.floor(fastElapsed(ms, startedAt))) };
 }
 
 /** The name of the month a day of the year is in (the place's own calendar). */
