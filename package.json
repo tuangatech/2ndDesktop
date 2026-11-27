@@ -17,6 +17,7 @@
   "scripts": {
     "dev": "npm run assets && concurrently -k -n vite,electron \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 node scripts/run-electron.mjs .\"",
     "build": "npm run assets && vite build",
+    "dev:scene": "node scripts/dev-scene.mjs",
     "start": "node scripts/run-electron.mjs .",
     "lint": "eslint .",
     "format": "prettier --write .",

@@ -10,6 +10,8 @@ import { resolveScene } from './scenes.js';
 import { reloadAllowed } from './reloadGuard.js';
 import { parseSceneOptions } from './sceneOptions.js';
 import { SoundPlayer } from './SoundPlayer.js';
+import { createClock } from './clock.js';
+import { createDevKit } from './devKit.js';
 
 const params = new URLSearchParams(location.search);
 const mode = params.get('mode') === 'desktop' ? 'desktop' : 'window';
@@ -81,7 +83,7 @@ async function boot() {
 
   // The host's side of the scene contract (app/page/host.js, D33): the record of the active scene, the clock, the
   // random source, the sound and the HTML area. A scene gets nothing else.
-  const clock = { offset: 0, now: () => Date.now() + clock.offset };
+  const clock = createClock(); // the wall clock; the dev kit and the tests move it (clock.js)
   // A record that had to be repaired or replaced is kept next to it as `<scene>-damaged-<time>.json`.
   const record = api
     ? {
@@ -196,7 +198,7 @@ async function boot() {
     const wanted = drawingResolution(mode, innerWidth, innerHeight, devicePixelRatio);
     if (Math.abs(wanted - app.renderer.resolution) < 0.01) return;
     app.renderer.resolution = wanted;
-    app.renderer.resize(innerWidth, innerHeight);
+    app.renderer.resize(...(devKit?.size() ?? [innerWidth, innerHeight]));
   };
   addEventListener('resize', syncResolution);
 
@@ -219,10 +221,11 @@ async function boot() {
   // time that passed (the tank settles pellets and hunger from the clock).
   let documentHidden = document.visibilityState === 'hidden';
   let mainPaused = false;
+  let devPaused = false; // the dev kit's "paused (as if covered)" box
   let wasRunning = true;
   let stoppedAt = 0;
   const syncRunning = () => {
-    const running = !documentHidden && !mainPaused && !contextGone;
+    const running = !documentHidden && !mainPaused && !devPaused && !contextGone;
     if (running) app.ticker.start();
     else app.ticker.stop();
     scene.setVisible(running);
@@ -242,6 +245,25 @@ async function boot() {
   });
   api?.reportVisibility(document.visibilityState);
   syncRunning();
+
+  // The dev kit (devKit.js): clock, shape of the stage, pause. Window mode with DESKTOP2_DEV=1 only; the product never
+  // has it. After a jump of the clock the scene settles as after a pause: `resume(gap)` and an update.
+  const devKit =
+    dev && mode === 'window'
+      ? createDevKit({
+          app,
+          stage: document.getElementById('stage'),
+          clock,
+          onJump: (delta) => {
+            if (delta > 0) scene.resume?.(delta);
+            scene.update(0);
+          },
+          setPaused: (paused) => {
+            devPaused = paused;
+            syncRunning();
+          },
+        })
+      : null;
 
   // Window strip buttons (window mode).
   document.getElementById('btn-min').addEventListener('click', () => api?.windowMinimize());

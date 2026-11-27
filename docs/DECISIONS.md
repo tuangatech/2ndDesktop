@@ -100,3 +100,9 @@ Written 2026-11-23 from the README's lists. Earlier decisions are grouped by the
 | Id | Decision | Owner or session | Where |
 | --- | --- | --- | --- |
 | DEC-52 | The scene template lives in **`templates/scene/`** at the repository root, not in `scenes/_template/` as `platform/01` and `BOOTSTRAP` section 5 said. Every folder of `scenes/` is a scene to the host: the page bundles it (`import.meta.glob`), the registry reads it, the contract test runs it, the tray may list it. A folder named `_template` is not a scene id, so the main process would reject it and the page would still bundle it. Outside `scenes/` it is only a source for `npm run new-scene`, linted by the same clock rule (`eslint.config.js`). A scene made from it is a development scene (`"dev": true`) until its author removes the line. | Windows session (work package 8.3) | `templates/scene/`, `scripts/new-scene.mjs`, `platform/01` section 12 |
+
+## Round 14: the dev kit (2026-11-26)
+
+| Id | Decision | Owner or session | Where |
+| --- | --- | --- | --- |
+| DEC-53 | The dev kit is a **panel of the host page** in window mode with `DESKTOP2_DEV=1` (`app/page/devKit.js`), not a separate fake host. The scene runs on the real host (real PixiJS, record, tray), so what is seen is what ships; the panel moves only what the host gives a scene: the clock (`host.clock` is now `app/page/clock.js`, with `jump`, `set`, `setSpeed`; `clock.offset += ms` of the tank's panel and tests keeps working), the size the stage is cut to, and a pause. `npm run dev:scene -- <id>` is `npm run dev` with the scene named in a data folder of its own. Weather, place and data controls come with their features (0.4). | Windows session (work package 8.4), owner agreed the panel in the app's dev mode | `app/page/devKit.js`, `clock.js`, `scripts/dev-scene.mjs`, `platform/01` section 12 |
