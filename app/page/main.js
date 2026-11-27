@@ -12,6 +12,9 @@ import { parseSceneOptions } from './sceneOptions.js';
 import { SoundPlayer } from './SoundPlayer.js';
 import { createClock } from './clock.js';
 import { createDevKit } from './devKit.js';
+import { createTime } from './time.js';
+import { createPlace } from './place.js';
+import { createSafeArea } from './safeArea.js';
 
 const params = new URLSearchParams(location.search);
 const mode = params.get('mode') === 'desktop' ? 'desktop' : 'window';
@@ -95,6 +98,24 @@ async function boot() {
   // Sounds (FR-38): switched by the menu in the main process, which tells the renderer.
   const sound = new SoundPlayer({ enabled: (await api?.getSettings?.())?.sound !== false });
   api?.onSettingsChanged?.((settings) => sound.setEnabled(settings.sound !== false));
+  // The real time of the computer, the place of the weather and the season, and what covers the scene (docs/platform/01
+  // section 10). The place never moves the clock: the time of day is the computer's own (time.js).
+  const place = createPlace();
+  const time = createTime({ clock, latitude: () => place.get().latitude });
+  const safeArea = createSafeArea(() => ({
+    mode,
+    platform: info.platform ?? '',
+    width: innerWidth,
+    height: innerHeight,
+    screen: {
+      width: screen.width,
+      height: screen.height,
+      availLeft: screen.availLeft,
+      availTop: screen.availTop,
+      availWidth: screen.availWidth,
+      availHeight: screen.availHeight,
+    },
+  }));
   const host = {
     app,
     art,
@@ -102,6 +123,9 @@ async function boot() {
     sound: sound.forScene(),
     record,
     clock,
+    time,
+    place,
+    safeArea,
     rng: makeRng(info.test?.seed ?? (Date.now() ^ Math.floor(Math.random() * 2 ** 32)) >>> 0),
     tuning: info.tuning ?? null,
     ui: { root: mode === 'window' ? document.getElementById('hud') : null },

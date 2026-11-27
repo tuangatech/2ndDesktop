@@ -625,10 +625,10 @@ Sound: short, quiet, synthesized or recorded by the author; plays only as a reac
 | Service | What a scene gets | First scene | Network |
 | --- | --- | --- | --- |
 | `host.clock` | the only time source; a manual clock for tests | fishtank | no |
-| `host.time` | the season as a curve over the day of the year, sunrise and sunset (rough, from date and place), `nightness`, local time | farmhouse | no |
-| `host.place` | country, region, time zone, coordinates rounded to 0.1 degree, and where they came from (player, time zone, IP) | farmhouse | optional |
+| `host.time` | **built in P2 (`app/page/time.js`):** the date and time on the computer's own wall (`parts()`), sunrise, solar noon and sunset (`sun()`: noon from the computer's zone at its standard offset, the length of the day from the place's latitude) and `nightness()` (0 to 1, smooth). The season as a curve over the day of the year is the scene's (`scenes/farmhouse/game/season.js`), not the host's | farmhouse | no |
+| `host.place` | **built in P2 (`app/page/place.js`), 0.2: the default place only:** `get()` gives name, latitude and longitude rounded to 0.1 degree, and the source (`default` or `player`); "Atlanta, GA" until a city is typed (0.4, DEC-60). Country, region and an IP lookup are not built | farmhouse | optional |
 | `host.data` | granted data kinds (`weather@1`, `tasks@1`, ...) with `updatedAt` and `source: live or simulated` | farmhouse, desk | yes |
-| `host.safeArea` | insets of the taskbar, menu bar, Dock and the strip where icons sit | farmhouse, desk | no |
+| `host.safeArea` | **built in P2 (`app/page/safeArea.js`):** `get()` gives the insets of the taskbar, menu bar and Dock (the screen minus its work area) and the strip where icons sit (left on Windows, right on the Mac), in the scene's CSS pixels; all zero in a window | farmhouse, desk | no |
 | `host.ui` | a node for HTML (window mode); `prompt(text)` a small host dialog for one line | fishtank, desk | no |
 | `host.sound` | define named short sounds as recipes (`define(name, recipe)`) and play them (`play(name)`, only after a player action); built in 0.1, DEC-51 | fishtank | no |
 | `host.net` | a named request to a declared host (document 2) | none yet | yes |
