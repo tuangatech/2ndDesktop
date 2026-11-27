@@ -103,12 +103,43 @@ The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDe
 
 The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
 
-### W-33: read PR 53 (`farmhouse-doc-fixes`): your six points of `Re W-32` and the shot tool (step S0 of the P2 plan)
+### W-40: read PR 60 (`farmhouse-house`): the lawn, the house with its porch, lit windows, chimney smoke, the drive and the truck (S5, stacked on PR 59)
 
-Documents and one script, no app code. The farm house design (PR 52) is merged. (1) `docs/scenes/farmhouse.md`: budget restated (about 50 MB Mac, 40 MB Windows, a stub-scene measurement first), Fast mode tints before it rebuilds, R11 says `fps` and motion by time, solar noon uses the standard offset, MET Norway row corrected (429, contact is an email or a website, the two claims softened). (2) `platform/02` 6.5 and **DEC-61**: the user agent may carry the project's address in parentheses where a provider requires a contact. (3) `scripts/shot.mjs`: `SHOT_SCENE=<id>` and `SHOT_AT=<local time>` (clock set and frozen). Please read the diff, and on the Mac run `npm run verify -- --quick` and `SHOT_SCENE=empty SHOT_AT=2026-10-20T18:30 npm run shot -- empty-check 480x320 window 1` (the picture is the empty scene); the two baseline pictures must still give one of the known values. Reply as `Re W-33` in `TODO-Win.md`.
+Look at `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T12:00 npm run shot -- s5 1600x900 window 2` and the same at 23:30 (lit windows, lamp) against `scenes/farmhouse/design/farmhouse-autumn-preview.png`. Reply as `Re W-40`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 60`.
+
+### W-41: read PR 61 (`farmhouse-ground`): the trees, the grass, the field and the fence follow the season (S6a, stacked on PR 60)
+
+Shots with `__scene.fishtank.debug.preview({season:'spring'})` (and summer, winter) as the fifth argument of `npm run shot`: are the blossom, fruit, autumn colour and snow right? Reply as `Re W-41`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 61`.
+
+### W-42: read PR 62 (`farmhouse-animals`): the seven animals and Scatter hay (S6b, stacked on PR 61)
+
+Look at the animals on a retina screen (their size, the walk, the pose at rest) and try Scatter hay from the tray. Reply as `Re W-42`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 62`.
+
+### W-43: read PR 63 (`farmhouse-weather`): the sky, sun, moon, clouds, fog, rain, snow and the grade (S7, stacked on PR 62)
+
+The questions in the PR body: is the night dark enough or too dark, is the fog as thick as the concept? Reply as `Re W-43`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 63`.
+
+### W-44: read PR 64 (`farmhouse-modes`): Calendar and Fast season modes and the tray items (S8, stacked on PR 63)
+
+Try the tray items on the Mac: switch to Fast and back, cycle the previews; does the dip feel too slow? Reply as `Re W-44`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 64`.
+
+### W-45: read PR 65 (`farmhouse-fixes`): your three defects and two number points of `Re W-33 to W-39`, fixed (stacked on PR 64)
+
+Please read the diff of `game/view.js`, `game/clockRules.js` and `game/animals.js` and run `npx vitest run scenes/farmhouse/tests/continuity.test.js`; it fails on the old code with your 0.171. Left for the owner: the 35 minutes of sun time in Atlanta, the soft hill on a retina screen. Reply as `Re W-45`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 65`.
+
+### W-46: read PR 66 (`farmhouse-finish`): the farm house listed for players (dev flag removed), DEC-62 and the Windows measurements (S9, stacked on PR 65)
+
+Please measure the finished stack on the Mac, window and desktop: `npm run measure:switch -- --switches 20 --scene farmhouse --seconds 8 --settle 15`. Windows gives 224.7 MB and no growth over 20 switches; your W-39 estimate for the Mac was near 345 MB of 350. Reply as `Re W-46`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 66`.
 
 ## Closed
 
+- W-33 (read PR 53, the farm house doc fixes): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
+- W-34 (read PR 54, the farm house step): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
+- W-35 (read PR 55, the farm house step): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
+- W-36 (read PR 56, the farm house step): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
+- W-37 (read PR 57, the farm house step): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
+- W-38 (read PR 58, the farm house step): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
+- W-39 (read PR 59, the farm house step): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
 - W-32 (read PR 52, the farm house design): PASS with six points, merged as `753e2f9`; the points are in PR 53 (W-33). See `Re W-32` above.
 - W-31 (read PR 51, DEC-57): PASS, merged as `c9fca47`. See `Re W-31` above.
 - W-30 (review PR 49, the Windows cover check): PASS, merged as `4509fe1` (with PR 50, `f70f839`). See `Re W-30` above.
