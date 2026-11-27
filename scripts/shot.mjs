@@ -8,6 +8,10 @@
 //   npm run shot -- tank 480x320
 //   npm run shot -- tank-1080p 1920x1080 desktop 6
 //   npm run shot -- fry 480x320 window 4 "__scene.repository.getState().fish.forEach((f) => __scene.repository.dev.setPoints(f.id, 0))"
+// Another scene, at a chosen moment (environment variables, the tank is the default and nothing else changes):
+//   SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T18:30 npm run shot -- farmhouse-dusk 1600x900 window 2
+// SHOT_SCENE is a scene id (written to the shot's own settings.json); SHOT_AT is a local time the manual clock is set to
+// and frozen at (the scene settles as after a jump of the dev kit: resume(gap) and an update).
 import { _electron as electron } from '@playwright/test';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -24,6 +28,14 @@ const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fishtank-shot-'));
 const live = process.env.SHOT_LIVE === '1';
+const shotScene = process.env.SHOT_SCENE ?? '';
+const shotAt = process.env.SHOT_AT ?? '';
+if (shotScene && !/^[a-z][a-z0-9-]{2,31}$/.test(shotScene))
+  throw new Error('SHOT_SCENE is not a scene id');
+if (shotAt && !Number.isFinite(Date.parse(shotAt)))
+  throw new Error('SHOT_AT is not a date and time');
+if (shotScene)
+  fs.writeFileSync(path.join(dataDir, 'settings.json'), JSON.stringify({ activeScene: shotScene }));
 
 const app = await electron.launch({
   args: [root],
@@ -56,6 +68,17 @@ try {
     await page.addInitScript(seededRandomScript());
     await page.reload();
     await page.waitForFunction(() => window.__ready === true, null, { timeout: 30_000 });
+  }
+  if (shotAt) {
+    // Freeze the clock at that moment (speed 0), then settle the scene as after a jump of the dev kit.
+    await page.evaluate((at) => {
+      const { clock, fishtank: scene } = window.__scene;
+      const before = clock.now();
+      clock.set(at);
+      clock.setSpeed(0);
+      if (at > before) scene.resume?.(at - before);
+      scene.update(0);
+    }, Date.parse(shotAt));
   }
   // An optional script runs in the page first, for example: "__scene.repository.getState().fish.forEach((f) => __scene.repository.dev.setPoints(f.id, 0))"
   if (script) {
