@@ -66,7 +66,7 @@ export const TONES = GREEN_DEEP.length;
 /** The dark conifers keep their green all year. */
 export const CONIFERS = ['#3f5a45', '#35503f', '#4a6048'];
 export const TRUNK = '#5d4a3b';
-const SNOW = '#f1f2ee';
+export const SNOW = '#f1f2ee';
 
 /**
  * The colour of one deciduous crown.

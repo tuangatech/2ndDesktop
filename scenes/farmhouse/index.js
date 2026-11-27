@@ -5,11 +5,22 @@
 import { Container, Graphics } from 'pixi.js';
 import { canScatter, HAY } from './game/animals.js';
 import { motionAt, slowAt } from './game/view.js';
-import { DESIGN, coverFit, toDesign } from './layout.js';
+import { DESIGN, coverFit, toDesign, visibleDesign } from './layout.js';
 import { seen, startState } from './state.js';
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
 import { paletteKey } from './art/palette.js';
 import { rasterize, spriteOf } from './art/raster.js';
+import {
+  CHIMNEY_TOP,
+  DOOR_GLASS,
+  GLASS,
+  TRUCK,
+  WINDOW_RECTS,
+  drivePicture,
+  housePicture,
+  lawnPicture,
+  truckPicture,
+} from './art/house.js';
 
 /** The scene's own seed: the weather and the animals are the same on every machine and in every session. */
 const SEED = 20261127;
@@ -34,6 +45,9 @@ const SLOW_MS = 1000;
 /** The record is saved again at most this often when only the time moved. */
 const SEEN_MS = 10 * 60 * 1000;
 
+/** The snow on the roofs and the bushes changes in steps of a fifth. */
+const snowStep = (cover) => Math.round(cover * 5);
+
 const SEASON_LABEL = { spring: 'Spring', summer: 'Summer', autumn: 'Autumn', winter: 'Winter' };
 
 /**
@@ -57,9 +71,8 @@ export default async function create(host) {
   }
   // A plain field until its art arrives (S6).
   layers.field.addChild(
-    new Graphics().rect(0, 560, DESIGN.width, DESIGN.height - 560).fill(0x7fa35a),
+    new Graphics().rect(0, 664, DESIGN.width, DESIGN.height - 664).fill(0x7fa35a),
   );
-  layers.lawn.addChild(new Graphics().rect(0, 540, DESIGN.width, 30).fill(0x9aa862));
 
   let width = 1;
   let fit = coverFit(1, 1);
@@ -111,12 +124,87 @@ export default async function create(host) {
   }
   refresh(true);
 
+  // The lit windows: a warm glass over the dark glass of the house, drawn with its glow, its alpha the light of the window
+  // (rule R3). Six small Graphics; nothing is drawn again.
+  const lights = {};
+  const lightOf = (r, bars) => {
+    const g = new Graphics();
+    g.roundRect(r.x - 5, r.y - 5, r.w + 10, r.h + 10, 7).fill({ color: GLASS.lit, alpha: 0.18 });
+    g.roundRect(r.x, r.y, r.w, r.h, 3).fill(GLASS.lit);
+    if (bars) {
+      g.rect(r.x, r.y + r.h * 0.42, r.w, r.h * 0.58).fill({ color: GLASS.litLow, alpha: 0.55 });
+      g.rect(r.x + r.w / 2 - 1.5, r.y, 3, r.h).fill(0xefe9da);
+      g.rect(r.x, r.y + r.h * 0.42, r.w, 3).fill(0xefe9da);
+    }
+    g.visible = false;
+    layers.house.addChild(g);
+    return g;
+  };
+  for (const [id, r] of Object.entries(WINDOW_RECTS)) lights[id] = lightOf(r, true);
+  lights.door = lightOf(DOOR_GLASS, false);
+
+  // The chimney smoke: six puffs that rise, drift and thin out, each on its own point of a nine-second cycle taken from
+  // the clock; the amount (rule R4) is the alpha of them all.
+  const SMOKE_PUFFS = 6;
+  const SMOKE_CYCLE = 9;
+  const smoke = new Container();
+  smoke.visible = false;
+  const puffs = [];
+  for (let i = 0; i < SMOKE_PUFFS; i++) {
+    const puff = new Graphics().circle(0, 0, 10).fill(0xe6e4dc);
+    puffs.push(puff);
+    smoke.addChild(puff);
+  }
+  layers.house.addChild(smoke);
+
+  const truckBox = new Container(); // the truck, moved and mirrored by the scene
+  layers['drive-truck'].addChild(truckBox);
+
+  /** Puts the lights, the smoke and the truck where the view of this moment says. */
+  let edgeX = DESIGN.width + 200;
+  function applyMotion() {
+    for (const [id, g] of Object.entries(lights)) {
+      const light = slow.lights[id] ?? 0;
+      g.visible = light > 0.01;
+      g.alpha = light;
+    }
+    smoke.visible = motion.smoke > 0.01;
+    if (smoke.visible) {
+      const t = host.clock.now() / 1000;
+      puffs.forEach((puff, i) => {
+        const k = (t / SMOKE_CYCLE + i / SMOKE_PUFFS) % 1;
+        puff.position.set(
+          CHIMNEY_TOP.x + k * 26 + Math.sin(k * 5 + i) * 5,
+          CHIMNEY_TOP.y - 4 - k * 100,
+        );
+        puff.scale.set(0.5 + k * 1.3);
+        puff.alpha = motion.smoke * 0.75 * Math.min(1, k * 5) * (1 - k);
+      });
+    }
+    const truck = motion.truck;
+    truckBox.visible = truck.visible;
+    const centre = TRUCK.left + TRUCK.width / 2;
+    truckBox.pivot.x = centre;
+    truckBox.scale.x = truck.facing === 'right' ? -1 : 1;
+    truckBox.position.set(TRUCK.x + centre + truck.x * (edgeX - TRUCK.x), TRUCK.y);
+  }
+  applyMotion();
+
   // The landscape: the sky and the three mountain layers, each one picture painted from drawing operations (art/draw.js) and turned into one texture.
   // The sky and the far ridge are drawn once; the mid ridge and the near hill are drawn again when the palette has moved
   // (paletteKey: steps of the leaf, the colour and the snow), the old texture staying on screen until the new one is ready.
-  const home = { sky: layers.sky, far: layers.ridges, mid: layers.ridges, hill: layers.forest };
+  const home = {
+    sky: layers.sky,
+    far: layers.ridges,
+    mid: layers.ridges,
+    hill: layers.forest,
+    lawn: layers.lawn,
+    house: layers.house,
+    drive: layers['drive-truck'],
+    truck: truckBox,
+  };
   async function drawPiece(name, picture) {
-    const texture = await rasterize(picture, host.app.renderer);
+    const texture = rasterize(picture, host.app.renderer);
     if (art.disposed) {
       texture.destroy(true);
       return;
@@ -125,6 +213,8 @@ export default async function create(host) {
     const sprite = spriteOf(picture, texture);
     home[name].addChild(sprite);
     if (name === 'mid') home.mid.setChildIndex(sprite, home.mid.children.length - 1);
+    if (name === 'drive') home.drive.setChildIndex(sprite, 0); // under the truck
+    if (name === 'house') home.house.setChildIndex(sprite, 0); // under the lights and the smoke
     art.pieces[name] = sprite;
     if (old) {
       old.parent?.removeChild(old);
@@ -135,18 +225,29 @@ export default async function create(host) {
   async function drawLandscape(all) {
     const { season, snowCover } = slow;
     art.key = paletteKey(season, snowCover);
+    art.snowStep = snowStep(snowCover);
     if (all) {
       await drawPiece('sky', skyPicture());
       await drawPiece('far', farRidgePicture());
+      await drawPiece('lawn', lawnPicture());
+      await drawPiece('drive', drivePicture());
+      await drawPiece('truck', truckPicture());
     }
     await drawPiece('mid', midRidgePicture(season, snowCover));
     await drawPiece('hill', hillPicture(season, snowCover));
+    await drawPiece('house', housePicture(snowCover));
   }
   await drawLandscape(true);
   art.ready = true;
   /** Called once a second: draws the two palette pictures again when the colours have moved enough. */
   function checkLandscape() {
-    if (art.building || art.disposed || paletteKey(slow.season, slow.snowCover) === art.key) return;
+    if (
+      art.building ||
+      art.disposed ||
+      (paletteKey(slow.season, slow.snowCover) === art.key &&
+        snowStep(slow.snowCover) === art.snowStep)
+    )
+      return;
     art.building = drawLandscape(false)
       .catch((error) =>
         host.log('farmhouse: the landscape was not drawn again: ' + (error?.message ?? error)),
@@ -163,6 +264,7 @@ export default async function create(host) {
     root,
     resize(w, h) {
       width = w;
+      edgeX = visibleDesign(w, h).right + 200; // the truck leaves the screen to the right
       fit = coverFit(w, h);
       world.scale.set(fit.scale);
       world.position.set(fit.x, fit.y);
@@ -170,6 +272,7 @@ export default async function create(host) {
     // The scene is a function of the clock: nothing is added up here (the host does not cap `dt` for us).
     update() {
       refresh();
+      applyMotion();
     },
     setVisible(value) {
       visible = value;
@@ -177,6 +280,7 @@ export default async function create(host) {
     // After a pause the scene is right at once: the view is worked out again from the clock.
     resume() {
       refresh(true);
+      applyMotion();
     },
     pointer(x, y) {
       pointer = x === null ? null : { x, y };
@@ -216,7 +320,19 @@ export default async function create(host) {
         await art.building;
         await drawLandscape(true);
       },
-      art: () => ({ builds: art.builds, key: art.key }),
+      art: () => ({ builds: art.builds, key: art.key, snowStep: art.snowStep }),
+      // What is on show now: the alpha of each lit window, the smoke, and the truck.
+      shown: () => ({
+        lights: Object.fromEntries(
+          Object.entries(lights).map(([id, g]) => [id, g.visible ? g.alpha : 0]),
+        ),
+        smoke: smoke.visible ? motion.smoke : 0,
+        truck: {
+          visible: truckBox.visible,
+          x: truckBox.position.x,
+          mirrored: truckBox.scale.x < 0,
+        },
+      }),
       pointer: () => pointer,
     },
   };

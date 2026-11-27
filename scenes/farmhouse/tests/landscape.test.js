@@ -103,7 +103,7 @@ describe('the drawing operations', () => {
       { t: 'path', d: 'M 0 0 L 1 1', fill: '#000000', stroke: '#000000', width: 2 },
     ]);
     expect(calls).toEqual(
-      expect.arrayContaining(['fillRect', 'ellipse', 'fill', 'stroke', 'createLinearGradient']),
+      expect.arrayContaining(['rect', 'ellipse', 'fill', 'stroke', 'createLinearGradient']),
     );
     expect(() => paint(ctx, [{ t: 'star' }])).toThrow(/unknown/);
   });
