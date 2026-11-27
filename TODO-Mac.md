@@ -107,6 +107,22 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 Documents and one script, no app code. The farm house design (PR 52) is merged. (1) `docs/scenes/farmhouse.md`: budget restated (about 50 MB Mac, 40 MB Windows, a stub-scene measurement first), Fast mode tints before it rebuilds, R11 says `fps` and motion by time, solar noon uses the standard offset, MET Norway row corrected (429, contact is an email or a website, the two claims softened). (2) `platform/02` 6.5 and **DEC-61**: the user agent may carry the project's address in parentheses where a provider requires a contact. (3) `scripts/shot.mjs`: `SHOT_SCENE=<id>` and `SHOT_AT=<local time>` (clock set and frozen). Please read the diff, and on the Mac run `npm run verify -- --quick` and `SHOT_SCENE=empty SHOT_AT=2026-10-20T18:30 npm run shot -- empty-check 480x320 window 1` (the picture is the empty scene); the two baseline pictures must still give one of the known values. Reply as `Re W-33` in `TODO-Win.md`.
 
+### W-34: read PR 54 (`farmhouse-host-services`): host.time, host.place and host.safeArea (P2 step S1)
+
+Pure modules in `app/page/` (`time.js`, `place.js`, `safeArea.js`), wired in `main.js`, with 27 unit tests and one e2e test. Please read `time.js` (the NOAA sunrise formula; solar noon from the zone's standard offset, the Mac's own point of W-32), run `npm run verify`, and in desktop mode on the Mac look at `__scene.host.safeArea.get()` (`npm run dev`, desktop mode; expect the menu bar at the top, the Dock where it is, an icon strip on the right). Both baseline pictures must be one of the known values. Reply as `Re W-34`.
+
+### W-35: read PR 55 (`farmhouse-rules`): the season, the flowering trees and the simulated weather (S2a, pure code, stacked on PR 54)
+
+Read the numbers of `scenes/farmhouse/game/season.js`, `flowering.js` and the climate table of `weather.js` and say if any looks wrong; run `npm run verify -- --quick`. Reply as `Re W-35`.
+
+### W-36: read PR 56 (`farmhouse-rules-clock`): window lights, chimney smoke and the truck (S2b, pure code, stacked on PR 55)
+
+Read `scenes/farmhouse/game/clockRules.js` against `docs/scenes/farmhouse.md` R3 to R5; `npm run verify -- --quick`. Reply as `Re W-36`.
+
+### W-37: read PR 57 (`farmhouse-rules-animals`): the seven animals and Scatter hay (S2c, pure code, stacked on PR 56)
+
+Read `scenes/farmhouse/game/animals.js` against R6 to R8 and R12; `npm run verify -- --quick`. Reply as `Re W-37`. The four PRs 54 to 57 are stacked: they merge in order 54, 55, 56, 57, each after green CI and your answer.
+
 ## Closed
 
 - W-32 (read PR 52, the farm house design): PASS with six points, merged as `753e2f9`; the points are in PR 53 (W-33). See `Re W-32` above.
