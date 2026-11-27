@@ -25,6 +25,8 @@ export const dayIndexOf = (parts) =>
  * @param {number} input.seed
  * @param {string|null} [input.previewSeason]  a tray preview of a season (not saved)
  * @param {string|null} [input.previewKind]  a tray preview of a weather kind (not saved)
+ * @param {{dayOfYear: number, dayIndex: number}|null} [input.fast]  the fast date (game/fast.js) in Fast mode: the season
+ *        and the weather follow it instead of the real date
  */
 export function slowAt({
   ms,
@@ -35,9 +37,13 @@ export function slowAt({
   seed,
   previewSeason = null,
   previewKind = null,
+  fast = null,
 }) {
-  const dayOfYear = previewSeason ? previewDay(previewSeason, latitude) : parts.dayOfYear;
-  const when = { dayIndex: dayIndexOf(parts), dayOfYear, minuteOfDay: parts.minuteOfDay };
+  const dayOfYear = previewSeason
+    ? previewDay(previewSeason, latitude)
+    : (fast?.dayOfYear ?? parts.dayOfYear);
+  const dayIndex = fast && !previewSeason ? fast.dayIndex : dayIndexOf(parts);
+  const when = { dayIndex, dayOfYear, minuteOfDay: parts.minuteOfDay };
   const simulated = weatherAt(seed, when, latitude);
   const weather = previewKind ? previewWeather(previewKind, simulated.temperature) : simulated;
   // A previewed snowfall also puts snow on the ground, so the picture shows it.

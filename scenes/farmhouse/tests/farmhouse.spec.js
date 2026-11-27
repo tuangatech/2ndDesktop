@@ -10,6 +10,10 @@ const switchTo = (run, id) =>
   run.app.evaluate((_electron, wanted) => globalThis.__desktop2Test.switchScene(wanted), id);
 const ready = (run) => run.page.waitForFunction(() => window.__ready === true);
 const recordOf = (dir) => path.join(dir, 'records', 'farmhouse.json');
+const modeOf = (dir) =>
+  fs.existsSync(recordOf(dir))
+    ? JSON.parse(fs.readFileSync(recordOf(dir), 'utf8')).seasonMode
+    : null;
 const farmhouseDir = () => {
   const dir = makeDataDir();
   fs.writeFileSync(path.join(dir, 'settings.json'), JSON.stringify({ activeScene: 'farmhouse' }));
@@ -53,7 +57,15 @@ test.describe('the farm house scene', () => {
         'layer-weather',
         'layer-grade',
       ]);
-      expect(info.menu).toEqual([{ id: 'hay', label: 'Scatter hay', enabled: true }]);
+      expect(info.menu.map((item) => item.id)).toEqual([
+        'hay',
+        undefined,
+        'seasons',
+        'preview-season',
+        'preview-weather',
+      ]);
+      expect(info.menu[0]).toEqual({ id: 'hay', label: 'Scatter hay', enabled: true });
+      expect(info.menu[2].label).toBe('Seasons: Calendar (switch to Fast)');
       expect(info.status.line).toMatch(/\(simulated weather\)$/);
       expect(['spring', 'summer', 'autumn', 'winter']).toContain(info.season);
       expect(info.animals).toBe(7);
@@ -144,6 +156,61 @@ test.describe('the farm house scene', () => {
       // The simulation is back when the preview is let go.
       const back = await shown({});
       expect(back.status).toMatch(/\(simulated weather\)$/);
+    } finally {
+      await run?.close().catch(() => {});
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test('the tray items switch Fast mode and the previews through a dip, and Fast mode is saved', async () => {
+    const dir = farmhouseDir();
+    let run;
+    try {
+      run = await launch({ dataDir: dir });
+      // Runs the dip to its end by stepping the scene the way the host does.
+      const choose = (id) =>
+        run.page.evaluate(async (item) => {
+          const scene = window.__scene.fishtank;
+          scene.onMenu(item);
+          let peak = 0;
+          for (let i = 0; i < 400; i++) {
+            scene.update(0.1);
+            peak = Math.max(peak, scene.debug.dip().alpha);
+            if (scene.debug.dip().phase === 'idle') break;
+            await new Promise((resolve) => setTimeout(resolve, 15));
+          }
+          return {
+            peak,
+            dip: scene.debug.dip(),
+            status: scene.status().line,
+            labels: scene.menuItems().map((m) => m.label),
+          };
+        }, id);
+      const fast = await choose('seasons');
+      expect(fast.dip.phase).toBe('idle');
+      expect(fast.peak).toBeGreaterThan(0.95); // the veil came all the way in, so there was no cut
+      expect(fast.dip.alpha).toBe(0);
+      expect(fast.status).toMatch(/\(Fast: January\)/); // the first day is the first of January
+      expect(fast.labels[2]).toMatch(/^Seasons: Fast, January/);
+      await expect
+        .poll(() => modeOf(dir), {
+          timeout: 10_000,
+        })
+        .toBe('fast');
+      const saved = JSON.parse(fs.readFileSync(recordOf(dir), 'utf8'));
+      expect(typeof saved.fastStartedAt).toBe('number');
+      const season = await choose('preview-season'); // spring
+      expect(season.status).toMatch(/^Spring/);
+      expect(season.labels[3]).toMatch(/^Preview season: Spring \(next: Summer\)/);
+      const kind = await choose('preview-weather'); // clear
+      expect(kind.status).toMatch(/^Spring, clear/);
+      const calendar = await choose('seasons');
+      expect(calendar.labels[2]).toBe('Seasons: Calendar (switch to Fast)');
+      await expect
+        .poll(() => modeOf(dir), {
+          timeout: 10_000,
+        })
+        .toBe('calendar');
     } finally {
       await run?.close().catch(() => {});
       fs.rmSync(dir, { recursive: true, force: true });

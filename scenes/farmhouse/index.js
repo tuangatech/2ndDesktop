@@ -6,7 +6,9 @@ import { Container, Graphics, Sprite } from 'pixi.js';
 import { canScatter, HAY, hayWeight, HERD } from './game/animals.js';
 import { motionAt, slowAt } from './game/view.js';
 import { DESIGN, coverFit, toDesign, visibleDesign } from './layout.js';
-import { seen, startState } from './state.js';
+import { seen, startFast, startState, stopFast } from './state.js';
+import { fastDate, monthOf } from './game/fast.js';
+import { smooth } from './game/hash.js';
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
 import { animalPicture, coatKey, hayPicture } from './art/animals.js';
 import { skyColours, skyKey, timeOfDay, fallingAt } from './game/sky.js';
@@ -134,6 +136,7 @@ export default async function create(host) {
         seed: SEED,
         previewSeason: preview.season,
         previewKind: preview.kind,
+        fast: state.seasonMode === 'fast' ? fastDate(ms, state.fastStartedAt) : null,
       });
       slowFor = ms;
       if (art.ready) checkLandscape();
@@ -377,17 +380,18 @@ export default async function create(host) {
   weatherView = createWeatherView({ renderer: host.app.renderer, layers, seed: SEED });
   art.ready = true;
   applyMotion(); // the animals are in their places from the first frame
-  /** Called once a second: draws again what has moved enough. */
-  function checkLandscape() {
-    if (art.building || art.disposed) return;
+  /** Whether every picture shows what the view of this moment asks for. */
+  function landscapeCurrent() {
     const now = wanted();
-    if (
+    return (
       now.key === art.key &&
       now.sky === art.skyKey &&
       trees.every(({ name }) => art.treeKeys[name] === now.keys[name])
-    ) {
-      return;
-    }
+    );
+  }
+  /** Called once a second: draws again what has moved enough. */
+  function checkLandscape() {
+    if (art.building || art.disposed || landscapeCurrent()) return;
     art.building = drawLandscape(false)
       .catch((error) =>
         host.log('farmhouse: the landscape was not drawn again: ' + (error?.message ?? error)),
@@ -396,6 +400,67 @@ export default async function create(host) {
         art.building = null;
       });
   }
+
+  // A change of the season setting or of a preview is a slow dip into the colour of the fog and back, so there is no cut:
+  // the veil comes in over 1.2 seconds, the change is made under it, the pictures are drawn again, and the veil goes out
+  // over 2.5 seconds. (A cosmetic fade of the frame time; what the scene shows is still a function of the clock.)
+  const veil = new Graphics().rect(0, 0, DESIGN.width, DESIGN.height).fill(0xdcdad0);
+  veil.alpha = 0;
+  veil.visible = false;
+  layers.grade.addChild(veil);
+  const dip = { phase: 'idle', t: 0, from: 0, apply: null };
+  const VEIL_IN = 1.2;
+  const VEIL_OUT = 2.5;
+  function changeWithDip(apply) {
+    dip.apply = apply;
+    if (dip.phase !== 'out') {
+      dip.phase = 'out';
+      dip.t = 0;
+      dip.from = veil.alpha;
+    }
+    veil.visible = true;
+  }
+  function stepDip(dt) {
+    if (dip.phase === 'idle') return;
+    dip.t += dt;
+    if (dip.phase === 'out') {
+      veil.alpha = dip.from + (1 - dip.from) * smooth(dip.t / VEIL_IN);
+      if (dip.t < VEIL_IN) return;
+      dip.apply?.();
+      dip.apply = null;
+      refresh(true);
+      applyMotion();
+      checkLandscape();
+      dip.phase = 'wait';
+    }
+    if (dip.phase === 'wait') {
+      // Held at full veil until the pictures show the new look.
+      veil.alpha = 1;
+      if (art.building || !landscapeCurrent()) {
+        checkLandscape();
+        return;
+      }
+      dip.phase = 'in';
+      dip.t = 0;
+    }
+    if (dip.phase === 'in') {
+      veil.alpha = 1 - smooth(dip.t / VEIL_OUT);
+      if (dip.t >= VEIL_OUT) {
+        dip.phase = 'idle';
+        veil.visible = false;
+        veil.alpha = 0;
+      }
+    }
+  }
+
+  const SEASON_CYCLE = [null, 'spring', 'summer', 'autumn', 'winter'];
+  const KIND_CYCLE = [null, 'clear', 'cloudy', 'fog', 'rain', 'snow', 'storm'];
+  const nextOf = (cycle, current) => cycle[(cycle.indexOf(current) + 1) % cycle.length];
+  const cap = (word) => word.charAt(0).toUpperCase() + word.slice(1);
+  const cycleLabel = (what, cycle, current) => {
+    const next = nextOf(cycle, current);
+    return `${what}: ${current ? cap(current) : 'off'} (next: ${next ? cap(next) : 'back to the setting'})`;
+  };
 
   const hayReady = () => canScatter(host.clock.now(), hayStartedAt);
 
@@ -411,6 +476,7 @@ export default async function create(host) {
     },
     // The scene is a function of the clock: nothing is added up here (the host does not cap `dt` for us).
     update(dt = 0) {
+      stepDip(Math.min(dt, 0.1));
       refresh();
       applyMotion(Math.min(dt, 0.1));
     },
@@ -428,20 +494,52 @@ export default async function create(host) {
     click() {},
     status: () => {
       const season = SEASON_LABEL[slow.season.name];
+      const fastNote =
+        state.seasonMode === 'fast' && !preview.season
+          ? ` (Fast: ${monthOf(slow.when.dayOfYear)})`
+          : '';
       return {
-        line: `${season}, ${slow.weather.kind}, ${Math.round(slow.weather.temperature)} °C (simulated weather)`,
-        diagnostics: `farmhouse, ${slow.season.name}, ${slow.weather.kind}, opened ${state.opened}`,
+        line: `${season}${fastNote}, ${slow.weather.kind}, ${Math.round(slow.weather.temperature)} °C (simulated weather)`,
+        diagnostics: `farmhouse, ${slow.season.name}, ${slow.weather.kind}, ${state.seasonMode}, opened ${state.opened}`,
       };
     },
+    // Flat items only (docs/platform/01): the cycles stand for the radio lists of docs/scenes/farmhouse.md section 3.
     menuItems: () => [
       {
         id: 'hay',
         label: hayReady() ? 'Scatter hay' : 'Scatter hay (wait a moment)',
         enabled: hayReady(),
       },
+      { label: 'Weather: simulated' },
+      {
+        id: 'seasons',
+        label:
+          state.seasonMode === 'fast'
+            ? `Seasons: Fast, ${monthOf(slow.when.dayOfYear)} (switch to Calendar)`
+            : 'Seasons: Calendar (switch to Fast)',
+      },
+      { id: 'preview-season', label: cycleLabel('Preview season', SEASON_CYCLE, preview.season) },
+      { id: 'preview-weather', label: cycleLabel('Preview weather', KIND_CYCLE, preview.kind) },
     ],
     onMenu(id) {
       if (id === 'hay' && hayReady()) hayStartedAt = host.clock.now();
+      else if (id === 'seasons') {
+        const toFast = state.seasonMode !== 'fast';
+        changeWithDip(() => {
+          state = toFast ? startFast(state, host.clock.now()) : stopFast(state);
+          host.record.save(state);
+        });
+      } else if (id === 'preview-season') {
+        const next = nextOf(SEASON_CYCLE, preview.season);
+        changeWithDip(() => {
+          preview.season = next;
+        });
+      } else if (id === 'preview-weather') {
+        const next = nextOf(KIND_CYCLE, preview.kind);
+        changeWithDip(() => {
+          preview.kind = next;
+        });
+      }
     },
     serialize: () => ({ ...state }),
     dispose() {
@@ -468,6 +566,10 @@ export default async function create(host) {
         applyMotion();
         if (art.ready) checkLandscape();
         return art.building;
+      },
+      dip: () => ({ phase: dip.phase, alpha: veil.alpha }),
+      settle: async () => {
+        await art.building;
       },
       art: () => ({ builds: art.builds, key: art.key, treeKeys: { ...art.treeKeys } }),
       // What is on show now: the alpha of each lit window, the smoke, and the truck.
