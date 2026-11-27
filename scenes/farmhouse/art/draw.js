@@ -7,6 +7,7 @@
 //   {t: 'rect', x, y, w, h, fill, rx?}
 //   {t: 'ellipse', x, y, rx, ry, fill}               (x, y the centre)
 //   {t: 'path', d, fill?, stroke?, width?, cap?}      (d is SVG path text, drawn with Path2D)
+//   {t: 'clip', x, y, rx, ry, ops}                    (the operations inside, only where the ellipse is)
 // and on any of them alpha?, and stroke? and width? on a rect or an ellipse.
 // A fill is a '#rrggbb' colour or a vertical gradient {y0, y1, stops: [[offset, '#rrggbb', alpha], ...]}.
 
@@ -103,6 +104,14 @@ export function paint(ctx, ops) {
         ctx.lineCap = op.cap ?? 'butt';
         ctx.stroke(path);
       }
+    } else if (op.t === 'clip') {
+      // The operations inside are drawn only where the ellipse is.
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(op.x, op.y, op.rx, op.ry, 0, 0, Math.PI * 2);
+      ctx.clip();
+      paint(ctx, op.ops);
+      ctx.restore();
     } else {
       throw new Error('unknown drawing operation ' + op.t);
     }
