@@ -6,7 +6,3 @@ export const PRODUCT_NAME = '2ndDesktop';
 export const APP_ID = 'com.tuangatech.2nddesktop';
 // The data folder of a development run, next to the real one (tech design 14.4).
 export const DEV_DATA_FOLDER = `${PRODUCT_NAME} (dev)`;
-// Where the same player's data lived before the rename (the old product had no `productName`, so the folder was the
-// package name), and the old development folder. Used once, to copy the saved tank over (app/main/migrate-data.js).
-export const OLD_DATA_FOLDER = 'fish-tank';
-export const OLD_DEV_DATA_FOLDER = 'Fish Tank (dev)';
