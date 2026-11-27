@@ -32,6 +32,9 @@ test.describe('the farm house scene', () => {
           status: scene.status(),
           season: view.slow.season.name,
           animals: view.motion.animals.length,
+          art: scene.debug.art(),
+          shown: scene.debug.shown(),
+          view,
         };
       });
       expect(info.id).toBe('farmhouse');
@@ -54,6 +57,13 @@ test.describe('the farm house scene', () => {
       expect(info.status.line).toMatch(/\(simulated weather\)$/);
       expect(['spring', 'summer', 'autumn', 'winter']).toContain(info.season);
       expect(info.animals).toBe(7);
+      // The eight pictures of S4 and S5 are drawn (sky, far ridge, lawn, drive, truck, mid ridge, hill, house).
+      expect(info.art.builds).toBe(8);
+      // What is on show follows the view: each window's light, the smoke and the truck.
+      for (const [id, light] of Object.entries(info.view.slow.lights)) {
+        expect(info.shown.lights[id]).toBeCloseTo(light > 0.01 ? light : 0, 5);
+      }
+      expect(info.shown.truck.visible).toBe(info.view.motion.truck.visible);
       await expect.poll(() => fs.existsSync(recordOf(dir)), { timeout: 10_000 }).toBe(true);
       const saved = JSON.parse(fs.readFileSync(recordOf(dir), 'utf8'));
       expect(saved).toMatchObject({ opened: 1, seasonMode: 'calendar' });
