@@ -101,6 +101,14 @@ The owner installed the Windows build of PR 22 and found: with the tank window o
 
 Documents only, three lines: DEC-54 (new "Round 15" in `docs/DECISIONS.md`) and the status of finding 10a in `docs/reviews/2026-11-25-host-security-review.md` ("Closed, not needed (no old data exists; DEC-54)"). Please check that DEC-54 says what the owner decided in your M-10 (not done; the migration only reads when there is nothing to copy; the question about deleting `migrate-data.js` stays open) and that the row reads right. `npm run format:check` is enough. Reply as `Re W-27` in `TODO-Win.md`.
 
+### W-28: review PR 47 (`p1-lock-pause`): the lock screen and a suspended computer are two pause reasons
+
+Your finding in the `Re W-15` addendum: a lone `resume` after `suspend` and `lock-screen` started the tank behind the lock screen. `main.js` no longer has the inline loop; `app/main/power-pause.js` holds the four events and their reasons (`lock-screen` and `unlock-screen` on `locked`, `suspend` and `resume` on `asleep`) and `wirePowerPause`; the scene runs again only when no reason is left. Windows: `npm run verify`: 45 files / 531 unit (5 new in `tests/host/power-pause.test.js`), 63 e2e (+1 skipped). Please (1) read the diff (about 40 lines of code); (2) on the branch, repeat your `powerMonitor.emit` simulation in the running app (desktop or window mode): `lock-screen`, `suspend`, `resume` must leave the scene paused (the log says paused, the page reports no frames) and `unlock-screen` must resume it; also the reverse order; (3) if you can, one real lock (Ctrl+Cmd+Q) and a real sleep and wake with the app running, and say what the log shows (a wake that shows the lock screen first is the case this is for). Reply as `Re W-28` in `TODO-Win.md`.
+
+### W-29: read PR 48 (`p1-manifest-amp`): no `&` in a scene name
+
+The answer to your `&` result: `checkManifest` now refuses an `&` in a scene's `name` (the rule `npm run new-scene` already has), a test names `Tom & Jerry`, and the `name` row of `platform/01` section 8.2 says "no `&`". Windows: 44 files / 527 unit. Read-only: please read the three-file diff, and check by hand on the branch that a scratch scene with `"name": "Tom & Jerry"` is now **left out** of the Scenes list and reported as rejected (the log or the dev run says why), and that the same scene without the `&` appears. The run-time labels a scene reports (`status()`, `menuItems()`) are not changed; if you think they need the `&&` form, try it on the Mac first (the PR text says so). Reply as `Re W-29` in `TODO-Win.md`.
+
 ## Closed
 
 - W-26 (review PR 45, the ad-hoc signature): PASS, merged (PR 45). See `Re W-26` above.
