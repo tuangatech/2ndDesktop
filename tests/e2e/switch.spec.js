@@ -41,6 +41,7 @@ test.describe('switching the scene', () => {
       expect(shape.labels).toContain('Scenes');
       expect(shape.scenes).toEqual([
         ['Empty', 'radio', false],
+        ['Farm house', 'radio', false],
         ['Tank', 'radio', true],
       ]);
     } finally {
@@ -69,6 +70,7 @@ test.describe('switching the scene', () => {
       ).toBe(true);
       expect((await trayShape(run)).scenes).toEqual([
         ['Empty', 'radio', true],
+        ['Farm house', 'radio', false],
         ['Tank', 'radio', false],
       ]);
       expect(readJson(path.join(dir, 'settings.json')).activeScene).toBe('empty');

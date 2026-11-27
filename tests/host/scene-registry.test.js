@@ -27,7 +27,7 @@ describe('checkManifest', () => {
   });
 
   it('accepts the manifests of the two scenes in the repository', () => {
-    for (const folder of ['fishtank', 'empty']) {
+    for (const folder of ['fishtank', 'empty', 'farmhouse']) {
       const raw = JSON.parse(fs.readFileSync(path.join(scenesDir, folder, 'scene.json'), 'utf8'));
       expect(checkManifest(raw, folder)).toMatchObject({ ok: true });
     }
@@ -111,7 +111,7 @@ describe('readSceneManifests', () => {
   it('finds the scenes of the repository and rejects none', () => {
     const { scenes, rejected } = readSceneManifests(scenesDir);
     expect(rejected).toEqual([]);
-    expect(scenes.map((s) => s.id)).toEqual(['empty', 'fishtank']);
+    expect(scenes.map((s) => s.id)).toEqual(['empty', 'farmhouse', 'fishtank']);
   });
 
   it('lists the same scene ids as the page does (the page finds them with Vite at build time)', () => {
