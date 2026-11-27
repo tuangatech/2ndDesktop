@@ -22,6 +22,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
+    "verify": "node scripts/verify.mjs",
     "test:e2e": "npm run build && playwright test",
     "dist": "npm run build && electron-builder",
     "dist:universal": "npm run build && node scripts/koffi-universal.mjs && electron-builder",
