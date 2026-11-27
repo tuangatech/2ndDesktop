@@ -123,6 +123,14 @@ Read `scenes/farmhouse/game/clockRules.js` against `docs/scenes/farmhouse.md` R3
 
 Read `scenes/farmhouse/game/animals.js` against R6 to R8 and R12; `npm run verify -- --quick`. Reply as `Re W-37`. The four PRs 54 to 57 are stacked: they merge in order 54, 55, 56, 57, each after green CI and your answer.
 
+### W-38: read PR 58 (`farmhouse-scene`): the scene skeleton: manifest (dev), record, layers, fit, tray, view (S3, stacked on PR 57)
+
+Read `scenes/farmhouse/index.js`, `state.js`, `layout.js` and `game/view.js`; `npm run verify -- --quick`; start it with `npm run dev:scene -- farmhouse` and look at the tray item "Scatter hay" and the status line. The scene is `dev: true`, so a release does not list it yet. Reply as `Re W-38`.
+
+### W-39: read PR 59 (`farmhouse-scene-landscape`): the sky, the mountain layers and the forest, and the render spike (S4, stacked on PR 58)
+
+The spike result is in the PR body: SVG text through an `<img>` grew the page by about 30 MB per rebuild (74 MB at start, 165 MB after 6 rebuilds), so the art is drawn as canvas operations (`art/draw.js`, `art/raster.js`): 45 MB at start on Windows, 20 ms per rebuild. Please run `npm run measure:switch -- --switches 0 --scene farmhouse --gc 1` on the Mac (the script now accepts `--scene farmhouse`) and give the footprint, and look at `npm run shot -- farmhouse-s4 1600x900 window 2` with `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T12:00` (PR 53 adds those two variables; the branch has the script). Reply as `Re W-39`. The PRs 54 to 59 are stacked: they merge in order, each after green CI and your answer.
+
 ## Closed
 
 - W-32 (read PR 52, the farm house design): PASS with six points, merged as `753e2f9`; the points are in PR 53 (W-33). See `Re W-32` above.
