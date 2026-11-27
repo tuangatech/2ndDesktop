@@ -27,7 +27,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const SCENES = ['fishtank', 'empty'];
+const SCENES = ['fishtank', 'empty', 'farmhouse'];
 const SAMPLES = 5; // memory is read this many times, a second apart, and the median is used
 
 function parseArgs(argv) {
