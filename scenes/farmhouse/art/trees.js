@@ -325,6 +325,8 @@ export function frontTreePicture(tree, state, snowCover = 0, seed = 8) {
  * @param {number} snowCover
  */
 export function grassColours(season, snowCover = 0) {
+  // Snow lies thicker on the ground than on a tree: up to nine tenths white.
+  const snowy = (c, k) => mix(c, SNOW, Math.max(0, Math.min(1, k)) * 0.9);
   const g = Math.max(0, Math.min(1, season.grass));
   const top = mix('#b3a877', '#93a95f', g);
   const bottom = mix('#948c5c', '#5a893d', g);

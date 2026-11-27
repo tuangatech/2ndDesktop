@@ -116,6 +116,40 @@ test.describe('the farm house scene', () => {
     }
   });
 
+  test('a preview of rain, snow, fog and a storm shows the weather; letting go brings the simulation back', async () => {
+    const dir = farmhouseDir();
+    let run;
+    try {
+      run = await launch({ dataDir: dir });
+      const shown = (next) =>
+        run.page.evaluate(async (preview) => {
+          const scene = window.__scene.fishtank;
+          await scene.debug.preview(preview);
+          scene.update(0.05);
+          return { status: scene.status().line, weather: scene.debug.shown().weather };
+        }, next);
+      const rain = await shown({ kind: 'rain' });
+      expect(rain.weather.rain).toBeGreaterThan(50);
+      expect(rain.weather.clouds).toBeGreaterThan(5);
+      expect(rain.weather.snow).toBe(0);
+      const snow = await shown({ kind: 'snow' });
+      expect(snow.weather.snow).toBeGreaterThan(50);
+      expect(snow.weather.rain).toBe(0);
+      const storm = await shown({ kind: 'storm' });
+      expect(storm.weather.rain).toBeGreaterThan(200);
+      const fog = await shown({ kind: 'fog' });
+      expect(fog.weather.fog.every((alpha) => alpha > 0)).toBe(true);
+      const winter = await shown({ season: 'winter', kind: 'snow' });
+      expect(winter.status).toMatch(/^Winter, snow/);
+      // The simulation is back when the preview is let go.
+      const back = await shown({});
+      expect(back.status).toMatch(/\(simulated weather\)$/);
+    } finally {
+      await run?.close().catch(() => {});
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test('a switch to the tank and back keeps the farm house record', async () => {
     const dir = farmhouseDir();
     let run;
