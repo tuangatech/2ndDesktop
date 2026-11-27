@@ -3,7 +3,7 @@
 // into polygons, and TankScene fills them. Everything is sized in units (FR-63) and measured from the left edge,
 // so a wider tank only shows more of the same reef (ridges and blades) and never stretches it.
 
-import { makeRng } from '../../shared/rng.js';
+import { makeRng } from '../../../shared/rng.js';
 import { visual } from './visualConfig.js';
 
 const CELL = 34; // units between the points of the random profile

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyTuning, config } from '../config.js';
+import { applyTuning, config } from '../game/config.js';
 import {
   collect,
   eggsAvailable,
@@ -15,7 +15,7 @@ import {
   sizeOf,
   stageOf,
   summarize,
-} from '../rules.js';
+} from '../game/rules.js';
 import { makeRng } from '../../../shared/rng.js';
 
 const H = 60 * 60 * 1000;

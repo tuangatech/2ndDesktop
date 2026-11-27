@@ -23,7 +23,7 @@ A living scene on the desktop of Windows and macOS (Electron + PixiJS v8, plain 
 
 ## Layout
 
-`app/main/` main process; `app/page/` host page (built by Vite into `dist/renderer/`); `scenes/<id>/` scenes (`scenes/fishtank/`, its own tests in `scenes/fishtank/tests/`); `templates/scene/` (what `new-scene` copies); `shared/` (`rng.js`); `scripts/`; `tests/host/` (unit tests of the host) and `tests/e2e/` (host end-to-end and `helpers.js`); `docs/`; `build/` and `assets/` icons and art (they move to `app/assets/` with the tank regrouping, BOOTSTRAP section 5). Vitest runs `tests/host/` and `scenes/*/tests/`; Playwright runs `tests/e2e/` and `scenes/*/tests/*.spec.js`: a new test folder must be added to `vitest.config.js` or `playwright.config.js`, or its tests silently do not run.
+`app/main/` main process; `app/page/` host page (built by Vite into `dist/renderer/`); `scenes/<id>/` scenes (`scenes/fishtank/`: `game/` pure rules and the repository, `view/` everything drawn with Pixi, `data/`, `ui/` window-mode HTML; its own tests in `scenes/fishtank/tests/`); `templates/scene/` (what `new-scene` copies); `shared/` (`rng.js`); `scripts/`; `tests/host/` (unit tests of the host) and `tests/e2e/` (host end-to-end and `helpers.js`); `docs/`; `build/` and `assets/` icons and art (they move to `app/assets/` with the tank regrouping, BOOTSTRAP section 5). Vitest runs `tests/host/` and `scenes/*/tests/`; Playwright runs `tests/e2e/` and `scenes/*/tests/*.spec.js`: a new test folder must be added to `vitest.config.js` or `playwright.config.js`, or its tests silently do not run.
 
 ## Commands
 

@@ -5,8 +5,8 @@
 const HOUR = 60 * 60 * 1000;
 
 /**
- * @param {{scene: import('./TankScene.js').TankScene,
- *          repository: ReturnType<typeof import('./repo/LocalTankRepository.js').createLocalRepository>,
+ * @param {{scene: import('../view/TankScene.js').TankScene,
+ *          repository: ReturnType<typeof import('../game/repo/LocalTankRepository.js').createLocalRepository>,
  *          clock: {offset: number}, speciesIds?: string[]}} options
  */
 export function createDevPanel({ scene, repository, clock, speciesIds = ['tetra'] }) {

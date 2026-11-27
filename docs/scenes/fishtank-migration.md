@@ -81,6 +81,8 @@ scenes/fishtank/
 
 **When to do it:** not in the import. The platform document's commit 3 moves the host; the scene's regrouping is **its own PR after the host move is green**, and before the farm house is started, so that the farm house copies the new shape. If the owner prefers zero churn, the alternative is to keep the folder flat and add only `assets/`, `tests/`, `DESIGN.md` and `sounds.js`; the platform works the same. My recommendation is the regrouping, because the tank is the reference scene that contributors will read first.
 
+**Done (2026-11-26, work package 8.x chore):** `game/` (`rules.js`, `config.js`, `repo/`), `view/`, `data/` and `ui/` are as above; 23 files moved with `git mv`, 45 imports and the ESLint globs changed, no logic. Still flat, for their own later PRs: `art/` and `gen-decor-art.mjs` (the `assets/` group, which `npm run assets` reads) and the split of `tests/` into `unit/` and `e2e/` (the Vitest and Playwright globs would change). `LocalTankRepository.js` was not added to the pure glob: that is a change of a rule, not of a place.
+
 **ESLint after the move:** the "pure rules" glob changes from `scenes/*/rules.js` and `scenes/*/config.js` to `scenes/*/game/rules.js` and `scenes/*/game/config.js` (or the whole `scenes/*/game/**` if the repository files are pure too: check that `LocalTankRepository.js` uses no browser or Node global before widening it). The clock rule (`Date.now`, `performance.now`, `new Date()`) stays on every file under `scenes/`.
 
 ## 4. What the scene must change to meet the new contract

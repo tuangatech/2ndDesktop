@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import species from '../species.json';
-import { paletteFor } from '../palette.js';
+import species from '../data/species.json';
+import { paletteFor } from '../view/palette.js';
 
 const artDir = path.join(import.meta.dirname, '..', 'art');
 

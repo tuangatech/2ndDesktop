@@ -5,8 +5,8 @@ import {
   chooseReaction,
   personalityOf,
   reactionVelocity,
-} from '../pointer.js';
-import { visual } from '../visualConfig.js';
+} from '../view/pointer.js';
+import { visual } from '../view/visualConfig.js';
 
 const cfg = visual.pointer;
 const unit = 1;
