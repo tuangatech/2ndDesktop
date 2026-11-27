@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createLineLimiter, createLogFile } from '../../app/main/log-file.js';
+import { createLineLimiter, createLogFile, pageLine } from '../../app/main/log-file.js';
 
 let dir;
 beforeEach(() => {
@@ -74,5 +74,24 @@ describe('createLineLimiter', () => {
     expect(limit.allow()).toBe(false);
     time = 6000;
     expect(limit.allow()).toBe(true);
+  });
+});
+
+describe('pageLine', () => {
+  it('keeps plain text and cuts it to the length', () => {
+    expect(pageLine('visible', 20)).toBe('visible');
+    expect(pageLine('x'.repeat(5000), 2000)).toHaveLength(2000);
+  });
+
+  it('turns control characters, a new line above all, into spaces', () => {
+    expect(pageLine('a\nb\r\nc\td\u0000e\u007ff\u001b[0m', 100)).toBe('a b  c d e f [0m');
+    // A page cannot write a line that looks like the app's own.
+    expect(pageLine('x\n2026-01-01T00:00:00.000Z restart after a crash', 100)).not.toContain('\n');
+  });
+
+  it('says nothing for what is not text', () => {
+    for (const value of [undefined, null, 42, {}, ['a'], { toString: () => 'x' }]) {
+      expect(pageLine(value, 10)).toBe('');
+    }
   });
 });
