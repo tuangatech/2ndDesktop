@@ -103,6 +103,10 @@ The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDe
 
 The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
 
+### W-32: read PR 52 (`farmhouse-design`): the farm house design after the owner's answers (DEC-58 to DEC-60)
+
+Documents and one concept picture only (`docs/scenes/farmhouse.md` v0.2, `docs/DECISIONS.md`, `docs/scenes/farmhouse/farmhouse-autumn.svg` and its PNG preview; no app code). Please read the diff and check: (1) the rules of the scene (4.1, R1 to R12) and the season modes (4.3): is there anything the Mac cannot do or would do differently (the clock rules need only `host.time`; Fast mode and the forest redraw every 15 minutes are the costly part, section 4.3 concern 3)? (2) the weather provider proposal (8.1: Open-Meteo, MET Norway as the fallback): are the facts right, and does a request made by the main process with a project-owned User-Agent fit the network design of `platform/02` section 11? (3) that no document except DEC-57 itself still says "the hemisphere from the time zone" (your W-31 point; DEC-60 replaces it with a typed city and "Atlanta, GA" as the default); (4) the picture: does it open and look right on the Mac (the SVG is about 7,000 lines, 0.5 MB)? `npm run format:check` is enough to run. Reply as `Re W-32` in `TODO-Win.md`.
+
 ## Closed
 
 - W-31 (read PR 51, DEC-57): PASS, merged as `c9fca47`. See `Re W-31` above.
