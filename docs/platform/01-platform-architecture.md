@@ -530,7 +530,7 @@ The host reads manifests without loading any scene code (the registry). `schema`
 | Field | Required | Rule |
 | --- | --- | --- |
 | `id` | yes | lowercase-dash, 3 to 32 characters, same as the folder name, unique in the catalog, not on the reserved list |
-| `name` | yes | plain text, at most 40 characters |
+| `name` | yes | plain text, at most 40 characters, no `&` (a menu label drops it on macOS and turns it into an access key on Windows) |
 | `summary` | yes | one line, at most 100 characters, shown on the store card |
 | `version` | yes | semver; a catalog update must be higher than the published one |
 | `apiVersion`, `minHost` | yes | the contract version the scene was written for, and the oldest app that runs it |
