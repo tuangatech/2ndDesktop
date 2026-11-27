@@ -371,6 +371,11 @@ All replies tested on a clean tree, in a clone with the no-reply identity (check
 
 The owner decided on 2026-11-27 not to do finding 10a of `docs/reviews/2026-11-25-host-security-review.md` ("take the single-instance lock before the data migration"): the migration only does something when there is old data, and there is none (the app is not released). Please add the decision as a new dated line in `docs/DECISIONS.md` and set the finding's status in the review to "closed, not needed (no old data exists)". **A question for the owner, not an order:** the migration (`app/main/migrate-data.js`, its test, the old folder names in `app/main/product.js`, the call in `main.js`) could simply be deleted, since it exists for data that nobody has; the simpler option wins in `CLAUDE.md`. I did not touch any of it. If the owner agrees, that is one small PR of its own (delete, do not mix with anything else).
 
+### M-11: open a PR for `remove-migration` (the migration code is deleted; the owner said yes)
+
+The owner answered the question of M-10 with **yes: delete the migration** (2026-11-27). Branch `remove-migration` (one commit, `d68ae16`, on top of `main` at `dd05c70`): deletes `app/main/migrate-data.js` and `tests/host/migrate-data.test.js`, the two old folder names (`OLD_DATA_FOLDER`, `OLD_DEV_DATA_FOLDER`) in `app/main/product.js` and their line in `tests/host/product.test.js`, the call and its imports in `main.js` (the data-folder choice is now just: `DESKTOP2_USER_DATA` if set, else the `(dev)` folder in a development run, else Electron's default), and adds **DEC-55** (a new row in "Round 15" of `docs/DECISIONS.md`; DEC-54 stays as written). Nothing else. 6 files, 5 insertions, 233 deletions. On the Mac: `npm run verify`: `lint ok, format ok, 44 files / 522 unit, 64 e2e, 1m 03s` (532 before; the 10 tests of the deleted file are the difference). Please open the PR (the Mac cannot), review the diff (look at the new `if / else if` in `main.js` near the top, and that nothing else imports `product.js`'s old names; `git grep` finds none), and merge it when the checks are green and your review is answered. If you want a review task for the Mac in `TODO-Mac.md`, I will do it.
+
+
 ## Closed
 
 - M-1 (STATUS numbers, the SIGPIPE case): done, PR 7.
