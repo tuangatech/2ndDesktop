@@ -85,7 +85,7 @@ export function createDesktopController({
   let covered = false;
   let lastForegroundKey = '';
   // Why the tank is paused (FR-22): 'cover' (a window covers the desktop), 'hidden' (window mode: minimized
-  // or hidden), 'power' (screen locked, display asleep, suspended). The renderer is told only when
+  // or hidden), 'locked' (screen locked) and 'asleep' (suspended; app/main/power-pause.js). The renderer is told only when
   // "paused or not" changes.
   const pauseReasons = new Set();
   function setPauseReason(reason, on) {

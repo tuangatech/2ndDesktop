@@ -29,6 +29,7 @@ import { buildAppMenuTemplate, buildTrayTemplate, sanitizeSceneMenu } from './me
 import { createCrashRestart, RESTARTED_ARG, restartCommandLine } from './crash-restart.js';
 import { FALLBACK_NOTE, chooseStartMode, settingsForMode, settingsOnQuit } from './display-mode.js';
 import { createLineLimiter, createLogFile, pageLine } from './log-file.js';
+import { wirePowerPause } from './power-pause.js';
 import { createSettingsStore } from './settings.js';
 import { createSceneBinding } from './scene-binding.js';
 import { chooseActiveScene, listedScenes, readSceneManifests } from './scene-registry.js';
@@ -621,14 +622,7 @@ app.whenReady().then(async () => {
   });
 
   // Lock, sleep and suspend pause the tank (FR-22, NFR-1); it catches up when it resumes.
-  for (const [event, on] of [
-    ['lock-screen', true],
-    ['unlock-screen', false],
-    ['suspend', true],
-    ['resume', false],
-  ]) {
-    powerMonitor.on(event, () => controller.setPauseReason('power', on));
-  }
+  wirePowerPause(powerMonitor, controller.setPauseReason);
   // Pulling out or plugging in the charger matters to a covered desktop when "Pause on battery only" is chosen.
   for (const event of ['on-battery', 'on-ac']) {
     powerMonitor.on(event, () => controller.reevaluateCover());
