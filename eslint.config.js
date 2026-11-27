@@ -28,15 +28,20 @@ export default [
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
-    files: ['app/page/**/*.js', 'scenes/**/*.js'],
-    ignores: ['scenes/*/rules.js', 'scenes/*/config.js', 'scenes/*/tests/**'],
+    files: ['app/page/**/*.js', 'scenes/**/*.js', 'templates/scene/**/*.js'],
+    ignores: [
+      'scenes/*/rules.js',
+      'scenes/*/config.js',
+      'scenes/*/tests/**',
+      'templates/scene/tests/**',
+    ],
     languageOptions: { globals: globals.browser },
   },
   {
     // A scene never reads the clock itself: host.clock is the one source of time, so the manual clock and the seed of
     // tests and `npm run shot` work for every scene (platform plan, the contract).
-    files: ['scenes/**/*.js'],
-    ignores: ['scenes/*/tests/**'],
+    files: ['scenes/**/*.js', 'templates/scene/**/*.js'],
+    ignores: ['scenes/*/tests/**', 'templates/scene/tests/**'],
     rules: {
       'no-restricted-properties': [
         'error',
