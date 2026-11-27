@@ -57,8 +57,8 @@ test.describe('the farm house scene', () => {
       expect(info.status.line).toMatch(/\(simulated weather\)$/);
       expect(['spring', 'summer', 'autumn', 'winter']).toContain(info.season);
       expect(info.animals).toBe(7);
-      // The eight pictures of S4 and S5 are drawn (sky, far ridge, lawn, drive, truck, mid ridge, hill, house).
-      expect(info.art.builds).toBe(8);
+      // The pictures are drawn once: sky, far ridge, drive, truck, mid ridge, hill, lawn, house, field, fence (10) and eight trees.
+      expect(info.art.builds).toBe(18);
       // What is on show follows the view: each window's light, the smoke and the truck.
       for (const [id, light] of Object.entries(info.view.slow.lights)) {
         expect(info.shown.lights[id]).toBeCloseTo(light > 0.01 ? light : 0, 5);

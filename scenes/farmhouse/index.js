@@ -9,6 +9,16 @@ import { DESIGN, coverFit, toDesign, visibleDesign } from './layout.js';
 import { seen, startState } from './state.js';
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
 import { paletteKey } from './art/palette.js';
+import {
+  BACK_TREES,
+  FRONT_TREES,
+  backTreePicture,
+  fencePicture,
+  fieldPicture,
+  frontTreePicture,
+  lawnGroundPicture,
+  treeKey,
+} from './art/trees.js';
 import { rasterize, spriteOf } from './art/raster.js';
 import {
   CHIMNEY_TOP,
@@ -18,7 +28,6 @@ import {
   WINDOW_RECTS,
   drivePicture,
   housePicture,
-  lawnPicture,
   truckPicture,
 } from './art/house.js';
 
@@ -69,11 +78,6 @@ export default async function create(host) {
     layers[name] = layer;
     world.addChild(layer);
   }
-  // A plain field until its art arrives (S6).
-  layers.field.addChild(
-    new Graphics().rect(0, 664, DESIGN.width, DESIGN.height - 664).fill(0x7fa35a),
-  );
-
   let width = 1;
   let fit = coverFit(1, 1);
   let visible = true;
@@ -97,7 +101,15 @@ export default async function create(host) {
   };
 
   // The pictures of the landscape (below): `ready` is set once the first ones are drawn.
-  const art = { key: null, building: null, builds: 0, pieces: {}, disposed: false, ready: false };
+  const art = {
+    key: null,
+    treeKeys: {},
+    building: null,
+    builds: 0,
+    pieces: {},
+    disposed: false,
+    ready: false,
+  };
 
   /** Works out the view of a moment: the slow part at most once a second of clock time, the motion every frame. */
   function refresh(force = false) {
@@ -190,9 +202,10 @@ export default async function create(host) {
   }
   applyMotion();
 
-  // The landscape: the sky and the three mountain layers, each one picture painted from drawing operations (art/draw.js) and turned into one texture.
-  // The sky and the far ridge are drawn once; the mid ridge and the near hill are drawn again when the palette has moved
-  // (paletteKey: steps of the leaf, the colour and the snow), the old texture staying on screen until the new one is ready.
+  // The pictures. Each one is painted from drawing operations (art/draw.js) and turned into one texture. The sky, the far
+  // ridge, the drive and the truck are drawn once; what depends on the season or the snow (the two ridges, the hill, the
+  // house, the grass and the fence) is drawn again when the palette has moved enough (paletteKey and snowStep), and each
+  // tree when its own look has (treeKey); the old texture stays on screen until the new one is ready.
   const home = {
     sky: layers.sky,
     far: layers.ridges,
@@ -202,7 +215,14 @@ export default async function create(host) {
     house: layers.house,
     drive: layers['drive-truck'],
     truck: truckBox,
+    field: layers.field,
+    fence: layers.fence,
   };
+  const trees = [
+    ...BACK_TREES.map((tree) => ({ tree, name: 'tree-' + tree.id, layer: layers['trees-back'] })),
+    ...FRONT_TREES.map((tree) => ({ tree, name: 'tree-' + tree.id, layer: layers['trees-front'] })),
+  ];
+  for (const t of trees) home[t.name] = t.layer;
   async function drawPiece(name, picture) {
     const texture = rasterize(picture, host.app.renderer);
     if (art.disposed) {
@@ -213,8 +233,8 @@ export default async function create(host) {
     const sprite = spriteOf(picture, texture);
     home[name].addChild(sprite);
     if (name === 'mid') home.mid.setChildIndex(sprite, home.mid.children.length - 1);
-    if (name === 'drive') home.drive.setChildIndex(sprite, 0); // under the truck
-    if (name === 'house') home.house.setChildIndex(sprite, 0); // under the lights and the smoke
+    if (name === 'drive' || name === 'house' || name === 'field')
+      home[name].setChildIndex(sprite, 0); // under the truck, the lights, the placeholders
     art.pieces[name] = sprite;
     if (old) {
       old.parent?.removeChild(old);
@@ -222,32 +242,55 @@ export default async function create(host) {
     }
     art.builds++;
   }
+  /** What the pictures should look like now: the key of the palette group and of each tree. */
+  const wanted = () => {
+    const { season, snowCover } = slow;
+    const key = paletteKey(season, snowCover) + '|' + snowStep(snowCover);
+    const keys = {};
+    for (const { tree, name } of trees) {
+      const state = BACK_TREES.includes(tree) ? { ...season } : { ...slow.trees[tree.id] };
+      keys[name] = BACK_TREES.includes(tree) ? key : treeKey(state, snowCover);
+    }
+    return { key, keys };
+  };
   async function drawLandscape(all) {
     const { season, snowCover } = slow;
-    art.key = paletteKey(season, snowCover);
-    art.snowStep = snowStep(snowCover);
+    const now = wanted();
     if (all) {
       await drawPiece('sky', skyPicture());
       await drawPiece('far', farRidgePicture());
-      await drawPiece('lawn', lawnPicture());
       await drawPiece('drive', drivePicture());
       await drawPiece('truck', truckPicture());
     }
-    await drawPiece('mid', midRidgePicture(season, snowCover));
-    await drawPiece('hill', hillPicture(season, snowCover));
-    await drawPiece('house', housePicture(snowCover));
+    if (all || now.key !== art.key) {
+      art.key = now.key;
+      await drawPiece('mid', midRidgePicture(season, snowCover));
+      await drawPiece('hill', hillPicture(season, snowCover));
+      await drawPiece('lawn', lawnGroundPicture(season, snowCover));
+      await drawPiece('house', housePicture(snowCover));
+      await drawPiece('field', fieldPicture(season, snowCover));
+      await drawPiece('fence', fencePicture(season, snowCover));
+    }
+    for (const { tree, name } of trees) {
+      if (!all && art.treeKeys[name] === now.keys[name]) continue;
+      art.treeKeys[name] = now.keys[name];
+      await drawPiece(
+        name,
+        BACK_TREES.includes(tree)
+          ? backTreePicture(tree, season, snowCover)
+          : frontTreePicture(tree, slow.trees[tree.id], snowCover),
+      );
+    }
   }
   await drawLandscape(true);
   art.ready = true;
-  /** Called once a second: draws the two palette pictures again when the colours have moved enough. */
+  /** Called once a second: draws again what has moved enough. */
   function checkLandscape() {
-    if (
-      art.building ||
-      art.disposed ||
-      (paletteKey(slow.season, slow.snowCover) === art.key &&
-        snowStep(slow.snowCover) === art.snowStep)
-    )
+    if (art.building || art.disposed) return;
+    const now = wanted();
+    if (now.key === art.key && trees.every(({ name }) => art.treeKeys[name] === now.keys[name])) {
       return;
+    }
     art.building = drawLandscape(false)
       .catch((error) =>
         host.log('farmhouse: the landscape was not drawn again: ' + (error?.message ?? error)),
@@ -320,7 +363,7 @@ export default async function create(host) {
         await art.building;
         await drawLandscape(true);
       },
-      art: () => ({ builds: art.builds, key: art.key, snowStep: art.snowStep }),
+      art: () => ({ builds: art.builds, key: art.key, treeKeys: { ...art.treeKeys } }),
       // What is on show now: the alpha of each lit window, the smoke, and the truck.
       shown: () => ({
         lights: Object.fromEntries(

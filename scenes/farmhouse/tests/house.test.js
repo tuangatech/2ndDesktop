@@ -6,7 +6,6 @@ import {
   WINDOW_RECTS,
   drivePicture,
   housePicture,
-  lawnPicture,
   truckPicture,
 } from '../art/house.js';
 import { WINDOWS } from '../game/clockRules.js';
@@ -21,7 +20,6 @@ const inside = (picture, r) =>
 describe('the house art', () => {
   it('is the same for the same inputs', () => {
     expect(housePicture(0)).toEqual(housePicture(0));
-    expect(lawnPicture()).toEqual(lawnPicture());
     expect(drivePicture()).toEqual(drivePicture());
     expect(truckPicture()).toEqual(truckPicture());
   });
@@ -50,7 +48,7 @@ describe('the house art', () => {
     expect(truck).toMatchObject({ x: TRUCK.left, y: TRUCK.top, width: TRUCK.width });
     // The wheels touch the ground line of the truck's space (y 0), and nothing hangs below it.
     expect(truck.y + truck.height).toBeGreaterThanOrEqual(6);
-    for (const pic of [drive, truck, housePicture(0), lawnPicture()]) {
+    for (const pic of [drive, truck, housePicture(0)]) {
       expect(JSON.stringify(pic.ops)).not.toMatch(/NaN|undefined|Infinity/);
     }
   });

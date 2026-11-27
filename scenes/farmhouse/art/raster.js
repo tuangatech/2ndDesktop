@@ -12,12 +12,15 @@ import { paint } from './draw.js';
  */
 export function rasterize(picture, renderer) {
   const canvas = new OffscreenCanvas(picture.pixelWidth, picture.pixelHeight);
-  const ctx = canvas.getContext('2d');
+  // A software canvas (`willReadFrequently`): the graphics card's canvas keeps about 40 MB of the GPU process for these
+  // eighteen pictures; painting on the processor costs a few milliseconds more and leaves only the bitmap.
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
   const scale = picture.pixelWidth / picture.width;
   ctx.scale(scale, scale);
   ctx.translate(-picture.x, -picture.y);
   paint(ctx, picture.ops);
   const bitmap = canvas.transferToImageBitmap();
+  canvas.width = canvas.height = 0; // let go of the canvas memory now, not at the next garbage collection
   const texture = Texture.from(bitmap);
   renderer.texture.initSource(texture.source);
   bitmap.close();
