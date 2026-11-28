@@ -12,11 +12,10 @@ const base = {
   waiting: 3,
   stash: 5,
   stashFull: false,
-  hungry: 2,
+  canFeed: true,
   fishCount: 2,
   eggs: 0,
   eggReady: false,
-  allFull: false,
   feeding: false,
 };
 // What the tank reports for a summary, cleaned the way the main process cleans it, then the tray template.
@@ -29,18 +28,15 @@ const labels = (items) => items.filter((i) => i.type !== 'separator').map((i) =>
 const find = (items, label) => items.find((i) => i.label === label);
 
 describe('statusLine', () => {
-  it('lists what is waiting, in the stash and hungry', () => {
-    expect(statusLine(base)).toBe('3 pellets waiting · 5 in the stash · 2 hungry');
-    expect(statusLine({ ...base, waiting: 1 })).toBe(
-      '1 pellet waiting · 5 in the stash · 2 hungry',
-    );
-    expect(statusLine({ ...base, waiting: 0 })).toBe('5 in the stash · 2 hungry');
+  it('lists what is waiting and what is in the stash', () => {
+    expect(statusLine(base)).toBe('3 pellets waiting · 5 in the stash');
+    expect(statusLine({ ...base, waiting: 1 })).toBe('1 pellet waiting · 5 in the stash');
+    expect(statusLine({ ...base, waiting: 0 })).toBe('5 in the stash');
   });
 
-  it('does not repeat the full-and-happy message of the feeding item when nothing is left to do', () => {
-    expect(statusLine({ ...base, waiting: 0, stash: 0, hungry: 0, allFull: true })).toBe(
-      'Nothing to do right now',
-    );
+  it('has no word about hunger or fullness, and says when nothing is left to do', () => {
+    expect(statusLine(base)).not.toMatch(/hungry|full/i);
+    expect(statusLine({ ...base, waiting: 0, stash: 0 })).toBe('Nothing to do right now');
   });
 });
 
@@ -48,10 +44,10 @@ describe('the tray template with the items of the tank', () => {
   it('has the normal items when there is something to do', () => {
     const items = tray(base, { mode: 'desktop' }, null, handlers());
     expect(labels(items)).toEqual([
-      '3 pellets waiting · 5 in the stash · 2 hungry',
+      '3 pellets waiting · 5 in the stash',
       'Collect pellets',
       'Feed a pellet',
-      'Feed until full',
+      'Feed everyone',
       'Show in a window',
       'Launch at login',
       'Sound',
@@ -67,10 +63,10 @@ describe('the tray template with the items of the tank', () => {
     const items = tray(base, { mode: 'window' }, null, h);
     find(items, 'Collect pellets').click();
     find(items, 'Feed a pellet').click();
-    find(items, 'Feed until full').click();
+    find(items, 'Feed everyone').click();
     find(items, 'Show on desktop').click();
     find(items, 'Quit').click();
-    expect(h.action.mock.calls.map((c) => c[0])).toEqual(['collect', 'feed', 'feedUntilFull']);
+    expect(h.action.mock.calls.map((c) => c[0])).toEqual(['collect', 'feed', 'feedEveryone']);
     expect(h.setMode).toHaveBeenCalledWith('desktop');
     expect(h.quit).toHaveBeenCalled();
   });
@@ -82,26 +78,26 @@ describe('the tray template with the items of the tank', () => {
     expect(find(none, 'No pellets waiting').enabled).toBe(false);
   });
 
-  it('greys feeding with the reason: everyone full, or an empty stash', () => {
-    const full = tray({ ...base, hungry: 0, allFull: true }, { mode: 'window' }, null, handlers());
-    expect(find(full, 'Everyone is full and happy').enabled).toBe(false);
+  it('greys feeding with the reason: every fish has had its meals, or an empty stash', () => {
+    const full = tray({ ...base, canFeed: false }, { mode: 'window' }, null, handlers());
+    expect(find(full, 'The fish have eaten enough for today').enabled).toBe(false);
     expect(find(full, 'Feed a pellet')).toBeUndefined();
     const empty = tray({ ...base, stash: 0 }, { mode: 'window' }, null, handlers());
     expect(find(empty, 'No pellets in the stash').enabled).toBe(false);
-    expect(find(empty, 'Feed until full')).toBeUndefined();
+    expect(find(empty, 'Feed everyone')).toBeUndefined();
   });
 
   it('offers Stop feeding instead of Feed until full while the loop runs', () => {
     const h = handlers();
     const items = tray({ ...base, feeding: true }, { mode: 'window' }, null, h);
-    expect(find(items, 'Feed until full')).toBeUndefined();
+    expect(find(items, 'Feed everyone')).toBeUndefined();
     find(items, 'Stop feeding').click();
     expect(h.action).toHaveBeenCalledWith('stopFeeding');
   });
 
-  it('still offers Stop feeding when the loop has just made everyone full', () => {
+  it('still offers Stop feeding when the loop has just fed everyone', () => {
     const items = tray(
-      { ...base, hungry: 0, allFull: true, feeding: true },
+      { ...base, canFeed: false, feeding: true },
       { mode: 'window' },
       null,
       handlers(),
@@ -139,15 +135,15 @@ describe('the tray template with the items of the tank', () => {
   });
 });
 
-describe('the all-full menu', () => {
-  it('shows "Everyone is full and happy" only once', () => {
+describe('the menu when no fish may eat', () => {
+  it('says "The fish have eaten enough for today" only once', () => {
     const items = tray(
-      { ...base, waiting: 0, stash: 0, hungry: 0, allFull: true },
+      { ...base, waiting: 0, stash: 0, canFeed: false },
       { mode: 'window' },
       null,
       handlers(),
     );
-    expect(items.filter((i) => i.label === 'Everyone is full and happy')).toHaveLength(1);
+    expect(items.filter((i) => i.label === 'The fish have eaten enough for today')).toHaveLength(1);
   });
 });
 

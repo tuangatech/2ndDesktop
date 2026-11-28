@@ -12,7 +12,7 @@ A small, calm aquarium on the desktop (behind the icons, or in a small window). 
 | --- | --- |
 | Start | 2 fry of different species, 4 floating pellets |
 | Pellets | one appears every hour, also while the app is closed; up to 16 wait in the water; collecting moves them to a stash of at most 30 |
-| Feeding | tray: Feed a pellet, or Feed everyone (one pellet for each fish, longest-waiting first); window mode: click the water. A fish takes at most 2 pellets in any 24 hours, at any hour |
+| Feeding | tray: Feed a pellet, or Feed everyone (one pellet for each fish, longest-waiting first; choose it twice for the day's two meals); window mode: click the water. A fish takes at most 2 pellets in any 24 hours, at any hour |
 | Growth | 20 points a pellet; juvenile at 100, adult at 400; size and colour follow |
 | Eggs | one for every 12 pellets fed; a hatched egg is a new fry, up to 8 fish |
 | Drowsy | no food for 36 hours: slower and low in the water; recovers at the first meal; fish never die |

@@ -13,14 +13,14 @@ describe('pacing promises', () => {
     expect(r.firstEggVisit).toBeLessThanOrEqual(3);
   });
 
-  // Finding from the simulator: a visit less than 24 hours after the last one finds a fish only half hungry, so a
-  // player who comes at a different hour every day feeds about 1.5 pellets per fish a day, not 2, and the original
-  // fish become adults after about 14 visits instead of 10.
+  // Finding from the simulator: a visit less than 24 hours after the last one finds a meal that has not aged out yet, so
+  // a player who comes at a different hour every day feeds about 1.4 pellets per fish a day, not 2, and the original
+  // fish become adults after 15 or 16 visits instead of 10 (DEC-71; with the old fullness rule it was about 14).
   it('a daily visitor at a random hour is a few visits slower, not days slower', () => {
     for (let seed = 1; seed <= 5; seed++) {
       const r = run('daily, random hour', seed);
       expect(r.juvenileVisit).toBeLessThanOrEqual(5);
-      expect(r.adultVisit).toBeLessThanOrEqual(15);
+      expect(r.adultVisit).toBeLessThanOrEqual(17);
     }
   });
 

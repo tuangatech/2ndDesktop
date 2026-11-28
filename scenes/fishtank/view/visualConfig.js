@@ -92,7 +92,7 @@ export const visual = {
     sinkSeconds: 6, // from the top of the water to the sand (FR-46)
     swayAmplitude: 1.6, // units
     swaySpeed: 1.9, // radians per second
-    feedLoopSeconds: 2, // "Feed until full" drops a pellet this often, in scene time (D28)
+    feedLoopSeconds: 2, // "Feed everyone" drops a pellet this often, in scene time (D28)
   },
   // Pellets that float in the tank and are collected by a click (FR-3, FR-4).
   floating: {

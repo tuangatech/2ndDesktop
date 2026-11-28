@@ -1,16 +1,17 @@
 // Pacing simulator (tech design 3.7, plan 5A): plays 30 days of the game for several visit patterns with the
 // shared rules, to check that the numbers keep the promises of the functional spec 7.2.
 // Usage: npm run sim
-// A visit collects every waiting pellet, feeds every hungry fish until it is full, and hatches every egg.
+// A visit collects every waiting pellet, gives every fish as many pellets as it may take now (the limit of meals in
+// 24 hours, DEC-71), and hatches every egg.
 import { pathToFileURL } from 'node:url';
 import { config } from '../scenes/fishtank/game/config.js';
 import { makeRng } from '../shared/rng.js';
 import {
+  canEat,
   collect,
   eggsAvailable,
   feed,
   hatchEgg,
-  isFull,
   newFish,
   newTankState,
   settlePellets,
@@ -48,7 +49,7 @@ export function simulate(visitHours, { days = 30, seed = 1, cfg = config } = {})
     eighthFishDay: null,
     pelletsLost: 0,
     pelletsFedToOriginals: 0,
-    visitsFoundEveryoneFull: 0,
+    visitsFoundEveryoneFed: 0,
   };
 
   visitHours.forEach((hours, index) => {
@@ -57,7 +58,7 @@ export function simulate(visitHours, { days = 30, seed = 1, cfg = config } = {})
     result.visits = index + 1;
     result.pelletsLost += settlePellets(state.tank, now, cfg).lost;
     state = settleState(state, now, cfg);
-    if (state.fish.every((fish) => isFull(fish, now, cfg))) result.visitsFoundEveryoneFull++;
+    if (state.fish.every((fish) => !canEat(fish, now, cfg))) result.visitsFoundEveryoneFed++;
 
     const collected = collect(state, Infinity, now, cfg);
     if (collected.ok) state = collected.state;
@@ -116,7 +117,7 @@ function table() {
       dash(r.firstEggVisit),
       dash(r.eighthFishDay),
       r.pelletsLost,
-      r.visitsFoundEveryoneFull,
+      r.visitsFoundEveryoneFed,
       r.pelletsPerOriginalFishPerDay.toFixed(2),
     ];
   });
@@ -128,7 +129,7 @@ function table() {
     'first egg (visit)',
     '8th fish (day)',
     'pellets lost',
-    'visits all full',
+    'visits all fed',
     'fed/fish/day',
   ];
   const widths = head.map((h, i) => Math.max(h.length, ...rows.map((r) => String(r[i]).length)));

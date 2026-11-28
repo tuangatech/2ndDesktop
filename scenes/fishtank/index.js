@@ -79,7 +79,7 @@ export default async function create(host) {
   const actions = {
     collect: () => scene.collectAll(),
     feed: () => scene.feedOne(),
-    feedUntilFull: () => scene.startFeeding(),
+    feedEveryone: () => scene.startFeeding(),
     stopFeeding: () => scene.stopFeeding(),
     hatch: () => scene.hatch(),
   };

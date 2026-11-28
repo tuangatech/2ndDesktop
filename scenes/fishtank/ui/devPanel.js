@@ -60,7 +60,7 @@ export function createDevPanel({ scene, repository, clock, speciesIds = ['tetra'
   const clockLabel = document.createElement('span');
   const refresh = () => {
     const summary = repository.getSummary();
-    stash.textContent = `stash ${summary.stash}, waiting ${summary.waiting}, hungry ${summary.hungry}, eggs ${summary.eggs}`;
+    stash.textContent = `stash ${summary.stash}, waiting ${summary.waiting}, eggs ${summary.eggs}`;
     clockLabel.textContent = `clock +${(clock.offset / HOUR).toFixed(1)} h`;
   };
   repository.subscribe(refresh);

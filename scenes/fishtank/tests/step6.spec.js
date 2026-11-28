@@ -84,7 +84,7 @@ test.describe('sounds (FR-38)', () => {
         scene.feedOne();
         const afterFeed = [...plays];
 
-        // Feed until full is a loop that runs from the tick: it drops several pellets and makes no sound.
+        // Feed everyone is a loop that runs from the tick: it drops several pellets and makes no sound.
         repository.dev.addStash(10);
         const before = plays.length;
         scene.startFeeding();

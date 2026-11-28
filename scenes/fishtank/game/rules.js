@@ -12,8 +12,7 @@ import { config } from './config.js';
  * @property {string} species
  * @property {number} seed
  * @property {number} growthPoints
- * @property {number} fullness
- * @property {number} fullnessUpdatedAt
+ * @property {number[]} mealsAt  epoch times of the meals in the last `meals.windowMs` (at most `meals.perFishPerDay`)
  * @property {number|null} lastFedAt
  * @property {number} createdAt
  */
@@ -62,29 +61,26 @@ export function settlePellets(tank, now, cfg = config) {
   return { floatingPellets, pelletsUpdatedAt, spawned, lost: due - spawned };
 }
 
-/** The fish with its fullness decayed by whole decay intervals; the remainder of the time is kept (FR-8). */
+/** The meals of the last window: a meal ages out `windowMs` after it was taken; one stamped later than now is dropped. */
+export function recentMeals(fish, now, cfg = config) {
+  const { windowMs } = cfg.meals;
+  return fish.mealsAt.filter((at) => at <= now && now - at < windowMs);
+}
+
+/** The fish with the meals that have aged out removed (the same object when none has). */
 export function settleFish(fish, now, cfg = config) {
-  const { decayMs } = cfg.fullness;
-  if (now < fish.fullnessUpdatedAt) return { ...fish, fullnessUpdatedAt: now };
-  if (fish.fullness <= 0) return fish;
-  const steps = Math.floor((now - fish.fullnessUpdatedAt) / decayMs);
-  if (steps <= 0) return fish;
-  const fullness = Math.max(0, fish.fullness - steps);
-  return {
-    ...fish,
-    fullness,
-    fullnessUpdatedAt: fullness === 0 ? now : fish.fullnessUpdatedAt + steps * decayMs,
-  };
+  const recent = recentMeals(fish, now, cfg);
+  return recent.length === fish.mealsAt.length ? fish : { ...fish, mealsAt: recent };
 }
 
 /** True when the fish has had no food for more than 36 hours; a never-fed fish counts from its creation (D10). */
 export function isDrowsy(fish, now, cfg = config) {
-  return now - (fish.lastFedAt ?? fish.createdAt) > cfg.fullness.drowsyAfterMs;
+  return now - (fish.lastFedAt ?? fish.createdAt) > cfg.drowsy.afterMs;
 }
 
-/** True when the fish is at maximum fullness after the decay up to `now`, so it does not eat (FR-8). */
-export function isFull(fish, now, cfg = config) {
-  return settleFish(fish, now, cfg).fullness >= cfg.fullness.max;
+/** True when the fish may take another pellet: fewer than `perFishPerDay` meals in the last window (DEC-71). */
+export function canEat(fish, now, cfg = config) {
+  return recentMeals(fish, now, cfg).length < cfg.meals.perFishPerDay;
 }
 
 /** Eggs waiting: one for every 12 pellets fed, minus the ones already hatched (FR-17). */
@@ -128,18 +124,20 @@ export function collect(state, count, now, cfg = config) {
   };
 }
 
-/** Feeds one pellet from the stash to a fish (FR-6 to FR-9). The economy is committed here (D1). */
+/**
+ * Feeds one pellet from the stash to a fish (FR-6 to FR-9). The economy is committed here (D1). Fails with
+ * `unknown_fish`, `stash_empty`, or `enough_today` when the fish has had its meals for the last 24 hours.
+ */
 export function feed(state, fishId, now, cfg = config) {
   const settled = settleState(state, now, cfg);
   const index = settled.fish.findIndex((fish) => fish.id === fishId);
   if (index < 0) return { ok: false, reason: 'unknown_fish' };
   if (settled.tank.stash < 1) return { ok: false, reason: 'stash_empty' };
   const fish = settled.fish[index];
-  if (fish.fullness >= cfg.fullness.max) return { ok: false, reason: 'fish_full' };
+  if (!canEat(fish, now, cfg)) return { ok: false, reason: 'enough_today' };
   const fed = {
     ...fish,
-    fullness: fish.fullness + 1,
-    fullnessUpdatedAt: fish.fullness === 0 ? now : fish.fullnessUpdatedAt,
+    mealsAt: [...fish.mealsAt, now],
     growthPoints: fish.growthPoints + cfg.growth.pointsPerPellet,
     lastFedAt: now,
   };
@@ -183,8 +181,7 @@ export function newFish(now, rng, speciesIds, species = rng.pick(speciesIds)) {
     species,
     seed: rng.int(1, 0x7fffffff),
     growthPoints: 0,
-    fullness: 0,
-    fullnessUpdatedAt: now,
+    mealsAt: [],
     lastFedAt: null,
     createdAt: now,
   };
@@ -216,16 +213,15 @@ export function newTankState(now, rng, speciesIds, cfg = config) {
 /** What the tray menu and the HUD show, computed from the stored values and the clock (FR-61). */
 export function summarize(state, now, cfg = config) {
   const settled = settleState(state, now, cfg);
-  const hungry = settled.fish.filter((fish) => fish.fullness < cfg.fullness.max).length;
+  const eaters = settled.fish.filter((fish) => canEat(fish, now, cfg)).length;
   const eggs = eggsAvailable(settled.tank, cfg);
   return {
     waiting: settled.tank.floatingPellets,
     stash: settled.tank.stash,
     stashFull: settled.tank.stash >= cfg.pellets.maxStash,
-    hungry,
+    canFeed: eaters > 0,
     fishCount: settled.fish.length,
     eggs,
     eggReady: eggs > 0 && settled.fish.length < cfg.eggs.maxFish,
-    allFull: settled.fish.length > 0 && hungry === 0,
   };
 }

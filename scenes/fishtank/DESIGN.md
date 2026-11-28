@@ -1,6 +1,6 @@
 # Scene: Fish tank (`fishtank`)
 
-Status: the first scene and the default one. Decision DEC-71 (2026-11-28): fish have no names and no fullness, and a fish can eat at any hour up to a daily limit. This document is the master design of the scene; the short overview in `docs/scenes/fishtank.md` points here. Until the two pull requests of DEC-71 are merged, the code on `main` still has fullness and names (delete this sentence when they are). Platform documents: `docs/platform/01` to `03`. Numbers in brackets such as (FR-22) point to the old functional specification in `docs/reference/fishtank-v1/`. The code move and the contract gaps are in `docs/scenes/fishtank-migration.md`.
+Status: the first scene and the default one. Decision DEC-71 (2026-11-28): fish have no names and no fullness, and a fish can eat at any hour up to a daily limit. This document is the master design of the scene; the short overview in `docs/scenes/fishtank.md` points here. Platform documents: `docs/platform/01` to `03`. Numbers in brackets such as (FR-22) point to the old functional specification in `docs/reference/fishtank-v1/`. The code move and the contract gaps are in `docs/scenes/fishtank-migration.md`.
 
 ## 1. Summary and vibe
 
@@ -15,7 +15,7 @@ A small, calm aquarium on the desktop. Fish swim, bubbles rise, food sinks, and 
 ## 2. The player's experience
 
 - **First minute:** the scene opens in a window with two small fry of different species, four pellets floating in the water, and a short hint in the window that the tank can be moved onto the desktop from the tray icon. The hint stays until the first successful feed.
-- **A normal day:** open the tray menu, read the status line ("2 pellets waiting · 5 in the stash"), choose Collect pellets, then Feed everyone, and watch each fish take a pellet. After that the rest of the day is just watching.
+- **A normal day:** open the tray menu, read the status line ("2 pellets waiting · 5 in the stash"), choose Collect pellets, then Feed everyone, and watch each fish take a pellet. A fish takes two meals a day, so choosing Feed everyone again later (or at once) gives each fish its second; after that the rest of the day is just watching.
 - **After a week away:** pellets have piled up (at most 16), the fish are drowsy (slower, low in the water) but fine, and recover at the first meal. Nothing is lost except pellets beyond the cap.
 - **Growth:** a fry becomes a juvenile at 100 points (5 pellets) and an adult at 400 points (20 pellets); the size grows smoothly between them, the colours change at the stage thresholds, and a short burst of bubbles marks a new stage. Every 12 pellets fed to the tank give an egg, and a hatched egg is a new fry, up to 8 fish.
 - **What the player never sees:** a fish's name, a hunger bar or a "hungry" count. The fish are told apart by species, size and colour.
@@ -29,7 +29,7 @@ A small, calm aquarium on the desktop. Fish swim, bubbles rise, food sinks, and 
 | Status line | "2 pellets waiting · 5 in the stash"; "Nothing to do right now" when both are zero |
 | Collect pellets | moves all waiting pellets into the stash (it holds at most 30) |
 | Feed a pellet | drops one pellet from the stash just under the surface above the fish that has waited longest since its last meal |
-| Feed everyone | one pellet for each fish that may still eat, the fish that has waited longest first, one pellet about every 2 seconds; it ends when every such fish has had one or the stash is empty; while it runs the item is Stop feeding |
+| Feed everyone | one pellet for each fish that may still eat, the one that has waited longest first, one pellet about every 2 seconds; it ends when every such fish has had one or the stash is empty (a second choice gives each fish its second meal); while it runs the item is Stop feeding |
 | Hatch egg | only while an egg is waiting |
 
 An item that cannot be used is a grey line that says why: "The fish have eaten enough for today", "No pellets in the stash", "Stash is full", "No pellets waiting", "An egg is waiting (the tank is full)". When the tank is not visible, an action changes the numbers at once without animation.
@@ -66,7 +66,7 @@ All game numbers are in `game/config.js`; the visual numbers (bubbles, sway, dec
 
 **Time.** Everything that changes over time is computed from `host.clock`, never from the sum of frame times: the pellets that appeared while the app was closed, the meals that have aged out, drowsiness, and the catch-up at the next start. A once-a-second tick settles the numbers. A clock that goes backwards re-anchors to now.
 
-**Pacing.** The pellet supply (24 a day) is always larger than the fish may eat (2 each a day, 16 for 8 fish), so the daily limit sets the pace and a visit rarely finds the fish short of food. It is held by `tests/pacing.test.js` and checked with `npm run sim` (30 days, several visit patterns): a player who visits daily at the same hour sees juvenile fish at visit 3 and adults at visit 10, and 8 fish within 20 days; one who visits at a different hour each day needs up to 15 visits for adults; one who visits every 12 hours still feeds each fish at most 2 pellets a day; a player who never visits gets no growth and no eggs; visiting every 3 days still makes progress, only slower.
+**Pacing.** The pellet supply (24 a day) is always larger than the fish may eat (2 each a day, 16 for 8 fish), so the daily limit sets the pace and a visit rarely finds the fish short of food. It is held by `tests/pacing.test.js` and checked with `npm run sim` (30 days, several visit patterns): a visit gives every fish the meals it may take now (two presses of Feed everyone); a player who visits daily at the same hour sees juvenile fish at visit 3 and adults at visit 10, and 8 fish within 20 days (10 in the simulator); one who visits at a different hour each day needs 15 or 16 visits for adults (the test allows 17); one who visits every 12 hours still feeds each fish 2 pellets a day at most; one who presses Feed everyone only once a day gives each fish one meal and takes about twice as long; a player who never visits gets no growth and no eggs; visiting every 3 days still makes progress, only slower.
 
 **Record** (`records/fishtank.json`, `schemaVersion` 1, written through `host.record`; the id and the version never change, so the owner's saved tank always loads):
 

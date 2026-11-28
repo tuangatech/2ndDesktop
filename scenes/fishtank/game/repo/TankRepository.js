@@ -2,7 +2,7 @@
 // calls these methods. Phase 1 has `LocalTankRepository`; Phase 3 adds a remote one with the same methods.
 //
 // Every action returns the result object of scenes/fishtank/game/rules.js: `{ ok: true, state, ... }` or
-// `{ ok: false, reason }`, where reason is one of stash_full, none_available, stash_empty, fish_full,
+// `{ ok: false, reason }`, where reason is one of stash_full, none_available, stash_empty, enough_today,
 // unknown_fish, no_egg, tank_full.
 
 /**
@@ -13,7 +13,7 @@
  * @property {() => Promise<void>} load  reads the record, catches up with the clock, or starts a new tank
  * @property {() => TankState} getState
  * @property {() => ReturnType<typeof import('../rules.js').summarize>} getSummary  for the tray and the HUD
- * @property {() => boolean} tick  settles pellets and fullness by the clock; true when something changed
+ * @property {() => boolean} tick  settles pellets and meals by the clock; true when something changed
  * @property {(count?: number) => object} collect
  * @property {(fishId: string) => object} feed
  * @property {() => object} hatchEgg
