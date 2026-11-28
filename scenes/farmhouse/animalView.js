@@ -5,9 +5,12 @@
 // ease in and out).
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { RIGS, advancePhase, poseAt } from './game/gait.js';
+import { secondaryAt } from './game/secondary.js';
 
 /** How far the body tips forward for each pose (the head goes down to graze and to eat hay). */
-const TILT = { stand: 0, walk: 0, graze: 0.18, eat: 0.28 };
+const TILT = { stand: 0, walk: 0, graze: 0.05, eat: 0.08 };
+/** How far down the head is for each pose (it goes down on its own neck; the body only tips a little). */
+const DOWN = { stand: 0, walk: 0, graze: 1, eat: 1 };
 /** The size of the shadow under each kind: half its width. */
 const SHADOW = { horse: 52, cow: 58, sheep: 32 };
 /** An animal that is moved by something other than its own walk (pushed aside) still moves its legs above this pace. */
@@ -26,9 +29,26 @@ const place = (sprite, picture) => {
  * @param {Container} options.parent  the layer the animal stands in
  * @param {{texture: object, picture: object}} options.body
  * @param {{far: {thigh: {texture: object, picture: object}, shin: {texture: object, picture: object}}, near: object}} options.legs
+ * @param {{texture: object, picture: object}} options.head  the head with the neck (turns about `joints.head`)
+ * @param {{texture: object, picture: object}} options.ear  the ear (turns about `joints.ear`, on the head)
+ * @param {{texture: object, picture: object}|null} options.tail  the tail (none on a sheep)
+ * @param {{head: number[], ear: number[], tail: number[]|null}} options.joints  where each part turns
  * @param {number} options.phase  where in the walk it begins (so that the animals are not in step)
+ * @param {number} options.seed  the scene's seed, and `index` the animal's number: its own stream of small movements
  */
-export function createAnimalView({ spec, parent, body, legs, phase }) {
+export function createAnimalView({
+  spec,
+  parent,
+  body,
+  head,
+  ear,
+  tail,
+  joints,
+  legs,
+  phase,
+  seed = 0,
+  index = 0,
+}) {
   const rig = RIGS[spec.kind];
   const box = new Container(); // placed, mirrored and scaled by the scene
   const shadow = new Graphics()
@@ -41,7 +61,24 @@ export function createAnimalView({ spec, parent, body, legs, phase }) {
 
   const torso = new Container();
   torso.pivot.set(rig.pivot, -rig.hipRest);
+  // A part turns about its joint: its container is at the joint, and its picture is drawn where it belongs around it.
+  const joint = (part, at, within = [0, 0]) => {
+    const c = new Container();
+    c.position.set(at[0] - within[0], at[1] - within[1]);
+    const sprite = new Sprite(part.texture);
+    sprite.width = part.picture.width;
+    sprite.height = part.picture.height;
+    sprite.position.set(part.picture.x - at[0], part.picture.y - at[1]);
+    c.addChild(sprite);
+    return c;
+  };
+  const tailBox = tail ? joint(tail, joints.tail) : null;
+  if (tailBox) torso.addChild(tailBox); // behind the body
   torso.addChild(place(new Sprite(body.texture), body.picture));
+  const headBox = joint(head, joints.head);
+  const earBox = joint(ear, joints.ear, joints.head); // on the head: it goes where the head goes
+  headBox.addChild(earBox);
+  torso.addChild(headBox);
 
   const pieces = rig.legs.map((leg) => {
     const set = legs[leg.layer];
@@ -58,7 +95,7 @@ export function createAnimalView({ spec, parent, body, legs, phase }) {
   for (const p of pieces) if (p.leg.layer === 'near') box.addChild(p.upper);
   parent.addChild(box);
 
-  const state = { phase: phase % 1, swing: 0, tilt: 0, last: null, drop: 0 };
+  const state = { phase: phase % 1, swing: 0, tilt: 0, down: 0, last: null, drop: 0, extra: null };
   return {
     box,
     /**
@@ -66,8 +103,10 @@ export function createAnimalView({ spec, parent, body, legs, phase }) {
      * @param {number} x  where its hooves are, in the scene's units
      * @param {number} y
      * @param {number} dt  seconds since the last frame
+     * @param {number} seconds  the clock: the small movements are a function of it (game/secondary.js)
      */
-    update(animal, x, y, dt) {
+    update(animal, x, y, dt, seconds = 0) {
+      state.down += ((DOWN[animal.pose] ?? 0) - state.down) * Math.min(1, dt * 4);
       state.tilt += ((TILT[animal.pose] ?? 0) - state.tilt) * Math.min(1, dt * 5);
       // The legs: the phase follows the ground covered, in the animal's own size, so the feet keep up with the body and do
       // not slide; the walk is asked for by the pose and by any other movement (being pushed aside).
@@ -81,8 +120,22 @@ export function createAnimalView({ spec, parent, body, legs, phase }) {
       state.swing += ((walking ? 1 : 0) - state.swing) * Math.min(1, dt * 6);
       const pose = poseAt(rig, { phase: state.phase, swing: state.swing, tilt: state.tilt });
       state.drop = pose.drop;
+      const extra = secondaryAt(spec.kind, {
+        seconds,
+        seed,
+        index,
+        phase: state.phase,
+        swing: state.swing,
+        down: state.down,
+      });
+      state.extra = extra;
       torso.position.set(rig.pivot, -rig.hipRest + pose.drop);
-      torso.rotation = pose.tilt;
+      torso.rotation = pose.tilt + extra.sway;
+      torso.scale.y = extra.breath;
+      headBox.rotation = extra.head;
+      headBox.position.y = joints.head[1] + extra.reach;
+      earBox.rotation = extra.ear;
+      if (tailBox) tailBox.rotation = extra.tail;
       pieces.forEach((p, i) => {
         const joint = pose.legs[i];
         p.upper.position.set(joint.hip[0], joint.hip[1]);
@@ -91,6 +144,13 @@ export function createAnimalView({ spec, parent, body, legs, phase }) {
       });
     },
     /** What the tests and the debug page can look at. */
-    debug: () => ({ phase: state.phase, swing: state.swing, tilt: state.tilt, drop: state.drop }),
+    debug: () => ({
+      phase: state.phase,
+      swing: state.swing,
+      tilt: state.tilt,
+      down: state.down,
+      drop: state.drop,
+      extra: state.extra,
+    }),
   };
 }

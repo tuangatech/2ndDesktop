@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { HERD } from '../game/animals.js';
-import { animalPicture, coatKey, hayPicture, legKey, legPieces } from '../art/animals.js';
+import {
+  animalParts,
+  animalPicture,
+  coatKey,
+  hayPicture,
+  legKey,
+  legPieces,
+} from '../art/animals.js';
 import { RIGS } from '../game/gait.js';
 
 describe('the animal art', () => {
@@ -9,7 +16,7 @@ describe('the animal art', () => {
     expect(coats.size).toBe(5);
     for (const spec of HERD) {
       const picture = animalPicture(spec.kind, spec.coat);
-      expect(picture.ops.length).toBeGreaterThan(10);
+      expect(picture.ops.length).toBeGreaterThan(5);
       expect(JSON.stringify(picture.ops)).not.toMatch(/NaN|undefined|Infinity/);
     }
   });
@@ -20,7 +27,7 @@ describe('the animal art', () => {
       const picture = animalPicture(kind, coat);
       expect(picture.y + picture.height).toBeGreaterThanOrEqual(6); // tufts of grass just under the hooves
       expect(picture.x).toBeLessThan(0);
-      expect(picture.x + picture.width).toBeGreaterThan(50);
+      expect(picture.x + picture.width).toBeGreaterThan(40);
       expect(picture.pixelWidth).toBe(Math.round(picture.width * 1.5));
     }
   });
@@ -63,6 +70,29 @@ describe('the animal art', () => {
     // the body picture has no leg rectangles left in it
     const bodyOps = animalPicture('cow', 'brown-white').ops.filter((op) => op.t === 'rect');
     expect(bodyOps).toHaveLength(0);
+  });
+
+  it('draws the head, the ear and the tail apart from the body, each with the joint it turns about', () => {
+    for (const spec of HERD) {
+      const parts = animalParts(spec.kind, spec.coat);
+      for (const name of ['body', 'head', 'ear']) {
+        expect(parts[name].ops.length).toBeGreaterThan(0);
+        expect(JSON.stringify(parts[name].ops)).not.toMatch(/NaN|undefined|Infinity/);
+      }
+      // a sheep's tail is under its wool; the others have one
+      expect(parts.tail === null).toBe(spec.kind === 'sheep');
+      expect(parts.joints.tail === null).toBe(spec.kind === 'sheep');
+      // each joint lies inside the picture of its part, or near its edge (the neck's base is in the body)
+      const inside = (picture, [x, y], slack) =>
+        x >= picture.x - slack &&
+        x <= picture.x + picture.width + slack &&
+        y >= picture.y - slack &&
+        y <= picture.y + picture.height + slack;
+      expect(inside(parts.head, parts.joints.head, 20)).toBe(true);
+      expect(inside(parts.ear, parts.joints.ear, 8)).toBe(true);
+      if (parts.tail) expect(inside(parts.tail, parts.joints.tail, 10)).toBe(true);
+      expect(parts.head.ops.some((op) => op.t === 'clip')).toBe(false); // the patches stay on the body
+    }
   });
 
   it('is the same every time, and the hay is a few heaps with straw', () => {
