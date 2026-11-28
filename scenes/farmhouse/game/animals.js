@@ -11,7 +11,7 @@
 // the herd keeps its order and its spacing instead of piling up against the edge it was clamped to (the cow and the
 // brown horse overlapped on a 16:9 screen, `Re W-47`).
 
-import { progressOf, seen, walked } from './barn.js';
+import { progressOf, visibility, walked } from './barn.js';
 import { lerp, smooth, unit } from './hash.js';
 import { NOMINAL, roam } from './roam.js';
 
@@ -269,7 +269,7 @@ export function animalsAt(
       scale: depthScale(depth),
       facing,
       pose,
-      alpha: barn ? seen(progress) : 1,
+      alpha: barn ? visibility(progress) : 1,
       inside: barn ? progress : 0,
     };
   });
