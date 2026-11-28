@@ -135,7 +135,7 @@ Run `npx vitest run scenes/farmhouse/tests/animals-art.test.js` and watch the fi
 
 ### W-55: review PR 75 (`farmhouse-move`): the animals roam freely, stand for long and are not in step (DEC-66, R8)
 
-The owner found the animals robotic. Run `npx vitest run scenes/farmhouse/tests/roam.test.js scenes/farmhouse/tests/animals.test.js` and watch the field live for a few minutes on a retina screen: do they look less robotic (long stands, moves in all directions), is anyone pushed in a way that looks like a slide or a dart, do sheep ever look like they stand on a cow or a horse, and a narrow window? Measure memory too (375 MB). Reply as `Re W-55`. PR body: `gh pr view 75`.
+The owner found the animals robotic. Run `npx vitest run scenes/farmhouse/tests/roam.test.js scenes/farmhouse/tests/animals.test.js` and watch the field live for a few minutes on a retina screen: do they look less robotic (long stands, moves in all directions), is anyone pushed in a way that looks like a slide or a dart, do sheep ever look like they stand on a cow or a horse, and a narrow window? Measure memory too (375 MB). **Scope grew after the owner watched it live (DEC-67):** two-piece legs and a shared gait module (`game/gait.js`), shadows under the animals, a walk about a fifth of the time, quicker legs. Please also run `npx vitest run scenes/farmhouse/tests/gait.test.js` and look closely at the legs live: knees bend the right way, feet do not slide, nobody floats, the cow's legs no longer look like stiff blocks? Reply as `Re W-55`. PR body: `gh pr view 75`.
 
 Also, PR 73 now has a shorter owl test (the old one timed out on the Windows runner), and PR 69 and PR 73 have new commits since your review: `Re W-49` is still open for 69.
 
