@@ -4,6 +4,7 @@
 // moves every frame (smoke, truck, animals) and is cheap.
 
 import { animalsAt } from './animals.js';
+import { hayAllowed, shelterAt } from './barn.js';
 import { smokeAmount, tripAllowed, truckAt, windowLights } from './clockRules.js';
 import { floweringAt, SPECIES } from './flowering.js';
 import { seasonAt, previewDay } from './season.js';
@@ -64,15 +65,20 @@ export function slowAt({
     nightness,
     sun,
     lights: windowLights(ms, parts, sun, weather, seed),
-    // Animals stand still at night and in a storm.
-    // Both are ramps (the night's `nightness` and the storm's wind), so they walk to their places and never jump.
+    // Animals stand still at night and in a storm (without a barn); with one they go in (R13). Both are ramps (the night's
+    // `nightness` and the storm's wind), so they walk to their places and never jump.
     still: Math.max(smooth((nightness - 0.5) / 0.4), stormness(weather)),
+    // How much they want shelter, and whether Scatter hay can be used (only by day, R12).
+    shelter: shelterAt(nightness, weather),
+    hayAllowed: hayAllowed(shelterAt(nightness, weather)),
+    // The morning side of the change (they face away from the door while they come out).
+    morning: ms < sun.noon,
     tripAllowed: (startMs) => tripAllowed(startMs, sun, weather, snowCover),
   };
 }
 
 /** What moves every frame, from the slow view of the same moment. */
-export function motionAt(ms, parts, slow, { seed, hayStartedAt = null, bounds } = {}) {
+export function motionAt(ms, parts, slow, { seed, hayStartedAt = null, bounds, barn = null } = {}) {
   return {
     smoke: smokeAmount(ms, parts, slow.weather.temperature),
     truck: truckAt(ms, slow.tripAllowed),
@@ -84,6 +90,7 @@ export function motionAt(ms, parts, slow, { seed, hayStartedAt = null, bounds } 
       still: slow.still,
       hayStartedAt,
       bounds,
+      barn: barn ? { door: barn.door, shelter: slow.shelter, leaving: slow.morning } : null,
     }),
   };
 }
