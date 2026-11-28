@@ -61,7 +61,8 @@ export const progressOf = (shelter, id) => clamp01((shelter - (ORDER[id] ?? 0)) 
 export const walked = (progress) => smooth(clamp01(progress / WALK_SHARE));
 
 /** How much of an animal is seen: 1 outside, 0 inside; it fades in the doorway as it goes in. */
-export const visibility = (progress) => 1 - smooth(clamp01((progress - WALK_SHARE) / (1 - WALK_SHARE)));
+export const visibility = (progress) =>
+  1 - smooth(clamp01((progress - WALK_SHARE) / (1 - WALK_SHARE)));
 
 /** Whether the tray's Scatter hay can be used: only by day (R12), when no animal is on its way to the barn. */
 export const hayAllowed = (shelter) => shelter < 0.02;
