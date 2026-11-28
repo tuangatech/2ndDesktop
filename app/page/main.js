@@ -101,7 +101,11 @@ async function boot() {
   // The real time of the computer, the place of the weather and the season, and what covers the scene (docs/platform/01
   // section 10). The place never moves the clock: the time of day is the computer's own (time.js).
   const place = createPlace();
-  const time = createTime({ clock, latitude: () => place.get().latitude });
+  const time = createTime({
+    clock,
+    latitude: () => place.get().latitude,
+    longitude: () => place.get().longitude,
+  });
   const safeArea = createSafeArea(() => ({
     mode,
     platform: info.platform ?? '',

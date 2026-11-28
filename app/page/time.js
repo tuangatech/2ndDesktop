@@ -8,6 +8,11 @@
 // zone with daylight saving), and only the length of the day comes from the latitude of the place and the date. A player
 // in another zone than the place sees their own noon and a day as long as the place's. The clock the player sees is the
 // current offset, so in summer sunrise and sunset shift by the one hour of daylight saving, as on the wall clock.
+//
+// DEC-64: when the place lies within 15 degrees of longitude of the meridian of the zone, the player is in the place's own
+// region and solar noon also moves by 4 minutes for each degree the place lies west (later) or east (earlier) of that
+// meridian. Atlanta is 9.4 degrees west of the Eastern meridian, so its sun comes about 38 minutes later than the plain
+// zone rule gave. Further away the meridian of the zone is kept, as before.
 
 const MINUTE = 60_000;
 const DAY = 86_400_000;
@@ -47,6 +52,23 @@ export function standardOffsetMinutes(zone, epochMs) {
     zoneOffsetMinutes(zone, Date.UTC(year, 0, 1)),
     zoneOffsetMinutes(zone, Date.UTC(year, 6, 1)),
   );
+}
+
+/** The widest gap in longitude, in degrees, at which a place still counts as being in the computer's own region. */
+export const REGION_DEGREES = 15;
+
+/**
+ * Minutes by which solar noon is later than on the meridian of the zone, for a place at `longitude` (degrees, east
+ * positive): 4 minutes per degree the place lies west of the meridian. Zero without a longitude or when the place is
+ * more than `REGION_DEGREES` from the meridian (the player is elsewhere, DEC-64).
+ * @param {number|null|undefined} longitude
+ * @param {number} standardOffsetMinutes  the zone's standard offset from UTC, minutes
+ */
+export function longitudeNoonShiftMinutes(longitude, standardOffsetMinutes) {
+  if (longitude === null || longitude === undefined || !Number.isFinite(longitude)) return 0;
+  const meridian = standardOffsetMinutes / 4; // degrees: 15 degrees per hour
+  const west = meridian - longitude;
+  return Math.abs(west) <= REGION_DEGREES ? west * 4 : 0;
 }
 
 /** Day of the year, 1 to 366, of a calendar date. */
@@ -106,16 +128,21 @@ export function sunPosition(dayOfYearValue, hour = 12) {
  * @param {number} epochMs
  * @param {number} latitude  degrees, north positive (the place)
  * @param {{offsetMinutes: number, standardOffsetMinutes: number}} zone  the computer's zone now, and at standard time
+ * @param {number|null} [longitude]  degrees, east positive (the place); moves solar noon when the place is in the region (DEC-64)
  * @returns {{noon: number, sunrise: number|null, sunset: number|null, dayLengthMinutes: number,
  *            polar: 'day'|'night'|null}}  epoch ms; sunrise and sunset are null in polar day or night
  */
-export function sunTimes(epochMs, latitude, zone) {
+export function sunTimes(epochMs, latitude, zone, longitude = null) {
   const parts = localParts(epochMs, zone.offsetMinutes);
   const midnight = epochMs - parts.minuteOfDay * MINUTE; // local midnight, epoch ms
   const { declination, equationOfTime } = sunPosition(parts.dayOfYear);
   // Solar noon in standard time on the meridian of the zone: 12:00 minus the equation of time; the wall clock adds the
   // daylight saving hour when it is in force.
-  const noonMinute = 720 - equationOfTime + (zone.offsetMinutes - zone.standardOffsetMinutes);
+  const noonMinute =
+    720 -
+    equationOfTime +
+    (zone.offsetMinutes - zone.standardOffsetMinutes) +
+    longitudeNoonShiftMinutes(longitude, zone.standardOffsetMinutes);
   const noon = midnight + noonMinute * MINUTE;
   const lat = Math.max(-89.9, Math.min(89.9, latitude)) * RAD;
   const cosHour =
@@ -153,7 +180,7 @@ export function nightnessAt(epochMs, sun) {
 
 /**
  * Builds `host.time`.
- * @param {{clock: {now: () => number}, readZone?: () => string, latitude: () => number}} options
+ * @param {{clock: {now: () => number}, readZone?: () => string, latitude: () => number, longitude?: () => number}} options
  *        `readZone` gives the computer's IANA zone (Intl by default); it is read again at most once a minute of clock
  *        time, so a laptop that travels changes zone without a restart
  */
@@ -161,6 +188,7 @@ export function createTime({
   clock,
   readZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone,
   latitude,
+  longitude = () => null,
 }) {
   let zone = null;
   let readAt = -Infinity;
@@ -184,8 +212,9 @@ export function createTime({
     /** The date and time on the player's wall (the computer's zone), of `ms` or now. */
     parts: (ms = clock.now()) => localParts(ms, offsets(ms).offsetMinutes),
     /** Sunrise, noon and sunset of the day of `ms` or today (epoch ms), for the place's latitude. */
-    sun: (ms = clock.now()) => sunTimes(ms, latitude(), offsets(ms)),
+    sun: (ms = clock.now()) => sunTimes(ms, latitude(), offsets(ms), longitude()),
     /** 0 (day) to 1 (night), smooth around sunrise and sunset. */
-    nightness: (ms = clock.now()) => nightnessAt(ms, sunTimes(ms, latitude(), offsets(ms))),
+    nightness: (ms = clock.now()) =>
+      nightnessAt(ms, sunTimes(ms, latitude(), offsets(ms), longitude())),
   };
 }
