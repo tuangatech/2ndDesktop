@@ -78,7 +78,7 @@ Never takes focus or moves above other windows by itself, never takes a click me
 | --- | --- | --- |
 | **Desktop** | Desktop mode behind the icons and window mode, recovery after Win+D, Explorer restart and display changes; tray / menu bar; single instance; launch at login | 0.1 |
 | **Scenes** | Manifest and registry; "Scenes" in the tray; switch with save handshake; fallback scene; the first loader spike decides how scenes load (PixiJS provided by the host, page served from `scene://<id>/`) | 0.2 |
-| **Power and pause** | Stops drawing when the screen is locked or asleep, a full-screen app is in front, or the desktop is covered; setting "When the desktop is covered": Always pause (default), Pause on battery only, Never pause. Pause means stop drawing only; the scene catches up from the clock. Budgets: 0.5% of a core when stopped, 30 fps and 3% in desktop mode, 250 MB (Windows) and 350 MB (macOS) after an hour | 0.1 and 0.2 |
+| **Power and pause** | Stops drawing when the screen is locked or asleep, a full-screen app is in front, or the desktop is covered; setting "When the desktop is covered": Always pause (default), Pause on battery only, Never pause. Pause means stop drawing only; the scene catches up from the clock. Budgets: 0.5% of a core when stopped, 30 fps and 3% in desktop mode, 250 MB (Windows) and 375 MB (macOS, DEC-63) after an hour | 0.1 and 0.2 |
 | **Saving and settings** | A record per scene (atomic write and backup); host settings in host pages; scene options declared in the manifest and shown by the host | 0.2 |
 | **Bundled scenes** | **Fish tank** (built): feed from the tray once a day, nothing dies, no scores. **Farm house**: a stone house under a forested mountain with the real season, time of day and (0.2) simulated weather | 0.1, 0.2 |
 | **Public release** | Signed Windows installer and notarized Mac build, download page, first-open README, **app update check separate from the store** (reads `latest.yml`; once a day; a fixed notice and link; setting "Tell me about updates"), the error report | 0.3 |
@@ -109,7 +109,7 @@ Only 0.1 and 0.2 are the plan. Everything after 0.3 is design notes, not backlog
 | **Bus factor**: one person and AI sessions hold the signing keys and accounts | Written down as a risk; an offline rotation key and a recovery note; name a second maintainer |
 | A malicious or compromised scene | Sandbox first; pinned commit built by CI; automatic gate; human checklist by depth; revoke after publishing; no third-party runtime packages in the first catalog |
 | The desktop is mostly covered, so the scene is rarely seen | Window mode is a first-class mode; a first-run hint for the Windows 11 tray overflow |
-| Memory on macOS (an empty WebGL page already costs about 245 MB) | The Mac limit is 350 MB; Windows sizes the scene |
+| Memory on macOS (an empty WebGL page already costs about 245 MB) | The Mac limit is 375 MB (350 until DEC-63); Windows sizes the scene |
 | Building a store nobody needs | Signed public release (0.3) first; the store waits for the bar (DEC-17, DEC-19, DEC-35) |
 | Electron security updates | Upgrade within the three-major support window and at once for a security release, with the golden hash and the attach checks after each (DEC-33) |
 

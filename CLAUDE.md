@@ -37,7 +37,7 @@ Unit tests 356 (the 341 of the import plus the 15 of the rename PR) and e2e test
 
 - Node 24, Electron pinned exactly, `contextIsolation` on, `nodeIntegration` off, sandbox on. The main process is the security boundary; a scene is never trusted (`docs/platform/02`).
 - A scene never reads the clock (`host.clock`; ESLint enforces it) and never uses `Math.random` where a test needs the same result (`host.seed`).
-- Pause everything when the desktop is covered or hidden (setting "When the desktop is covered", default "Always pause"); 30 fps cap in desktop mode; memory 250 MB Windows, 350 MB macOS.
+- Pause everything when the desktop is covered or hidden (setting "When the desktop is covered", default "Always pause"); 30 fps cap in desktop mode; memory 250 MB Windows, 375 MB macOS (DEC-63).
 - Desktop mode takes no clicks and shows no HTML: every action also lives in the tray menu.
 - Cross-platform: LF, `path.join`/`app.getPath`, no shell-only commands in npm scripts, lowercase-dash asset names.
 - All art and sound are original (SVG drawn here, synthesized audio); fonts OFL. No downloaded assets.
