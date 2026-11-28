@@ -109,7 +109,7 @@ Please read the two new rows of `docs/DECISIONS.md` (Round 19), the R13 to R20 r
 
 ### W-49: read PR 69 (`farmhouse-horse`): the brown horse's home at x 0.30 (your suggestion in `Re W-47`)
 
-Run `npx vitest run scenes/farmhouse/tests/animals.test.js` (the two new tests fail with the home at 0.27) and look at the left of the field in a few frames. Reply as `Re W-49`. PR body: `gh pr view 69`.
+Scope grew after your `Re W-47`: the homes of the herd are now shares of the visible width (so the spacing also holds on a narrow window), re-spaced, with a test for three screen shapes. Run `npx vitest run scenes/farmhouse/tests/animals.test.js` and look at the field in a few frames, also in a narrow window: do cow and horse still overlap anywhere? Reply as `Re W-49`. PR body: `gh pr view 69`.
 
 ### W-50: read PR 70 (`farmhouse-sun`): solar noon by the place's longitude when the player is in its region (Atlanta's sun 38 minutes early)
 
@@ -118,6 +118,14 @@ Run `npx vitest run tests/host/time.test.js`, and in the real app on the Mac loo
 ### W-51: read PR 71 (`farmhouse-truck`): the truck redrawn as a blue and white step-side pick-up
 
 Look at it on a retina screen: `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T12:00 npm run shot -- truck 1600x900 window 3`, and in the app when it drives (12:07, 12:22: it backs out, turns and drives off): is anything cut or odd when it is mirrored? Reply as `Re W-51`. PR body: `gh pr view 71`.
+
+### W-52: review PR 72 (`farmhouse-barn`): the red barn, the animals in at night and in a storm, hay by day (DEC-64)
+
+Run `npx vitest run scenes/farmhouse/tests/barn.test.js scenes/farmhouse/tests/barn-art.test.js`, and in the real app on the Mac look at dusk (`SHOT_AT` 30 and 50 minutes after your sunset shows the walk), the night, and a storm (tray: Preview weather to Storm: they go in), and that "Scatter hay" is greyed at night. Does the barn sit well at the left edge on a retina screen and on a narrow window? Measure memory too (limit now 375 MB, DEC-63). Reply as `Re W-52`. PR body: `gh pr view 72`.
+
+### W-53: review PR 73 (`farmhouse-barn-extras`, stacked on PR 72): the owl, the weathervane, the breath in the cold (R16 to R18)
+
+Run `npx vitest run scenes/farmhouse/tests/extras.test.js`, and look at the loft window on a clear night (`SHOT_AT=2026-10-23T01:20`): are the owl's eyes visible enough on a retina screen? The vane in wind and the breath in a cold preview. Merge 72 first. Reply as `Re W-53`. PR body: `gh pr view 73`.
 
 ## Closed
 
