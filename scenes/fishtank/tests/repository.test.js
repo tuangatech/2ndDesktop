@@ -57,7 +57,6 @@ describe('load', () => {
     first.repo.collect(4);
     const fishId = first.repo.getState().fish[0].id;
     first.repo.feed(fishId);
-    first.repo.renameFish(fishId, 'Bubbles');
     const saved = first.repo.getState();
 
     const second = setup({ storage: first.storage });
@@ -164,19 +163,17 @@ describe('actions', () => {
     repo.collect(2);
     repo.feed(fishId);
     repo.feed('nobody');
-    repo.renameFish(fishId, 'Bubbles');
     repo.dev.addFed(12);
     const hatched = repo.hatchEgg();
     expect(events).toEqual([
       { type: 'collect', collected: 2 },
       { type: 'feed', fishId, pointsAfter: 20 },
-      { type: 'rename', fishId },
       { type: 'dev' },
       { type: 'hatch', fishId: hatched.fish.id },
     ]);
     stop();
     repo.collect(1);
-    expect(events).toHaveLength(5);
+    expect(events).toHaveLength(4);
   });
 });
 
@@ -228,7 +225,6 @@ describe('repairState and migrate', () => {
         id: 'a',
         species: 'tetra',
         seed: 1,
-        name: 'Bubbles',
         growthPoints: 120,
         fullness: 0,
         fullnessUpdatedAt: T0,
@@ -244,6 +240,15 @@ describe('repairState and migrate', () => {
     expect(repair(good())).toEqual({ state: good(), fixes: [] });
   });
 
+  it('drops a name saved by an older build without a message (DEC-71)', () => {
+    const state = good();
+    state.fish[0].name = 'Bubbles';
+    const result = repair(state);
+    expect(result.fixes).toEqual([]);
+    expect(result.state).toEqual(good());
+    expect('name' in result.state.fish[0]).toBe(false);
+  });
+
   it('clamps counts into their caps and fills missing values, keeping the fish', () => {
     const cases = [
       [(s) => (s.tank.floatingPellets = 17), (r) => r.tank.floatingPellets === 16],
@@ -252,8 +257,6 @@ describe('repairState and migrate', () => {
       [(s) => (s.tank.stash = 'x'), (r) => r.tank.stash === 0],
       [(s) => (s.fish[0].fullness = 3), (r) => r.fish[0].fullness === 2],
       [(s) => (s.fish[0].growthPoints = 1.5), (r) => r.fish[0].growthPoints === 1],
-      [(s) => (s.fish[0].name = 'x'.repeat(17)), (r) => r.fish[0].name === 'x'.repeat(16)],
-      [(s) => (s.fish[0].name = 5), (r) => r.fish[0].name === null],
       [(s) => delete s.fish[0].createdAt, (r) => r.fish[0].createdAt === T0 + 1],
       [(s) => delete s.tank.pelletsUpdatedAt, (r) => r.tank.pelletsUpdatedAt === T0 + 1],
       [(s) => delete s.tank.decorSeed, (r) => Number.isInteger(r.tank.decorSeed)],
@@ -269,12 +272,12 @@ describe('repairState and migrate', () => {
     }
   });
 
-  it('gives a fish of a species that no longer exists a known one, with its growth and name', () => {
+  it('gives a fish of a species that no longer exists a known one, with its growth', () => {
     const state = good();
     state.fish[0].species = 'shark';
     const { state: fixed, fixes } = repair(state);
     expect(speciesIds).toContain(fixed.fish[0].species);
-    expect(fixed.fish[0]).toMatchObject({ id: 'a', name: 'Bubbles', growthPoints: 120 });
+    expect(fixed.fish[0]).toMatchObject({ id: 'a', growthPoints: 120 });
     expect(fixes).toHaveLength(1);
   });
 

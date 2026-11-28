@@ -17,7 +17,10 @@ import { launch } from '../../../tests/e2e/helpers.js';
 // hashed, so the two runs can be compared.
 const STEPS = 900;
 const GOLDEN = {
-  state: '784820e6e804d032',
+  // 2026-11-28 (DEC-71, fish have no names): the state hash changed from 784820e6e804d032 because every fish lost its
+  // `name: null` field. Checked: putting `name: null` back after `seed` in the dump of a run gives the old hash exactly.
+  // The graph hash did not move.
+  state: '7be7c96f8e2607bc',
   // 2026-11-22: the graph hash changed (the state hash did not) when the far reef (scenes/fishtank/backdrop.js) and the
   // back-row haze layer were added: more nodes under `background` and `water`, and the back decor has no alpha of its own.
   graph: '5be771c4e5cb12a9',
