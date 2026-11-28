@@ -6,10 +6,16 @@
 //
 // `kinds` are those of the `weather@1` data kind: clear, partly, cloudy, fog, drizzle, rain, snow, storm.
 
-import { HOME_LATITUDE, MAX_SHIFT_DEGREES, keyed, northernDay, seasonAt } from './season.js';
+import {
+  HOME_LATITUDE,
+  MAX_SHIFT_DEGREES,
+  YEAR,
+  keyed,
+  northernDay,
+  seasonName,
+} from './season.js';
 import { lerp, smooth, unit } from './hash.js';
 
-export const KINDS = ['clear', 'partly', 'cloudy', 'fog', 'drizzle', 'rain', 'snow', 'storm'];
 export const BLOCK_HOURS = 4;
 const BLOCKS_PER_DAY = 24 / BLOCK_HOURS;
 const FADE_MINUTES = 30;
@@ -54,6 +60,11 @@ const LOOK = {
   snow: { cloud: 0.9, rain: 0.5, fog: 0.15, wind: 0.3 },
   storm: { cloud: 1, rain: 1, fog: 0, wind: 0.9 },
 };
+/** The kinds of weather, in the order of `LOOK`. */
+export const KINDS = Object.freeze(Object.keys(LOOK));
+/** No fog after the early morning, and no summer storm in the morning or the night. */
+const noFogAt = (startHour) => startHour < 4 || startHour >= 12;
+const noStormAt = (season, startHour) => season === 'summer' && (startHour < 12 || startHour >= 20);
 
 /**
  * The part of the calendar the weather needs; a scene gets it from `host.time.parts()`, and Fast mode makes one of its
@@ -95,15 +106,15 @@ function temperatureAt(seed, when, latitude, cloud) {
 /** The kind of a block before snow is decided (a heavier draw of the same weights, with some persistence). */
 function drawKind(seed, dayIndex, block, dayOfYear, latitude) {
   const draw = (b, d) => {
-    const season = seasonAt(dayOfYear, latitude).name;
+    const season = seasonName(northernDay(dayOfYear, latitude));
     const weights = [...WEIGHTS[season]];
     // Fog forms in the early morning only; a summer storm comes in the afternoon and evening.
     const start = (((b % BLOCKS_PER_DAY) + BLOCKS_PER_DAY) % BLOCKS_PER_DAY) * BLOCK_HOURS;
-    if (start < 4 || start >= 12) {
+    if (noFogAt(start)) {
       weights[2] += weights[3];
       weights[3] = 0;
     }
-    if (season === 'summer' && (start < 12 || start >= 20)) {
+    if (noStormAt(season, start)) {
       weights[1] += weights[6];
       weights[6] = 0;
     }
@@ -121,9 +132,9 @@ function drawKind(seed, dayIndex, block, dayOfYear, latitude) {
   // storm in the morning).
   const kept = draw(previous[1], previous[0]);
   const start = block * BLOCK_HOURS;
-  const season = seasonAt(dayOfYear, latitude).name;
-  if (kept === 'fog' && (start < 4 || start >= 12)) return fresh;
-  if (kept === 'storm' && season === 'summer' && (start < 12 || start >= 20)) return fresh;
+  const season = seasonName(northernDay(dayOfYear, latitude));
+  if (kept === 'fog' && noFogAt(start)) return fresh;
+  if (kept === 'storm' && noStormAt(season, start)) return fresh;
   return kept;
 }
 
@@ -132,7 +143,7 @@ function blockWeather(seed, dayIndex, block, dayOfYear, latitude) {
   let kind = drawKind(seed, dayIndex, block, dayOfYear, latitude);
   const middle = { dayIndex, dayOfYear, minuteOfDay: (block + 0.5) * BLOCK_HOURS * 60 };
   const temperature = temperatureAt(seed, middle, latitude, LOOK[kind].cloud);
-  const summer = seasonAt(dayOfYear, latitude).name === 'summer';
+  const summer = seasonName(northernDay(dayOfYear, latitude)) === 'summer';
   if (
     (kind === 'rain' || kind === 'drizzle' || kind === 'storm') &&
     temperature <= SNOW_BELOW &&
@@ -174,7 +185,7 @@ export function weatherAt(seed, when, latitude = HOME_LATITUDE) {
             seed,
             when.dayIndex - 1,
             BLOCKS_PER_DAY - 1,
-            when.dayOfYear === 1 ? 365 : when.dayOfYear - 1,
+            when.dayOfYear === 1 ? YEAR : when.dayOfYear - 1,
             latitude,
           );
     const t = smooth(into / FADE_MINUTES);

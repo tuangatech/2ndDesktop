@@ -45,8 +45,7 @@ export function windowLights(ms, parts, sun, weather, seed = 0) {
   const gloom = Math.max(stormness(weather), smooth((weather.fog - 0.7) / 0.3));
   const midnight = ms - parts.minuteOfDay * MIN;
   const lights = {};
-  for (const id of WINDOWS) {
-    const index = WINDOWS.indexOf(id);
+  for (const [index, id] of WINDOWS.entries()) {
     const floor = FLOOR[id];
     let night = 0;
     if (sun.polar === 'night') {
@@ -167,6 +166,6 @@ export function truckAt(ms, allowed) {
   at -= TRIP.away;
   // Back from the right, forward with the nose to the left, slowing to a stop at the drive.
   const k = at / TRIP.back;
-  const x = 1 - (1 - (1 - k) ** 2);
+  const x = (1 - k) ** 2;
   return { phase: 'back', x: Math.max(0, x), facing: 'left', visible: x < 1 };
 }
