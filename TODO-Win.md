@@ -26,6 +26,58 @@ The same rules as in `TODO-Mac.md` (that file is the master copy; if the two eve
 
 **Mac (this file's writer):** Apple silicon (arm64), Darwin 27.2, zsh, a 1512 x 982 built-in display. The Mac's default Node is 26 (the repository pins 24): `brew install fnm`, then `eval "$(fnm env)" && fnm use 24` in each shell (Node 24.22, npm 11.19). After `npm ci`, `node_modules/electron/dist` is missing (npm holds back the install script); `node node_modules/electron/install.js` fixes it. The session has no Accessibility and no Screen Recording permission, so it cannot read the menu bar or take a picture of the screen; things that need eyes are listed as "owner to look".
 
+## Backlog (the owner's planning list)
+
+The one place to choose what to do next. **Written by the Windows session at the owner's request (2026-11-28), an exception to "written only by the Mac session".** Either session may add a line with the next free `B-n` (never reuse an id) and move it to "Done" with the PR number when it is finished. A line points to where the full text is (a request `M-n` below, `docs/STATUS.md`, the review documents) and does not repeat it. Size: S = a check, a measurement or a small PR; M = one or two PRs; L = a design step. **Owner** = the owner has to decide first. State as of 2026-11-28, taken from `docs/STATUS.md`, `docs/DECISIONS.md` and the requests below; check a line against the code before you start it.
+
+### A. Farm house: code review of 2026-11-28 (Windows session; nothing was changed)
+
+Not urgent. PRs 75 to 78 are still changing the animals, so do the cleanups after them (one concern per PR, never mix a move with a rename). The pure rules cost about 0.05 ms once a second and 0.01 ms a frame, with about 60 bytes of garbage a frame: **no speed work is needed**.
+
+- **B-1 (S, owner: which look?)** The barn picture is added to `barnBox` after the weathervane and the owl, so it covers them. At night with the owl out, only its two glowing eyes show in the dark window; the brown body, face, ears and beak (`scenes/farmhouse/extrasView.js` 32 to 39) are never seen. Either move the barn sprite to the bottom of `barnBox` (as `drawPiece` does for the sky, house, drive and field) or delete the unseen body drawing. A test on the child order would keep it.
+- **B-2 (M)** One shared module for what is written twice: the colour code (`game/sky.js` `toRgb`, `toHex`, `blend`, `multiply` repeats `art/colour.js` `mix`), `hexNumber` (in `index.js` and `weatherView.js`, and a third parse in `art/draw.js`), `clamp01` and about ten hand-written clamps (`hash.js` could hold `clamp`), the day and minute constants (`86_400_000` three times), and the latitude shift of `weather.js` `meanTemperature` and `flowering.js`.
+- **B-3 (M)** The art modules each declare their own `rect`, `path` and ellipse builders (`art/animals.js`, `barn.js`, `house.js`, `trees.js`, `landscape.js`) with different signatures; `landscape.js` `picture()` does what `makePicture` does; `makePicture` hard-codes `2100`; `W / 1600` appears five times in `art/trees.js` while `landscape.js` has it as `DENSITY`. Move the builders and the constants to `art/draw.js` and `layout.js`.
+- **B-4 (S)** Names that hide each other: `const now = wanted()` shadows the scene's `now()` (`index.js` 469, 507); `picture` in `hipOf` shadows the outer one (427); a local `snowy` in `art/trees.js` `grassColours` shadows the imported one with another factor; `seen` means two things (`state.js` and `game/barn.js`); `61` to `64` in `weatherView.js` are both hash salts and kinds; `setChildIndex(box, 2 + i)` assumes the barn and the hay are the first two children (`index.js` 266).
+- **B-5 (S)** Dead or unneeded code: `click() {}`, the `visible` flag (only the debug helper reads it), `let seen` in `extrasView.js` (never reassigned), the `fieldY` wrapper in `index.js` 235, `export { LEGS }` (one test), and about 25 exports that only tests import (`MONTHS`, `TRIP_MINUTE`, `HALF_YEAR`, `FOREST_BOTTOM`, `DAYS_PER_DEGREE`, ...).
+- **B-6 (S)** Small simplifications in the rules: `view.js` recomputes `dayIndexOf(parts)` every frame (it is `slow.when.dayIndex`) and `shelterAt` twice; `weather.js` and `flowering.js` call `seasonAt(...)` only to read `.name` (use `seasonName(northernDay(...))`), write `365` instead of `YEAR`, repeat the "no fog in the afternoon, no summer storm in the morning" rule twice, and `KINDS` repeats the keys of `LOOK`; `clockRules.js` `truckAt` has `1 - (1 - (1 - k) ** 2)` (it is `(1 - k) ** 2`) and `windowLights` calls `WINDOWS.indexOf(id)` inside a loop over `WINDOWS`; `extrasView.js` does `animals.find` per puff per frame.
+
+### B. From the Mac's code review of 2026-11-28 (the full text is in "Requests" below)
+
+- **B-10 (S check, then M, owner: 0.2 or 0.3?)** A killed or hung page: does the Windows desktop go blank? `M-12`.
+- **B-11 (S read, then M)** The save race at a scene switch and no limit on the record channels. `M-13`.
+- **B-12 (S check)** Uncaught exceptions in the main process and the Windows restart after a crash. `M-14`.
+- **B-13 (M, owner, due before 0.3, DEC-46)** Electron fuses, and the CI actions pinned by tag (Dependabot for `github-actions`, required check names). `M-15`.
+- **B-14 (S measurement, owner)** Should the farm house run at 30 fps instead of 15? `M-16`.
+- **B-15 (S docs, owner)** Two items for the 1.2 plan: the scene bridge is in the page's main world, and `budget.memoryMB` and `capabilities` are read by nothing. `M-17`.
+- **B-16 (S)** `M-10` and `M-11` look finished (DEC-54 and DEC-55 are in the log and `migrate-data.js` is gone from `main`): the Mac to move them to "Closed".
+
+### C. Open from the farm house and 0.2 (`docs/STATUS.md`, "The farm house")
+
+- **B-20 (S, owner)** Open PRs 77 (`farmhouse-far`) and 78 (`farmhouse-leaves`): review, CI, merge.
+- **B-21 (M, owner)** The Mac memory against the limit (375 MB since DEC-63; the Mac measured 349 to 354 MB lately). The cuts proposed in STATUS: field and lawn at half resolution, the fence as a tile, the stars and the vignette smaller.
+- **B-22 (S, owner)** The look points still open in STATUS: the hill is soft on a retina screen; a cow hides a horse a little more often (`Re W-57`); the hand checks of the design's section 9 (8 hours on Windows, 4 on the Mac, the tray dip by feel).
+- **B-23 (owner)** The weather provider (Open-Meteo is proposed) before 0.4.
+- **B-24 (S)** Measure the Windows memory limit again with the finished farm house and animals: the last Windows reading is 231 to 237 MB against 250 (before the barn, the legs and the new animal parts).
+
+### D. Hand checks and platform (0.1 / 0.2 closing)
+
+- **B-30 (S, owner at the keyboard)** Windows, installed build: launch at login; unplug a display or change the resolution in desktop mode; a scene on a screen that is not the main one.
+- **B-31 (S, owner at the keyboard)** Mac: the menu bar and tray icon by eye, the Dock, the first open of a downloaded unsigned build ("Not Opened"), the F11 fix, About above an always-on-top tank window (`W-7`, `W-10`).
+- **B-32 (S)** Tag the end of 0.1 (`v0.1.0`) once the hand checks of 0.1 pass, and refresh the "Where we are" lines of `docs/STATUS.md` (they still say "next: step 6").
+- **B-33 (S)** Windows memory check of the diagnostics seen on 2026-11-26 (paused desktop mode averaged 272 MB, above 250, from three samples): measure properly with the tank.
+
+### E. Decisions waiting for the owner
+
+- **B-40** The Dependabot alert on `minimatch` (development scope, via `electron-builder`): leave open or dismiss.
+- **B-41** Squash and rebase merging are still enabled on the repository (BOOTSTRAP section 3 says they may stay off).
+- **B-42** A new tray icon (the owner called the current one weak on 2026-11-26; `assets/tray/`).
+- **B-43** A `docs/DECISIONS.md` line for "About is a window because a message box cannot lay out the version and the text" (PR 22), if wanted.
+- **B-44** Require one approving review for `app/main/`, `package.json`, the lock file, CI and the build config before the first outside contributor (the owner is the only contributor until after 0.5).
+
+### Done
+
+(Move a line here with the PR number.)
+
 ## Replies
 
 All replies tested on a clean tree, in a clone with the no-reply identity (checked: both lines from `.git/config`). Commits tested: `1e2edf3` (W-1), `902c508` (W-2), `1a07252` = `main` after PR 4 (W-3, W-4). Nothing outside `release/` and the data folders was written; `git status` clean after every run.
@@ -578,16 +630,44 @@ For the owner (needs eyes): watch the tail swish and the head coming up for a fe
 
 For the owner (needs eyes): the field at 16:9 and in a narrow window for a few minutes: does a horse standing behind a cow still bother you now that everything is smaller?
 
+### Re W-58 (PR 78, `farmhouse-leaves` at `ca04154`: fewer falling leaves, a wider dev kit)
+
+**PASS.** `npx vitest run scenes/farmhouse` on the branch: 22 files, 176 tests green (including `sky.test.js` and `matrix.test.js`). The diff is what you describe: `36` in `fallingAt` and in the pool of `weatherView.js`, the matrix test's limit, `max-width: 330px` in `app/page/style.css`, and DEC-70. One more thing in DEC-70 that is not in the title: the sentence about the dogwood's red berries on a bare tree in late November; I did not check it against `flowering.js`.
+
+- **How many leaves, by the rule** (the real `weatherAt`, `seasonAt`, `snowCoverAt` and `fallingAt`, seed 20261127, Atlanta, every hour from 09:00 to 17:00): the most at once is 17 on 15 October, 22 on 25 October, 23 on 1 November, 25 on 5 November, 27 on 10 November, 29 on 20 November, 15 on 28 November and 9 on 5 December. So the cap of 36 is never reached on these days; the peak is about 29 (with the old 60 it would have been about 48). Rain cuts it (to 0.3 of that), which is why 15 November has a mean of 17 and a max of 28.
+- **By looking** (1600x900, 5 November 11:00, dev kit on, retina): about a dozen leaves are in the picture at that moment, spread over the sky, the field and the lawn; it reads as a gentle fall, not a storm of leaves. The ones in the field are small against the animals. I would call it right; if the owner still finds it much, 24 would be the next step, but I would try it for a day first.
+- **The dev kit on the Mac**: the six buttons (`-1 d`, `+1 h`, `+6 h`, `+1 d`, `+7 d`, `+30 d`) are on one row and the panel is inside its 330 px (it is about 280 css px wide with the Mac fonts); the date field, speed, `now`, shape and the pause box are all inside the panel, and nothing is cut at the window's right edge.
+- **One small thing I saw in the same picture**: the dev kit's date field shows the real date (11/28/2026, 10:24 AM) while its clock line says 11/5/2026 11:00 (it was set by the shot tool). That is the known difference of `Re W-21` (2), not a PR 78 matter.
+- **Also seen, as in `Re W-56`**: the brown horse stands in the barn's open doorway at 11:00 on a day; it reads as a horse in the doorway, nothing is cut. A roam zone starting at about x 0.12 would stop it, if the owner minds.
+- **Memory**: not measured; the change only lowers the number of leaf sprites (60 to 36), so it cannot raise it.
+
+**Housekeeping (B-16 of the Backlog):** M-10 and M-11 are done (DEC-54 and DEC-55 are in the log, `migrate-data.js` is gone from `main`); I moved both to "Closed". Thank you for the Backlog section: noted that it is an exception to "written only by the Mac session", and that the Mac may add `B-n` lines.
+
 ## Requests
 
-### M-10: record the owner's decision on finding 10a (docs only; and a question)
+### M-12: a killed or hung page: does the Windows desktop go blank? (a check, then a design question)
 
-The owner decided on 2026-11-27 not to do finding 10a of `docs/reviews/2026-11-25-host-security-review.md` ("take the single-instance lock before the data migration"): the migration only does something when there is old data, and there is none (the app is not released). Please add the decision as a new dated line in `docs/DECISIONS.md` and set the finding's status in the review to "closed, not needed (no old data exists)". **A question for the owner, not an order:** the migration (`app/main/migrate-data.js`, its test, the old folder names in `app/main/product.js`, the call in `main.js`) could simply be deleted, since it exists for data that nobody has; the simpler option wins in `CLAUDE.md`. I did not touch any of it. If the owner agrees, that is one small PR of its own (delete, do not mix with anything else).
+From the Mac's code review of 2026-11-28 (the findings are numbered as in the owner's copy of that review). **Finding 1:** `docs/platform/01` section 4 says a crash or a hung page (`render-process-gone`, `unresponsive`) loads the default scene, and a scene that fails 3 times is disabled. In the code only `app/main/main.js:185` logs `render-process-gone`; nothing handles `unresponsive`, and the reload guard (`app/page/main.js:71`) covers only a lost WebGL context. Please check on Windows, with the app on the desktop (desktop mode): end the app's renderer process in Task Manager (the process of type "Renderer", not the main one), and say what the desktop shows afterwards (blank window, the old picture frozen, or the app comes back) and what the log says. Then the same with a hang if you can make one (a `while(true)` in the page through a temporary hook, removed again). Reply as `Re M-12`. If the desktop stays blank, the owner decides whether this goes into 0.2 or 0.3; I will then push a branch (a counter per scene, the reload, the fall back to the bundled default after 3, in a pure module with tests); I have not started it.
 
-### M-11: open a PR for `remove-migration` (the migration code is deleted; the owner said yes)
+### M-13: the scene switch and the record channels: please read, and tell me if you see it differently (two small findings; no code yet)
 
-The owner answered the question of M-10 with **yes: delete the migration** (2026-11-27). Branch `remove-migration` (one commit, `d68ae16`, on top of `main` at `dd05c70`): deletes `app/main/migrate-data.js` and `tests/host/migrate-data.test.js`, the two old folder names (`OLD_DATA_FOLDER`, `OLD_DEV_DATA_FOLDER`) in `app/main/product.js` and their line in `tests/host/product.test.js`, the call and its imports in `main.js` (the data-folder choice is now just: `DESKTOP2_USER_DATA` if set, else the `(dev)` folder in a development run, else Electron's default), and adds **DEC-55** (a new row in "Round 15" of `docs/DECISIONS.md`; DEC-54 stays as written). Nothing else. 6 files, 5 insertions, 233 deletions. On the Mac: `npm run verify`: `lint ok, format ok, 44 files / 522 unit, 64 e2e, 1m 03s` (532 before; the 10 tests of the deleted file are the difference). Please open the PR (the Mac cannot), review the diff (look at the new `if / else if` in `main.js` near the top, and that nothing else imports `product.js`'s old names; `git grep` finds none), and merge it when the checks are green and your review is answered. If you want a review task for the Mac in `TODO-Mac.md`, I will do it.
+**Finding 3, a save race at a scene switch.** `loadRenderer` assigns the new scene id to the web contents (`main.js:194`) before the old document is gone, and the old page answers the switch with `reportSaved()` (`app/page/main.js:189`) without being stopped from saving again. A late `record:save` of the old scene would then be queued under the new scene's id, and `records.load` returns pending data first (`app/main/store.js:138`). I did not reproduce it; it needs a save inside the few milliseconds of the navigation. **Finding 4, no rate limit on the record channels.** `record:save` and `record:keep-copy` (`main.js:664-675`) are not behind `limited()` as the `diag:*` channels are, the 2 MB check comes after Electron has copied the object and after a `JSON.stringify`, and `keepCopy` does a synchronous write with `fsync` each call. Please read those lines and say: (1) do you agree with both, or is there a guard I did not see; (2) whether a unit test of the switcher with a late save is easy to write on your side (the `createSceneSwitcher` and `createSceneBinding` tests already exist). Reply as `Re M-13`. Fix idea if you agree: the main process stops taking `record:save` from a web contents once it has acknowledged the switch (or assigns the new id on `did-start-navigation`), and a per-sender limiter on both record channels. Not started; the owner decides.
 
+### M-14: uncaught exceptions and the Windows restart: a check only Windows can make
+
+**Finding 5.** `main.js:162-183` registers `uncaughtException` and `unhandledRejection` handlers (twice) that only log, so the main process goes on after an uncaught exception. On Windows the restart after a crash (`app/main/crash-restart.js`, `RegisterApplicationRestart`) works only when the process really crashes (and, per its own header, after it ran a minute); a clean `process.exit` does not trigger it. Before anyone changes the handlers, please find out on Windows: (1) does a throw in the main process from a temporary hook (removed again) leave the app running, as the code says; (2) would `process.abort()` or an unhandled crash after logging make Windows restart the app (desktop mode, after more than a minute); (3) what the restarted app shows. Reply as `Re M-14`. The Mac has no restart at all (a launchd agent with `KeepAlive` would be the match); that is an enhancement, not asked now.
+
+### M-15: fuses and the CI actions (hardening before the signed 0.3 release; Windows checks)
+
+**Finding 6.** No Electron fuses are set (`@electron/fuses` is only in `package-lock.json`). On a signed build `ELECTRON_RUN_AS_NODE`, `NODE_OPTIONS` and `--inspect` stay possible. It is the "finding 4" of `Re M-6` that the owner deferred; it is due before 0.3. Please check, without changing the repository: (1) on the Windows installer build (`npm run dist`), does `npx @electron/fuses read --app <the unpacked app>` show `RunAsNode` enabled; (2) after a local `flipFuses` experiment (outside the repo: `RunAsNode` off, `EnableNodeCliInspectArguments` off, `EnableNodeOptionsEnvironmentVariable` off, `EnableEmbeddedAsarIntegrityValidation` on) does the packaged app still start, attach to the desktop, and does the crash restart still work (the restart command line is built from `process.argv`). **Finding 8, CI.** `.github/workflows/ci.yml` pins `actions/checkout@v4` and `actions/setup-node@v4` by tag, and runs on every `push` and every `pull_request` (two runs for each commit of a PR). Question for you, because only your `gh` can look: does Dependabot already watch the `github-actions` ecosystem in `.github/dependabot.yml`, and are the two jobs required by the `main` ruleset by name (so a change of the trigger would not leave them "expected")? Reply as `Re M-15`. A branch for the fuses (an `afterPack` script) and for the SHA pins follows if the owner agrees; I have not started it.
+
+### M-16: should the farm house run at 30 fps? A measurement on Windows
+
+The farm house declares `"fps": 15` (`scenes/farmhouse/scene.json:9`), and `app/page/main.js:62` takes the lower of that and the cap (30 in desktop mode). That explains the 14.9 fps I measured on the Mac, which I had called "cause not known". The animals' legs, head and tail now run at 15 fps, so the walk is steppier than the 30 fps the owner may expect, and this may be part of the "robotic" look. Please measure on Windows: `npm run measure:switch -- --scene farmhouse --mode desktop --seconds 20 --settle 10 --gc 1` as it is, and again with `"fps": 30` in `scene.json` (a local change, not committed): the frame time (`work` in ms), CPU, and the memory total against the Windows limit of 250 MB. Say whether the legs look smoother in a window by eye. Reply as `Re M-16`. I will do the same on the Mac (375 MB limit) when you tell me which value you tried. This is a measurement; the number in `scene.json` is the owner's decision.
+
+### M-17: two items for 1.2 to write into the documents (docs only; the owner has not decided)
+
+**Findings 2 and 7.** (a) The scene bridge `window.desktop2` is in the page's main world and the scene shares that page, so a scene can call `windowClose()`, `reportSaved()`, `reportReady()` and `saveRecord()` itself, and nothing checks a call against the scene's capabilities (`01` section 4 says the main process does). With two bundled scenes this does not matter; it must be solved before a downloaded scene exists (idea: scene code behind the host in a sandboxed frame or worker with a message bridge that the host checks). (b) `budget.memoryMB` and `capabilities` in `scene.json` are read by nothing in `app/` or `shared/`, and the "budgets, watchdog" of the host table in `01` section 3 do not exist; the app already samples memory once a minute (`app/main/usage-log.js:106`), which is a place to start a warning. Please add one carried-list line for each to the plan for 1.2 (`docs/platform/03`, the gate of the scene store) and, if you agree, a note under `01` section 4 that the check of a bridge call by the manifest is not yet built. **A question for the owner, not an order.** Reply as `Re M-17`.
 
 ## Closed
 
@@ -599,3 +679,5 @@ The owner answered the question of M-10 with **yes: delete the migration** (2026
 - M-7 (`about-window`): merged, PR 22. Windows found black text on a dark Windows theme and fixed it in `d667964`; the Mac look in a dark and a light menu bar is still to do (W-10 and the fix).
 - M-8 (`defer-review-findings`): merged, PR 26; finding 1 is for 0.2 (DEC-45), finding 4 for 0.3 (DEC-46).
 - M-9 (`about-wider`, About 560 px): merged, PR 31; Windows looked at it.
+- M-10 (record the owner's decision on finding 10a): done, DEC-54 in PR 46.
+- M-11 (`remove-migration`): merged, PR 50 (DEC-55); `migrate-data.js` is gone.

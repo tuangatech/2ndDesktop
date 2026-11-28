@@ -4,7 +4,7 @@
 // once and nothing about them is saved (R1, R6).
 //
 // The field is one rectangle in the scene's own units: `x` from 0 (left) to 1 (right) across the painted width, `depth`
-// from 0 at the fence to 1 at the bottom of the screen. The size follows the depth (R7): `depthScale`.
+// from 0 at the fence to 1 at the bottom of the screen (the animals keep to the back three quarters, `FIELD.depthMax`). The size follows the depth (R7): `depthScale`.
 //
 // The homes and ranges in `x` below are shares of the width that is on the screen for the animals (`bounds`: the part of
 // the field between the edges of the screen, less the icon strip), not of the painted width: on a narrow or a wide screen
@@ -40,29 +40,29 @@ export const HERD = Object.freeze([
     id: 'horse-brown',
     kind: 'horse',
     coat: 'brown',
-    home: [0.22, 0.3],
-    roam: zone([0.03, 0.43], [0.04, 0.42], [0.22, 0.26], 30),
+    home: [0.22, 0.25],
+    roam: zone([0.03, 0.43], [0.04, 0.34], [0.22, 0.22], 30),
   },
   {
     id: 'horse-beige',
     kind: 'horse',
     coat: 'beige',
-    home: [0.78, 0.3],
-    roam: zone([0.57, 0.97], [0.04, 0.42], [0.78, 0.26], 30),
+    home: [0.78, 0.25],
+    roam: zone([0.57, 0.97], [0.04, 0.34], [0.78, 0.22], 30),
   },
   {
     id: 'cow-1',
     kind: 'cow',
     coat: 'brown-white',
-    home: [0.2, 0.8],
-    roam: zone([0.03, 0.43], [0.52, 0.96], [0.2, 0.8], 26),
+    home: [0.2, 0.62],
+    roam: zone([0.03, 0.43], [0.42, 0.74], [0.2, 0.6], 26),
   },
   {
     id: 'cow-2',
     kind: 'cow',
     coat: 'tan-white',
-    home: [0.8, 0.8],
-    roam: zone([0.57, 0.97], [0.52, 0.96], [0.8, 0.8], 26),
+    home: [0.8, 0.62],
+    roam: zone([0.57, 0.97], [0.42, 0.74], [0.8, 0.6], 26),
   },
   { id: 'sheep-1', kind: 'sheep', coat: 'white', flock: [-0.08, -0.06], roam: SHEEP },
   { id: 'sheep-2', kind: 'sheep', coat: 'white', flock: [0, 0.16], roam: SHEEP },
@@ -71,7 +71,7 @@ export const HERD = Object.freeze([
 /** The sheep stay in a loose flock whose centre roams the field on its own, slowly. */
 const FLOCK = Object.freeze({
   id: 'flock',
-  home: [0.5, 0.45],
+  home: [0.5, 0.4],
   roam: {
     cycle: 300,
     stops: 7,
@@ -79,15 +79,16 @@ const FLOCK = Object.freeze({
     minStop: 15,
     pull: 0.3,
     x: [0.12, 0.88],
-    depth: [0.3, 0.6],
-    home: [0.5, 0.45],
-    local: [0.2, 0.22],
+    depth: [0.26, 0.5],
+    home: [0.5, 0.4],
+    local: [0.2, 0.17],
     speed: 26,
   },
 });
 
-/** The field in front of the fence: never at the fence line itself, never off the bottom. */
-export const FIELD = Object.freeze({ depthMin: 0.04, depthMax: 0.96, xMin: 0.04, xMax: 0.96 });
+/** The field in front of the fence: never at the fence line itself, and never too near the screen (an animal at the bottom
+ * of the screen is too big and too many: the owner asked for them a bit farther away). */
+export const FIELD = Object.freeze({ depthMin: 0.04, depthMax: 0.74, xMin: 0.04, xMax: 0.96 });
 /** Scatter hay (R12): seconds to gather, to eat, and to wander off again; and the pause after a use. */
 export const HAY = Object.freeze({ gather: 20, eat: 60, leave: 20, pause: 30, spot: [0.5, 0.52] });
 

@@ -185,7 +185,7 @@ describe('R12 Scatter hay', () => {
   });
 
   it('they walk to the hay without a jump, from wherever they are', () => {
-    let last = byId(run(-1));
+    let last = byId(run(-0.1)); // a tenth of a second before, like every step after it
     for (let ms = 0; ms <= (HAY.gather + HAY.eat + HAY.leave) * 1000; ms += 100) {
       const now = byId(animalsAt(FIRST + ms, ctx({ hayStartedAt: FIRST })));
       for (const id of Object.keys(now))
