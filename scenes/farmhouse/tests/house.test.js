@@ -52,4 +52,23 @@ describe('the house art', () => {
       expect(JSON.stringify(pic.ops)).not.toMatch(/NaN|undefined|Infinity/);
     }
   });
+
+  it('draws the truck as a blue and white pick-up that stays inside its own box', () => {
+    const truck = truckPicture();
+    const text = JSON.stringify(truck.ops);
+    // blue body and cream trim, no pure white or black (docs/art-style.md)
+    expect(text).toMatch(/#4a7fb4/);
+    expect(text).toMatch(/#f3efe4/);
+    expect(text).not.toMatch(/#ffffff|#000000/i);
+    // every rectangle and wheel is inside the picture, so nothing is cut at the edge
+    for (const op of truck.ops) {
+      const box =
+        op.t === 'rect'
+          ? { x: op.x, y: op.y, w: op.w, h: op.h }
+          : op.t === 'ellipse'
+            ? { x: op.x - op.rx, y: op.y - op.ry, w: 2 * op.rx, h: 2 * op.ry }
+            : null;
+      if (box) expect(inside(truck, box)).toBe(true);
+    }
+  });
 });
