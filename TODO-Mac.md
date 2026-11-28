@@ -151,6 +151,12 @@ The owner found too many falling leaves in the fall. The most at once is 36 (was
 
 Also, PR 73 now has a shorter owl test (the old one timed out on the Windows runner), and PR 69 and PR 73 have new commits since your review: `Re W-49` is still open for 69.
 
+### W-59: review PR 80 (`fishtank-names`): the fish tank loses its fish names and the fish label (DEC-71, part 1)
+
+The owner decided (2026-11-28) that fish have no names and no fullness; this PR is part 1 (names), part 2 (fullness, "Feed everyone", a limit of 2 meals in 24 hours) comes next. A fish has no `name`, the rename rule and event are gone, and the label that showed after a click (name or species, stage, Hungry, Full or Drowsy, with a Rename button) is gone with them; a click on a fish is only a wiggle. A saved record that still has names loads, and the names are dropped without a message. The first commit is docs only: `scenes/fishtank/DESIGN.md` is rewritten as the full design of the tank after both parts (it says so in its status line), `docs/scenes/fishtank.md` is a short overview, DEC-71 is in the log (DEC-69 and DEC-70 are the farm house's).
+
+**The golden state hash moved on purpose**: `784820e6e804d032` to `7be7c96f8e2607bc`, only because every fish lost `name: null` (putting it back after `seed` in the dump of a run gives the old hash). The graph hash `5be771c4e5cb12a9` is unchanged, and both baseline pictures keep their hashes here. Please check on the Mac: (1) `npm run verify`; (2) the golden test gives `7be7c96f8e2607bc` and `5be771c4e5cb12a9` on your machine; (3) the window picture and the desktop picture are still your known values; (4) in window mode click a fish: it wiggles and nothing else appears; (5) read `scenes/fishtank/DESIGN.md` for anything you know to be wrong (the Mac numbers in section 7, the sound recipes, the pointer rules). Reply as `Re W-59`. PR body: `gh pr view 80`.
+
 ## Closed
 
 - W-40 (read PR 60, the lawn, house and truck): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
