@@ -27,6 +27,8 @@ import { rasterize, spriteOf } from './art/raster.js';
 
 const W = DESIGN.width;
 const H = DESIGN.height;
+/** The four falling things: each number is both the kind of the motion (`fall`) and a salt of the seeded positions. */
+const KIND = Object.freeze({ rain: 61, snow: 62, leaves: 63, petals: 64 });
 /** The most of each falling thing the scene ever has (the caps of `fallingAt`). */
 const POOL = { rain: 420, snow: 360, leaves: 36, petals: 50 };
 
@@ -128,10 +130,10 @@ export function createWeatherView({ renderer, layers, seed }) {
     const u3 = unit(seed, i, kind, 3);
     let speed;
     let drift;
-    if (kind === 61) {
+    if (kind === KIND.rain) {
       speed = 760 + u3 * 200; // rain
       drift = wind * 240;
-    } else if (kind === 62) {
+    } else if (kind === KIND.snow) {
       speed = 50 + u3 * 45; // snow
       drift = wind * 60 + Math.sin(t * 0.7 + i) * 14;
     } else {
@@ -141,11 +143,11 @@ export function createWeatherView({ renderer, layers, seed }) {
     const x = mod(u1 * (W + 300) + drift * t, W + 300) - 150;
     const y = mod(u2 * (H + 80) + speed * t, H + 80) - 40;
     sprite.position.set(x, y);
-    if (kind === 61) {
+    if (kind === KIND.rain) {
       sprite.rotation = Math.atan2(drift, speed) * -1;
       sprite.scale.set(0.7 + u3 * 0.5);
       sprite.alpha = 0.3 + u2 * 0.3;
-    } else if (kind === 62) {
+    } else if (kind === KIND.snow) {
       sprite.scale.set(0.4 + u3 * 0.7);
       sprite.alpha = 0.6 + u2 * 0.4;
     } else {
@@ -226,10 +228,10 @@ export function createWeatherView({ renderer, layers, seed }) {
       });
       // Falling things.
       const wind = weather.wind;
-      place(rain, falling.rain, 61, t, wind);
-      place(snow, falling.snow, 62, t, wind);
-      place(leaves, falling.leaves, 63, t, wind);
-      place(petals, falling.petals, 64, t, wind);
+      place(rain, falling.rain, KIND.rain, t, wind);
+      place(snow, falling.snow, KIND.snow, t, wind);
+      place(leaves, falling.leaves, KIND.leaves, t, wind);
+      place(petals, falling.petals, KIND.petals, t, wind);
       // Grade.
       const dim = lightningDim(ms, weather, seed);
       const grade = gradeAt(tod, weather, dim);
