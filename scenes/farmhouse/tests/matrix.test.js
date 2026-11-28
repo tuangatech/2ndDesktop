@@ -82,7 +82,7 @@ function check(view) {
   expect(skyKey(tod, slow.weather)).not.toMatch(/NaN/);
   expect(falling.rain).toBeLessThanOrEqual(420);
   expect(falling.snow).toBeLessThanOrEqual(360);
-  expect(falling.leaves).toBeLessThanOrEqual(60);
+  expect(falling.leaves).toBeLessThanOrEqual(36);
   expect(falling.petals).toBeLessThanOrEqual(50);
   expect(falling.rain === 0 || falling.snow === 0 || slow.weather.snowShare > 0).toBe(true);
   expect(cloudStrengths(slow.weather)).toHaveLength(9);
