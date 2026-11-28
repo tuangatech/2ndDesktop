@@ -141,6 +141,14 @@ The owner found the animals robotic. Run `npx vitest run scenes/farmhouse/tests/
 
 The owner asked for the animals to look alive when they stand. Each animal is now four parts (body, head with neck, ear, tail) moved by a pure module `game/secondary.js`. Run `npx vitest run scenes/farmhouse/tests/secondary.test.js scenes/farmhouse/tests/animals-art.test.js`, then watch the field live on a retina screen for a few minutes: does the head go down to graze without a seam at the neck (horses at the deepest dip, cows, sheep), does it come up to look now and then, are the ear twitch and the tail swish too fast or too busy (is the swish at a fly believable), is the breathing and rocking visible but quiet, and do the animals still look right at 1.5 times size? Measure memory (14 more small textures; 375 MB). Note the base is `farmhouse-move`: merge 75 first. Reply as `Re W-56`. PR body: `gh pr view 76`.
 
+### W-57: review PR 77 (`farmhouse-far`): the animals keep farther from the screen (DEC-69, R7)
+
+The owner found too many animals too near and too big. The field they use now ends at 0.74 of its depth (was 0.96), so the biggest is about 1.24 times (was 1.46) and the bottom of the screen is free; the zones are scaled to fit (horses 0.04 to 0.34, cows 0.42 to 0.74, flock 0.26 to 0.50). Small change in `game/animals.js`, one test fixed (the hay-jump test started its first step a second early). Run `npx vitest run scenes/farmhouse/tests/animals.test.js scenes/farmhouse/tests/roam.test.js`, then look live on a retina screen at 16:9 and in a narrow window: do seven animals read well, does a cow in front of a horse or the flock look worse now (horse and cow zones are 0.08 apart), is anything cut by the bottom edge? It is independent of PR 76. Reply as `Re W-57`. PR body: `gh pr view 77`.
+
+### W-58: review PR 78 (`farmhouse-leaves`): fewer falling leaves, a wider dev kit (DEC-70)
+
+The owner found too many falling leaves in the fall. The most at once is 36 (was 60; `fallingAt` in `game/sky.js` and the pool in `weatherView.js`), and the dev kit panel is 330 px wide at most so its six buttons fit on one line (`app/page/style.css`). Small. Run `npx vitest run scenes/farmhouse/tests/sky.test.js scenes/farmhouse/tests/matrix.test.js`, then look at the field live with the dev kit on a day in early November (the leaves at their most): about right, or still too many (or too few now)? Check that the dev kit buttons are on one row on the Mac too (fonts differ). Reply as `Re W-58`. PR body: `gh pr view 78`.
+
 Also, PR 73 now has a shorter owl test (the old one timed out on the Windows runner), and PR 69 and PR 73 have new commits since your review: `Re W-49` is still open for 69.
 
 ## Closed
