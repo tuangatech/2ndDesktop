@@ -46,10 +46,7 @@ const tufts = (seed, spread) => {
 function horse(coat) {
   const [c1, c2, mane] = COATS[coat];
   const g = gradient(-80, -30, c1, c2);
-  const far = darker(c2, 0.2);
   return [
-    rect(-38, -38, 8, 38, far, 4),
-    rect(22, -38, 8, 38, far, 4),
     { t: 'path', d: 'M -48 -58 C -66 -56 -70 -34 -64 -14', stroke: mane, width: 9, cap: 'round' },
     oval(0, -52, 49, 21, g),
     tilted(36, -82, 7, 26, 35, mane),
@@ -58,20 +55,12 @@ function horse(coat) {
     tilted(81, -85, 6.5, 5.5, 38, darker(c2, 0.25)),
     tilted(60, -108, 3, 6.5, 12, c2),
     oval(67, -96, 1.9, 1.9, '#3a312b'),
-    rect(-30, -38, 9, 38, c2, 4),
-    rect(32, -38, 9, 38, c2, 4),
-    rect(-30, -6, 9, 6, mane, 3),
-    rect(32, -6, 9, 6, mane, 3),
     ...tufts(31, 44),
   ];
 }
 
 function sheep() {
-  const ops = [
-    rect(-18, -22, 5, 22, '#4a4540', 2.5),
-    rect(12, -22, 5, 22, '#4a4540', 2.5),
-    oval(0, -30, 30, 18, '#cfc6b0'),
-  ];
+  const ops = [oval(0, -30, 30, 18, '#cfc6b0')];
   for (const [x, y, r] of [
     [-20, -36, 14],
     [-4, -44, 17],
@@ -84,8 +73,6 @@ function sheep() {
     ops.push(oval(x, y, r, r, gradient(y - r, y + r, '#f2ecdc', '#e1d9c4')));
   }
   ops.push(
-    rect(-10, -22, 5, 22, '#5c5650', 2.5),
-    rect(19, -22, 5, 22, '#5c5650', 2.5),
     tilted(36, -30, 9, 11, -12, '#5a4f47'),
     tilted(28, -38, 7, 3, 25, '#4a403a'),
     oval(34, -48, 6, 6, '#ece5d2'),
@@ -98,8 +85,6 @@ function sheep() {
 function cow(patch) {
   const skin = mix('#f3eee1', '#e3dcc8', 0.5);
   return [
-    rect(-38, -40, 9, 40, '#cdc4b0', 4),
-    rect(24, -40, 9, 40, '#cdc4b0', 4),
     { t: 'path', d: 'M -50 -70 C -60 -64 -60 -42 -57 -24', stroke: patch, width: 4, cap: 'round' },
     oval(-57, -20, 4, 7, patch),
     oval(0, -60, 51, 25, gradient(-85, -35, '#f3eee1', '#dcd4c0')),
@@ -122,12 +107,83 @@ function cow(patch) {
     tilted(56, -76, 8, 3.8, -25, patch),
     tilted(62, -79, 3, 5, 15, '#e6dcc0'),
     oval(69, -65, 1.9, 1.9, '#3a312b'),
-    rect(-30, -40, 10, 40, '#ece5d3', 4),
-    rect(30, -40, 10, 40, '#ece5d3', 4),
-    rect(-30, -7, 10, 7, '#5f5148', 3),
-    rect(30, -7, 10, 7, '#5f5148', 3),
     ...tufts(33, 46),
   ];
+}
+
+/**
+ * The four legs of each kind, drawn apart from the body so that they can swing about the hip (the walk, index.js). `far`
+ * is the pair on the far side (drawn behind the body, darker) and `near` the pair on this side (in front). `x` is the
+ * middle of the leg at the hip, `pair` which two legs move together (a walk moves the legs of a diagonal together: the near
+ * hind with the far fore, the near fore with the far hind), `amp` how far a leg swings (radians) and `length` its length
+ * from the hip (y -length) to the ground.
+ */
+const LEGS = {
+  horse: {
+    length: 38,
+    amp: 0.42,
+    far: { w: 8, x: [-34, 26], pair: [1, 0] },
+    near: { w: 9, x: [-25.5, 36.5], pair: [0, 1] },
+  },
+  cow: {
+    length: 40,
+    amp: 0.38,
+    far: { w: 9, x: [-33.5, 28.5], pair: [1, 0] },
+    near: { w: 10, x: [-25, 35], pair: [0, 1] },
+  },
+  sheep: {
+    length: 22,
+    amp: 0.5,
+    far: { w: 5, x: [-15.5, 14.5], pair: [1, 0] },
+    near: { w: 5, x: [-7.5, 21.5], pair: [0, 1] },
+  },
+};
+export { LEGS };
+
+/** The key of a set of leg textures: the legs of a horse follow its coat, the others are the same for every coat. */
+export const legKey = (animal) => (animal.kind === 'horse' ? `horse-${animal.coat}` : animal.kind);
+
+/** One leg of `w` wide, drawn from the hip (0, 0) down to the ground at y `length`. */
+function legPicture(length, w, fill, hoof, hoofHeight) {
+  const ops = [rect(-w / 2, 0, w, length, fill, w > 6 ? 4 : 2.5)];
+  if (hoof) ops.push(rect(-w / 2, length - hoofHeight, w, hoofHeight, hoof, 3));
+  return makePicture(
+    { x: -w / 2 - 1, y: -1, width: w + 2, height: length + 2, resolution: RESOLUTION },
+    ops,
+  );
+}
+
+/**
+ * The legs of one animal: two pictures (far and near) and where the four hips are (in the animal's own space, hooves at y
+ * 0 and the nose to the right).
+ * @returns {{far: object, near: object, hips: {layer: 'far'|'near', x: number, y: number, pair: number}[],
+ *            length: number, amp: number}}
+ */
+export function legPictures(kind, coat) {
+  const spec = LEGS[kind];
+  const [c1, c2] =
+    kind === 'horse'
+      ? COATS[coat]
+      : kind === 'cow'
+        ? ['#cdc4b0', '#ece5d3']
+        : ['#4a4540', '#5c5650'];
+  const farFill = kind === 'horse' ? darker(c2, 0.2) : c1;
+  const nearFill = kind === 'horse' ? c2 : kind === 'cow' ? '#ece5d3' : '#5c5650';
+  const hoof = kind === 'horse' ? COATS[coat][2] : kind === 'cow' ? '#5f5148' : null;
+  const hoofHeight = kind === 'horse' ? 6 : 7;
+  const hips = [];
+  for (const layer of ['far', 'near']) {
+    spec[layer].x.forEach((x, i) =>
+      hips.push({ layer, x, y: -spec.length, pair: spec[layer].pair[i] }),
+    );
+  }
+  return {
+    far: legPicture(spec.length, spec.far.w, farFill, null, 0),
+    near: legPicture(spec.length, spec.near.w, nearFill, hoof, hoofHeight),
+    hips,
+    length: spec.length,
+    amp: spec.amp,
+  };
 }
 
 const FRAMES = {
