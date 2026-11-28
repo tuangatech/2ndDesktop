@@ -3,6 +3,7 @@ import {
   createTime,
   dayOfYear,
   localParts,
+  longitudeNoonShiftMinutes,
   nightnessAt,
   standardOffsetMinutes,
   sunTimes,
@@ -124,6 +125,67 @@ describe('sunrise and sunset', () => {
     expect(night).toMatchObject({ polar: 'night', sunrise: null, sunset: null });
     expect(nightnessAt(day.noon, day)).toBe(0);
     expect(nightnessAt(night.noon, night)).toBe(1);
+  });
+});
+
+describe('DEC-64: solar noon by the longitude of the place when the player is in its region', () => {
+  // A moment's time of day on the wall, as hours and minutes since midnight.
+  const wall = (ms, offset) => {
+    const d = new Date(ms + offset * MIN);
+    return d.getUTCHours() * 60 + d.getUTCMinutes();
+  };
+
+  it('moves solar noon 4 minutes per degree west of the meridian of the zone, within 15 degrees only', () => {
+    expect(longitudeNoonShiftMinutes(-84.4, -300)).toBeCloseTo(37.6, 5); // Atlanta in the Eastern zone
+    expect(longitudeNoonShiftMinutes(-75, -300)).toBeCloseTo(0, 5); // on the meridian
+    expect(longitudeNoonShiftMinutes(-70, -300)).toBeCloseTo(-20, 5); // east of it: earlier
+    expect(longitudeNoonShiftMinutes(-84.4, 540)).toBe(0); // a player in Tokyo: the meridian of the zone, as in DEC-59
+    expect(longitudeNoonShiftMinutes(-84.4, -480)).toBe(0); // Pacific: 38.6 degrees away
+    expect(longitudeNoonShiftMinutes(null, -300)).toBe(0);
+    expect(longitudeNoonShiftMinutes(undefined, -300)).toBe(0);
+    expect(longitudeNoonShiftMinutes(Number.NaN, -300)).toBe(0);
+  });
+
+  it('gives Atlanta the real sunrise and sunset (within 4 minutes), not 35 minutes early', () => {
+    const real = [
+      // [month, day, wall offset, standard offset, sunrise, sunset] on the wall clock of Atlanta
+      [10, 20, -240, -300, 7 * 60 + 45, 18 * 60 + 59],
+      [12, 21, -300, -300, 7 * 60 + 38, 17 * 60 + 32],
+      [6, 21, -240, -300, 6 * 60 + 27, 20 * 60 + 50],
+      [1, 15, -300, -300, 7 * 60 + 41, 17 * 60 + 50],
+    ];
+    for (const [m, d, offset, standard, sunrise, sunset] of real) {
+      const zone = { offsetMinutes: offset, standardOffsetMinutes: standard };
+      const sun = sunTimes(at(2026, m, d, 12, 0, offset), ATLANTA, zone, -84.4);
+      expect(Math.abs(wall(sun.sunrise, offset) - sunrise)).toBeLessThanOrEqual(4);
+      expect(Math.abs(wall(sun.sunset, offset) - sunset)).toBeLessThanOrEqual(4);
+      const plain = sunTimes(at(2026, m, d, 12, 0, offset), ATLANTA, zone);
+      expect(wall(sun.sunset, offset) - wall(plain.sunset, offset)).toBeGreaterThan(36); // the old rule was about 38 early
+    }
+  });
+
+  it('host.time uses the longitude of the place, and a player far away keeps the noon of the zone', () => {
+    const ms = at(2026, 10, 20, 12, 0, -240);
+    const atlanta = createTime({
+      clock: clockOf(ms),
+      readZone: () => NY,
+      latitude: () => ATLANTA,
+      longitude: () => -84.4,
+    });
+    const plain = createTime({ clock: clockOf(ms), readZone: () => NY, latitude: () => ATLANTA });
+    expect(minutes(atlanta.sun().noon - plain.sun().noon)).toBeCloseTo(37.6, 3);
+    const tokyo = createTime({
+      clock: clockOf(ms),
+      readZone: () => 'Asia/Tokyo',
+      latitude: () => ATLANTA,
+      longitude: () => -84.4,
+    });
+    const tokyoPlain = createTime({
+      clock: clockOf(ms),
+      readZone: () => 'Asia/Tokyo',
+      latitude: () => ATLANTA,
+    });
+    expect(tokyo.sun().noon).toBe(tokyoPlain.sun().noon);
   });
 });
 
