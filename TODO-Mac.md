@@ -137,6 +137,10 @@ Run `npx vitest run scenes/farmhouse/tests/animals-art.test.js` and watch the fi
 
 The owner found the animals robotic. Run `npx vitest run scenes/farmhouse/tests/roam.test.js scenes/farmhouse/tests/animals.test.js` and watch the field live for a few minutes on a retina screen: do they look less robotic (long stands, moves in all directions), is anyone pushed in a way that looks like a slide or a dart, do sheep ever look like they stand on a cow or a horse, and a narrow window? Measure memory too (375 MB). **Scope grew after the owner watched it live (DEC-67):** two-piece legs and a shared gait module (`game/gait.js`), shadows under the animals, a walk about a fifth of the time, quicker legs. Please also run `npx vitest run scenes/farmhouse/tests/gait.test.js` and look closely at the legs live: knees bend the right way, feet do not slide, nobody floats, the cow's legs no longer look like stiff blocks? Reply as `Re W-55`. PR body: `gh pr view 75`.
 
+### W-56: review PR 76 (`farmhouse-life`, stacked on PR 75): head and neck, ear, tail and standing life (DEC-68, R22)
+
+The owner asked for the animals to look alive when they stand. Each animal is now four parts (body, head with neck, ear, tail) moved by a pure module `game/secondary.js`. Run `npx vitest run scenes/farmhouse/tests/secondary.test.js scenes/farmhouse/tests/animals-art.test.js`, then watch the field live on a retina screen for a few minutes: does the head go down to graze without a seam at the neck (horses at the deepest dip, cows, sheep), does it come up to look now and then, are the ear twitch and the tail swish too fast or too busy (is the swish at a fly believable), is the breathing and rocking visible but quiet, and do the animals still look right at 1.5 times size? Measure memory (14 more small textures; 375 MB). Note the base is `farmhouse-move`: merge 75 first. Reply as `Re W-56`. PR body: `gh pr view 76`.
+
 Also, PR 73 now has a shorter owl test (the old one timed out on the Windows runner), and PR 69 and PR 73 have new commits since your review: `Re W-49` is still open for 69.
 
 ## Closed
