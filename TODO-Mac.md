@@ -131,6 +131,10 @@ Please read the diff of `game/view.js`, `game/clockRules.js` and `game/animals.j
 
 Please measure the finished stack on the Mac, window and desktop: `npm run measure:switch -- --switches 20 --scene farmhouse --seconds 8 --settle 15`. Windows gives 224.7 MB and no growth over 20 switches; your W-39 estimate for the Mac was near 345 MB of 350. Reply as `Re W-46`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 66`.
 
+### W-47: read PR 67 (`farmhouse-polish`): your two defects and three look points of `Re W-40 to W-46`, fixed, and a test of every weather in every month (stacked on PR 66)
+
+Please run `npx vitest run scenes/farmhouse/tests/continuity.test.js scenes/farmhouse/tests/matrix.test.js` (the two new continuity checks fail on the old code) and look at the night shot (the far ridge, the horse apart from the cow), the fog shot and the dip (0.6 s in, 1.2 s out) in the tray. The memory points (cut about 4 MB of textures, or raise the Mac limit) stay with the owner; if you can, measure again after the cut is decided. Reply as `Re W-47`. PR 66 and PR 67 merge in order, each after green CI and your reply. PR body: `gh pr view 67`.
+
 ## Closed
 
 - W-33 (read PR 53, the farm house doc fixes): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
