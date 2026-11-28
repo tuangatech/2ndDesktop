@@ -12,7 +12,8 @@ const isObject = (v) => Boolean(v) && typeof v === 'object' && !Array.isArray(v)
  * Repairs a loaded state instead of throwing it away: losing the player's fish is the worst thing a save can do.
  * Counts are clamped into their caps (a later build or tuning.json may have lowered a cap), missing values get a
  * neutral default, and a fish of a species that no longer exists keeps its growth but gets a species
- * that does. A `name` saved by an older build (DEC-71) is dropped without a message. Only a fish without a usable id is dropped. Returns `{ state, fixes }`, where `fixes` lists what was
+ * that does. The `name`, `fullness` and `fullnessUpdatedAt` of a record saved by an older build (DEC-71) are dropped without a message, and
+ * a fish with no `mealsAt` starts with none. Only a fish without a usable id is dropped. Returns `{ state, fixes }`, where `fixes` lists what was
  * changed (empty for a clean state), or null when there is no tank to repair.
  * @param {unknown} state
  * @param {{config: object, speciesIds: string[], now: number, rng: {int: (lo: number, hi: number) => number}}} options
@@ -65,7 +66,14 @@ export function repairState(state, { config, speciesIds, now, rng }) {
       fixes.push(`fish ${i} species ${String(f.species).slice(0, 20)} -> ${species}`);
     }
     const kept = { ...f };
-    delete kept.name;
+    for (const old of ['name', 'fullness', 'fullnessUpdatedAt']) delete kept[old];
+    let mealsAt = [];
+    if (f.mealsAt !== undefined) {
+      if (Array.isArray(f.mealsAt)) {
+        mealsAt = f.mealsAt.filter(isNumber).slice(-config.meals.perFishPerDay);
+      }
+      if (mealsAt.length !== f.mealsAt?.length) fixes.push(`fish ${i} mealsAt`);
+    }
     const lastFedAt = f.lastFedAt === null || isNumber(f.lastFedAt) ? f.lastFedAt : null;
     if (lastFedAt !== f.lastFedAt) fixes.push(`fish ${i} lastFedAt`);
     fish.push({
@@ -73,8 +81,7 @@ export function repairState(state, { config, speciesIds, now, rng }) {
       species,
       seed,
       growthPoints: count(f.growthPoints, 1e9, `fish ${i} growthPoints`),
-      fullness: count(f.fullness, config.fullness.max, `fish ${i} fullness`),
-      fullnessUpdatedAt: time(f.fullnessUpdatedAt, `fish ${i} fullnessUpdatedAt`),
+      mealsAt,
       lastFedAt,
       createdAt: time(f.createdAt, `fish ${i} createdAt`),
     });
@@ -169,7 +176,7 @@ export function createLocalRepository({ storage, clock, rng, config, speciesIds 
         storage.keepCopy?.(loaded.data);
         return startNew('damaged');
       }
-      // The catch-up of FR-1: while the app was closed, pellets appeared and hunger decayed.
+      // The catch-up of FR-1: while the app was closed, pellets appeared and meals aged out.
       state = rules.settleState(repaired.state, clock.now(), config);
       status.source = 'saved';
       status.fixes = repaired.fixes;
@@ -184,21 +191,21 @@ export function createLocalRepository({ storage, clock, rng, config, speciesIds 
     getFish: () => state.fish,
     getStash: () => state.tank.stash,
     getSummary: () => rules.summarize(state, clock.now(), config),
-    isFull: (id) => {
+    canEat: (id) => {
       const fish = state.fish.find((f) => f.id === id);
-      return fish ? rules.isFull(fish, clock.now(), config) : true;
+      return fish ? rules.canEat(fish, clock.now(), config) : false;
     },
     isDrowsy: (id) => {
       const fish = state.fish.find((f) => f.id === id);
       return fish ? rules.isDrowsy(fish, clock.now(), config) : false;
     },
 
-    /** Settles pellets and fullness by the clock. Returns true (and notifies) when the numbers changed. */
+    /** Settles pellets and meals by the clock. Returns true (and notifies) when the numbers changed. */
     tick() {
       const settled = rules.settleState(state, clock.now(), config);
       const changed =
         settled.tank.floatingPellets !== state.tank.floatingPellets ||
-        settled.fish.some((f, i) => f.fullness !== state.fish[i].fullness);
+        settled.fish.some((f, i) => f.mealsAt.length !== state.fish[i].mealsAt.length);
       // The settled values are what the stored values mean at this time, so they replace them either way
       // (nothing needs saving: loading settles again from the same numbers).
       state = settled;

@@ -9,7 +9,7 @@ const stepScene = `(seconds) => {
   for (let t = 0; t < seconds; t += 1 / 30) fishtank.update(1 / 30);
 }`;
 
-test('a new player collects, feeds both fish fully and is told that everyone is full', async () => {
+test('a new player collects, feeds both fish up to their daily limit and is told they have eaten enough', async () => {
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(`(async () => {
@@ -22,7 +22,7 @@ test('a new player collects, feeds both fish fully and is told that everyone is 
       }
       const stashAfterCollect = repository.getStash();
       step(2);
-      // Four clicks on the water feed both fish fully (FR-6, FR-8); each fish holds two pellets.
+      // Four clicks on the water feed both fish up to their limit (FR-6, DEC-71); a fish takes two pellets a day.
       const layout = scene.layout;
       const drops = [0.2, 0.4, 0.6, 0.8].map((fx) => scene.dropAt(layout.width * fx, layout.height * 0.3).ok);
       step(40);
@@ -42,39 +42,45 @@ test('a new player collects, feeds both fish fully and is told that everyone is 
     })()`);
     expect(result.stashAfterCollect).toBe(4);
     expect(result.drops).toEqual([true, true, true, true]);
-    expect(result.fifth).toMatchObject({ ok: false, reason: 'all_full' });
-    expect(result.toast).toBe('Everyone is full and happy. Come back later!');
+    expect(result.fifth).toMatchObject({ ok: false, reason: 'enough_today' });
+    expect(result.toast).toBe('The fish have eaten enough for today. Come back later!');
     expect(result.stash).toBe(0);
     expect(result.points).toEqual([40, 40]);
     expect(result.shown).toEqual([40, 40]);
     expect(result.pellets).toBe(0);
-    expect(result.summary).toMatchObject({ allFull: true, hungry: 0 });
+    expect(result.summary).toMatchObject({ canFeed: false });
   } finally {
     await close();
   }
 });
 
-test('feed until full stops when the stash runs out and never overfeeds', async () => {
+test('Feed everyone gives each fish one pellet, stops when the stash runs out and never goes over the daily limit', async () => {
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(`(async () => {
       const step = ${stepScene};
       const { scene, repository, fishtank } = window.__scene;
+      const meals = () => repository.getState().fish.map((f) => f.mealsAt.length);
       repository.dev.addStash(3); // three pellets for two fish that could take four
-      fishtank.onMenu('feedUntilFull');
+      fishtank.onMenu('feedEveryone');
       const running = scene.getSummary().feeding;
       step(30);
-      const first = { running, summary: scene.getSummary(), fullness: repository.getState().fish.map((f) => f.fullness) };
+      const first = { running, summary: scene.getSummary(), meals: meals() };
+      fishtank.onMenu('feedEveryone'); // a second round: one pellet is left, so only one fish gets a second meal
+      step(30);
+      const second = { summary: scene.getSummary(), meals: meals() };
       repository.dev.addStash(30);
-      fishtank.onMenu('feedUntilFull');
+      fishtank.onMenu('feedEveryone'); // topped up: only the fish with a meal to spare takes one
       step(60);
-      return { first, stash: repository.getStash(), fullness: repository.getState().fish.map((f) => f.fullness) };
+      return { first, second, stash: repository.getStash(), meals: meals() };
     })()`);
     expect(result.first.running).toBe(true);
-    expect(result.first.summary).toMatchObject({ stash: 0, feeding: false });
-    expect(result.first.fullness.reduce((a, b) => a + b, 0)).toBe(3);
-    // Topped up: only the one missing pellet was used.
-    expect(result.fullness).toEqual([2, 2]);
+    expect(result.first.summary).toMatchObject({ stash: 1, feeding: false });
+    expect(result.first.meals).toEqual([1, 1]); // one pellet for each fish, not two for the first
+    expect(result.second.summary).toMatchObject({ stash: 0, feeding: false });
+    expect(result.second.meals.reduce((a, b) => a + b, 0)).toBe(3);
+    // Topped up: only the one missing meal was given.
+    expect(result.meals).toEqual([2, 2]);
     expect(result.stash).toBe(29);
   } finally {
     await close();
@@ -88,7 +94,7 @@ test('a paused tank ends a tray feed with the same numbers as a visible one', as
       const { scene, repository, fishtank } = window.__scene;
       scene.setVisible(false);
       fishtank.onMenu('collect');
-      fishtank.onMenu('feedUntilFull');
+      fishtank.onMenu('feedEveryone');
       const out = {
         summary: scene.getSummary(),
         points: repository.getState().fish.map((f) => f.growthPoints),
@@ -99,9 +105,10 @@ test('a paused tank ends a tray feed with the same numbers as a visible one', as
       scene.setVisible(true);
       return out;
     })()`);
-    expect(result.summary).toMatchObject({ waiting: 0, stash: 0, hungry: 0, allFull: true });
-    expect(result.points).toEqual([40, 40]);
-    expect(result.shown).toEqual([40, 40]);
+    // Four pellets collected, one for each fish: the other two stay in the stash.
+    expect(result.summary).toMatchObject({ waiting: 0, stash: 2, canFeed: true });
+    expect(result.points).toEqual([20, 20]);
+    expect(result.shown).toEqual([20, 20]);
     expect(result.pellets).toBe(0);
     expect(result.floatingSprites).toBe(0);
   } finally {
@@ -123,7 +130,7 @@ test('the tray protocol: the scene menu on request and an action from the menu',
     const first = await ask();
     expect(first).toMatchObject({
       name: 'Tank',
-      line: '4 pellets waiting · 0 in the stash · 2 hungry',
+      line: '4 pellets waiting · 0 in the stash',
     });
     expect(first.diagnostics).toBe('Fish: 2, pellets fed in total: 0');
     expect(first.items.map((item) => item.id)).toEqual(['collect', undefined]);
@@ -131,7 +138,7 @@ test('the tray protocol: the scene menu on request and an action from the menu',
       BrowserWindow.getAllWindows()[0].webContents.send('scene:action', 'collect'),
     );
     await page.waitForFunction(() => window.__scene.repository.getStash() === 4);
-    expect(await ask()).toMatchObject({ line: '4 in the stash · 2 hungry' });
+    expect(await ask()).toMatchObject({ line: '4 in the stash' });
   } finally {
     await close();
   }
@@ -150,7 +157,9 @@ test('once a day: juvenile on day 3, adult on day 10, the first egg on day 3', a
           if (day > 1) clock.offset += 24 * HOUR;
           scene.tick();
           fishtank.onMenu('collect');
-          fishtank.onMenu('feedUntilFull');
+          // A fish takes two meals a day: one press of Feed everyone gives each fish one, so two give the day's limit.
+          fishtank.onMenu('feedEveryone');
+          fishtank.onMenu('feedEveryone');
           const state = repository.getState();
           rows.push({
             day,

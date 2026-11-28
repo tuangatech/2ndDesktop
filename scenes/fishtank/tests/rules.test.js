@@ -5,8 +5,8 @@ import {
   eggsAvailable,
   feed,
   hatchEgg,
+  canEat,
   isDrowsy,
-  isFull,
   newFish,
   newTankState,
   settleFish,
@@ -26,8 +26,7 @@ const fishAt = (overrides = {}) => ({
   species: 'tetra',
   seed: 1,
   growthPoints: 0,
-  fullness: 0,
-  fullnessUpdatedAt: T0,
+  mealsAt: [],
   lastFedAt: null,
   createdAt: T0,
   ...overrides,
@@ -123,29 +122,39 @@ describe('settlePellets', () => {
   });
 });
 
-describe('settleFish', () => {
-  it('drops fullness by 1 every 12 hours and never below 0', () => {
-    const fish = fishAt({ fullness: 2 });
-    expect(settleFish(fish, T0 + 11 * H).fullness).toBe(2);
-    expect(settleFish(fish, T0 + 12 * H).fullness).toBe(1);
-    expect(settleFish(fish, T0 + 24 * H).fullness).toBe(0);
-    expect(settleFish(fish, T0 + 100 * H).fullness).toBe(0);
+describe('settleFish and canEat', () => {
+  const MEAL = 2; // meals.perFishPerDay
+
+  it('lets a meal age out 24 hours after it was taken, and not before', () => {
+    const fish = fishAt({ mealsAt: [T0, T0 + 3 * H] });
+    expect(settleFish(fish, T0 + 23 * H).mealsAt).toEqual([T0, T0 + 3 * H]);
+    expect(settleFish(fish, T0 + 24 * H).mealsAt).toEqual([T0 + 3 * H]);
+    expect(settleFish(fish, T0 + 27 * H).mealsAt).toEqual([]);
   });
 
-  it('keeps the remainder of the time', () => {
-    const settled = settleFish(fishAt({ fullness: 2 }), T0 + 15 * H);
-    expect(settled.fullness).toBe(1);
-    expect(settled.fullnessUpdatedAt).toBe(T0 + 12 * H);
+  it('gives back the same object when nothing has aged out', () => {
+    const fish = fishAt({ mealsAt: [T0] });
+    expect(settleFish(fish, T0 + H)).toBe(fish);
   });
 
-  it('re-anchors when the clock goes backwards', () => {
-    const settled = settleFish(fishAt({ fullness: 1, fullnessUpdatedAt: T0 + 5 * H }), T0);
-    expect(settled.fullness).toBe(1);
-    expect(settled.fullnessUpdatedAt).toBe(T0);
+  it('drops a meal stamped later than now (the clock went backwards)', () => {
+    const fish = fishAt({ mealsAt: [T0 + 5 * H] });
+    expect(settleFish(fish, T0).mealsAt).toEqual([]);
+    expect(canEat(fish, T0)).toBe(true);
+  });
+
+  it('lets a fish eat at any hour until it has had its meals for the last 24 hours', () => {
+    expect(config.meals.perFishPerDay).toBe(MEAL);
+    expect(canEat(fishAt(), T0)).toBe(true);
+    expect(canEat(fishAt({ mealsAt: [T0] }), T0 + H)).toBe(true);
+    const fed = fishAt({ mealsAt: [T0, T0 + H] });
+    expect(canEat(fed, T0 + 2 * H)).toBe(false);
+    expect(canEat(fed, T0 + 23 * H)).toBe(false);
+    expect(canEat(fed, T0 + 24 * H)).toBe(true); // the first meal has aged out
   });
 });
 
-describe('isDrowsy and isFull', () => {
+describe('isDrowsy', () => {
   it('is drowsy only after 36 hours without food', () => {
     const fish = fishAt({ lastFedAt: T0 });
     expect(isDrowsy(fish, T0 + 36 * H)).toBe(false);
@@ -157,12 +166,6 @@ describe('isDrowsy and isFull', () => {
     expect(isDrowsy(fish, T0 + 37 * H)).toBe(true);
     const fed = feed(stateWith({ stash: 1 }, [fish]), 'f1', T0 + 37 * H);
     expect(isDrowsy(fed.state.fish[0], T0 + 37 * H)).toBe(false);
-  });
-
-  it('is full at the maximum and hungry again after 12 hours', () => {
-    const fish = fishAt({ fullness: 2 });
-    expect(isFull(fish, T0)).toBe(true);
-    expect(isFull(fish, T0 + 12 * H)).toBe(false);
   });
 });
 
@@ -210,38 +213,42 @@ describe('collect', () => {
 });
 
 describe('feed', () => {
-  it('costs a pellet, fills the fish, gives 20 points and counts the meal', () => {
+  it('costs a pellet, gives 20 points and counts the meal', () => {
     const result = feed(stateWith({ stash: 3 }), 'f1', T0 + H);
     expect(result.ok).toBe(true);
     const [fish] = result.state.fish;
-    expect(fish.fullness).toBe(1);
+    expect(fish.mealsAt).toEqual([T0 + H]);
     expect(fish.growthPoints).toBe(20);
     expect(fish.lastFedAt).toBe(T0 + H);
-    expect(fish.fullnessUpdatedAt).toBe(T0 + H); // feeding a fish at 0 starts a fresh timer
     expect(result.state.tank.stash).toBe(2);
     expect(result.state.tank.totalFed).toBe(1);
   });
 
-  it('does not restart the timer of a fish that is already partly full', () => {
-    const state = stateWith({ stash: 2 }, [fishAt({ fullness: 1, fullnessUpdatedAt: T0 })]);
-    const result = feed(state, 'f1', T0 + 5 * H);
-    expect(result.state.fish[0].fullness).toBe(2);
-    expect(result.state.fish[0].fullnessUpdatedAt).toBe(T0);
+  it('takes a second meal at once, and refuses a third until the first has aged out', () => {
+    let state = stateWith({ stash: 5 });
+    state = feed(state, 'f1', T0).state;
+    state = feed(state, 'f1', T0 + 1000).state;
+    expect(state.fish[0].mealsAt).toEqual([T0, T0 + 1000]);
+    expect(feed(state, 'f1', T0 + 2000)).toEqual({ ok: false, reason: 'enough_today' });
+    expect(feed(state, 'f1', T0 + 24 * H - 1)).toEqual({ ok: false, reason: 'enough_today' });
+    const later = feed(state, 'f1', T0 + 24 * H);
+    expect(later.ok).toBe(true);
+    expect(later.state.fish[0].mealsAt).toEqual([T0 + 1000, T0 + 24 * H]);
   });
 
-  it('refuses a full fish, an empty stash and an unknown fish', () => {
-    const full = stateWith({ stash: 5 }, [fishAt({ fullness: 2 })]);
-    expect(feed(full, 'f1', T0)).toEqual({ ok: false, reason: 'fish_full' });
+  it('counts the limit for each fish on its own', () => {
+    let state = stateWith({ stash: 9 }, [fishAt({ id: 'a' }), fishAt({ id: 'b' })]);
+    state = feed(feed(state, 'a', T0).state, 'a', T0).state;
+    expect(feed(state, 'a', T0).ok).toBe(false);
+    expect(feed(state, 'b', T0).ok).toBe(true);
+  });
+
+  it('refuses an empty stash and an unknown fish', () => {
     expect(feed(stateWith({ stash: 0 }), 'f1', T0)).toEqual({ ok: false, reason: 'stash_empty' });
     expect(feed(stateWith({ stash: 1 }), 'nope', T0)).toEqual({
       ok: false,
       reason: 'unknown_fish',
     });
-  });
-
-  it('feeds a fish that had been full but has decayed', () => {
-    const state = stateWith({ stash: 1 }, [fishAt({ fullness: 2 })]);
-    expect(feed(state, 'f1', T0 + 12 * H).ok).toBe(true);
   });
 });
 
@@ -298,21 +305,24 @@ describe('newTankState', () => {
 describe('summarize', () => {
   it('describes the tank for the menu', () => {
     const state = stateWith({ floatingPellets: 2, stash: 5, totalFed: 12 }, [
-      fishAt({ id: 'a', fullness: 2 }),
-      fishAt({ id: 'b', fullness: 1 }),
+      fishAt({ id: 'a', mealsAt: [T0, T0] }),
+      fishAt({ id: 'b', mealsAt: [T0] }),
     ]);
     expect(summarize(state, T0, config)).toEqual({
       waiting: 2,
       stash: 5,
       stashFull: false,
-      hungry: 1,
+      canFeed: true,
       fishCount: 2,
       eggs: 1,
       eggReady: true,
-      allFull: false,
     });
-    const allFull = stateWith({}, [fishAt({ fullness: 2 })]);
-    expect(summarize(allFull, T0).allFull).toBe(true);
+  });
+
+  it('says that nobody can be fed while every fish has had its meals, and again after a day', () => {
+    const state = stateWith({}, [fishAt({ mealsAt: [T0, T0] })]);
+    expect(summarize(state, T0).canFeed).toBe(false);
+    expect(summarize(state, T0 + 24 * H).canFeed).toBe(true);
   });
 });
 

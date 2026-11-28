@@ -17,10 +17,12 @@ export const config = {
     adultAt: 400, // points at which a juvenile becomes an adult
     fryScale: 0.5, // a fry is this fraction of the adult size (FR-12)
   },
-  fullness: {
-    max: 2, // a fish at this level does not eat (FR-8)
-    decayMs: 12 * HOUR, // fullness drops by 1 this often
-    drowsyAfterMs: 36 * HOUR, // no food for this long makes a fish drowsy (FR-10)
+  meals: {
+    perFishPerDay: 2, // a fish takes at most this many pellets in any `windowMs` (DEC-71; there is no fullness)
+    windowMs: 24 * HOUR,
+  },
+  drowsy: {
+    afterMs: 36 * HOUR, // no food for this long makes a fish drowsy (FR-10)
   },
   eggs: {
     pelletsPerEgg: 12, // one egg for every 12 pellets fed in total (FR-17)
@@ -40,9 +42,9 @@ const TUNABLE = {
   'growth.pointsPerPellet': [1, 200],
   'growth.juvenileAt': [10, 1000],
   'growth.adultAt': [20, 5000],
-  'fullness.max': [1, 10],
-  'fullness.decayMs': [60 * 1000, 7 * 24 * HOUR],
-  'fullness.drowsyAfterMs': [60 * 1000, 14 * 24 * HOUR],
+  'meals.perFishPerDay': [1, 20],
+  'meals.windowMs': [60 * 1000, 7 * 24 * HOUR],
+  'drowsy.afterMs': [60 * 1000, 14 * 24 * HOUR],
   'eggs.pelletsPerEgg': [1, 100],
   'eggs.maxFish': [1, 12],
 };

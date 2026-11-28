@@ -8,7 +8,7 @@ test('three pellets dropped quickly are all eaten before they reach the sand, ro
     const result = await page.evaluate(
       ({ HOUR }) => {
         const { scene, repository, clock, fishtank } = window.__scene;
-        // Four grown fish of mixed species, so each round of three pellets finds hungry fish (a fish holds two).
+        // Four grown fish of mixed species, so each round of three pellets finds fish that may eat (a fish takes two a day).
         const species = Object.keys(scene.art.species);
         repository.dev.setFish(
           Array.from({ length: 4 }, (_, i) => ({
@@ -45,7 +45,7 @@ test('three pellets dropped quickly are all eaten before they reach the sand, ro
             step(0.5);
           rounds.push({ dropped, remaining: scene.food.pellets.length });
           step(1.5);
-          // A day later everyone is hungry again.
+          // A day later the meals have aged out.
           clock.offset += 24 * HOUR;
           scene.tick();
         }
@@ -206,7 +206,7 @@ test('the tray feeds the hungriest fish first, so a fish that swims deep is not 
   }
 });
 
-test('hungry fish chasing food keep a little apart', async () => {
+test('fish chasing food keep a little apart', async () => {
   const { page, close } = await launch();
   try {
     const result = await page.evaluate(() => {
@@ -250,7 +250,7 @@ test('hungry fish chasing food keep a little apart', async () => {
             }
           }
           left += scene.food.pellets.length;
-          clock.offset += 24 * 60 * 60 * 1000; // everyone hungry again
+          clock.offset += 24 * 60 * 60 * 1000; // the meals have aged out
           scene.tick();
         }
       }

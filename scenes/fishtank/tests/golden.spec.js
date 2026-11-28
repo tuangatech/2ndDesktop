@@ -5,8 +5,8 @@ import { seededRandomScript } from '../../../scripts/seeded-random.mjs';
 import { launch } from '../../../tests/e2e/helpers.js';
 
 // The golden state hash (platform plan D49): the gate for moving the tank into `scenes/fishtank/` (Step 1). With a
-// fixed seed, the manual clock and a seeded Math.random, a scripted session is run (collect, drop three pellets, feed
-// until full, six hours pass, hatch an egg if one is waiting) and the scene is stepped 900 more times (30 seconds of
+// fixed seed, the manual clock and a seeded Math.random, a scripted session is run (collect, drop three pellets, Feed
+// everyone, six hours pass, hatch an egg if one is waiting) and the scene is stepped 900 more times (30 seconds of
 // 1/30). Two hashes are taken: one of the saved state and the actions' results (without the time stamps, which follow
 // the real clock) and one of the whole scene graph (the PixiJS type, position, scale, rotation, alpha and visibility
 // of every node, rounded to 0.01). A change that is meant to alter the look or the numbers of the tank changes the
@@ -20,7 +20,11 @@ const GOLDEN = {
   // 2026-11-28 (DEC-71, fish have no names): the state hash changed from 784820e6e804d032 because every fish lost its
   // `name: null` field. Checked: putting `name: null` back after `seed` in the dump of a run gives the old hash exactly.
   // The graph hash did not move.
-  state: '7be7c96f8e2607bc',
+  // 2026-11-28 (DEC-71, no fullness): the state hash changed again, from 7be7c96f8e2607bc to ed0f26e9232cd6f0. Checked with
+  // GOLDEN_DUMP on both builds: the two dumps are identical once the keys fullness, fullnessUpdatedAt, mealsAt, hungry,
+  // allFull and canFeed are removed from them, and the scene graph is identical. The time stamps of the meals (mealsAt)
+  // are in TIME_KEYS below, because they follow the real clock.
+  state: 'ed0f26e9232cd6f0',
   // 2026-11-22: the graph hash changed (the state hash did not) when the far reef (scenes/fishtank/backdrop.js) and the
   // back-row haze layer were added: more nodes under `background` and `water`, and the back decor has no alpha of its own.
   graph: '5be771c4e5cb12a9',
@@ -32,7 +36,7 @@ const snapshot = `(steps) => {
     for (let t = 0; t < seconds; t += 1 / 30) fishtank.update(1 / 30);
   };
   // A scripted session first, so that the rules and the repository are touched, not only the swimming: collect the
-  // floating pellets, drop three, feed until full, let six hours pass, hatch an egg if one is waiting.
+  // floating pellets, drop three, Feed everyone, let six hours pass, hatch an egg if one is waiting.
   const trace = {};
   trace.collected = scene.collectAll();
   step(3);
@@ -57,10 +61,10 @@ const snapshot = `(steps) => {
     for (const child of node.children) walk(child, depth + 1);
   };
   walk(scene.root, 0);
-  // Game numbers are integers and are compared exactly; floats (fullness and the like) are rounded to 0.01.
+  // Game numbers are integers and are compared exactly; floats are rounded to 0.01.
   // The time stamps follow the real clock and differ from run to run; they are listed by name, so that a new game
   // field is never dropped by accident.
-  const TIME_KEYS = ['createdAt', 'fullnessUpdatedAt', 'pelletsUpdatedAt', 'lastFedAt', 'savedAt'];
+  const TIME_KEYS = ['createdAt', 'mealsAt', 'pelletsUpdatedAt', 'lastFedAt', 'savedAt'];
   const strip = (value) => {
     if (Array.isArray(value)) return value.map(strip);
     if (value && typeof value === 'object') {

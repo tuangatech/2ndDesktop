@@ -194,17 +194,20 @@ describe('tick', () => {
     expect(storage.box.saves.length).toBe(saves);
   });
 
-  it('lets fullness decay', async () => {
+  it('lets a meal age out after 24 hours', async () => {
     const { repo, clock } = setup();
     await repo.load();
     repo.collect(4);
     const id = repo.getState().fish[0].id;
     repo.feed(id);
-    repo.feed(id);
-    expect(repo.isFull(id)).toBe(true);
     clock.time += 12 * H;
-    expect(repo.tick()).toBe(true);
-    expect(repo.isFull(id)).toBe(false);
+    repo.feed(id);
+    expect(repo.canEat(id)).toBe(false);
+    expect(repo.feed(id)).toEqual({ ok: false, reason: 'enough_today' });
+    clock.time += 12 * H;
+    expect(repo.tick()).toBe(true); // the first meal has aged out
+    expect(repo.canEat(id)).toBe(true);
+    expect(repo.getState().fish[0].mealsAt).toHaveLength(1);
   });
 });
 
@@ -226,8 +229,7 @@ describe('repairState and migrate', () => {
         species: 'tetra',
         seed: 1,
         growthPoints: 120,
-        fullness: 0,
-        fullnessUpdatedAt: T0,
+        mealsAt: [],
         lastFedAt: null,
         createdAt: T0,
       },
@@ -240,13 +242,16 @@ describe('repairState and migrate', () => {
     expect(repair(good())).toEqual({ state: good(), fixes: [] });
   });
 
-  it('drops a name saved by an older build without a message (DEC-71)', () => {
+  it('loads a record saved before DEC-71: name, fullness and its time stamp go quietly, no meals are counted', () => {
     const state = good();
-    state.fish[0].name = 'Bubbles';
+    delete state.fish[0].mealsAt;
+    Object.assign(state.fish[0], { name: 'Bubbles', fullness: 2, fullnessUpdatedAt: T0 });
     const result = repair(state);
     expect(result.fixes).toEqual([]);
     expect(result.state).toEqual(good());
-    expect('name' in result.state.fish[0]).toBe(false);
+    for (const old of ['name', 'fullness', 'fullnessUpdatedAt']) {
+      expect(old in result.state.fish[0]).toBe(false);
+    }
   });
 
   it('clamps counts into their caps and fills missing values, keeping the fish', () => {
@@ -255,7 +260,9 @@ describe('repairState and migrate', () => {
       [(s) => (s.tank.stash = 31), (r) => r.tank.stash === 30],
       [(s) => (s.tank.stash = -1), (r) => r.tank.stash === 0],
       [(s) => (s.tank.stash = 'x'), (r) => r.tank.stash === 0],
-      [(s) => (s.fish[0].fullness = 3), (r) => r.fish[0].fullness === 2],
+      [(s) => (s.fish[0].mealsAt = [1, 2, 3]), (r) => r.fish[0].mealsAt.length === 2],
+      [(s) => (s.fish[0].mealsAt = 'x'), (r) => r.fish[0].mealsAt.length === 0],
+      [(s) => (s.fish[0].mealsAt = [T0, 'x']), (r) => r.fish[0].mealsAt.length === 1],
       [(s) => (s.fish[0].growthPoints = 1.5), (r) => r.fish[0].growthPoints === 1],
       [(s) => delete s.fish[0].createdAt, (r) => r.fish[0].createdAt === T0 + 1],
       [(s) => delete s.tank.pelletsUpdatedAt, (r) => r.tank.pelletsUpdatedAt === T0 + 1],

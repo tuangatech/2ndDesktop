@@ -19,7 +19,7 @@ import { visual } from './visualConfig.js';
 
 /** What the player is told when something cannot be done (FR-5, FR-7, FR-18). */
 export const MESSAGES = {
-  all_full: 'Everyone is full and happy. Come back later!',
+  enough_today: 'The fish have eaten enough for today. Come back later!',
   stash_empty: 'No food in the stash',
   stash_full: 'Stash is full',
   none_available: 'No pellets waiting',
@@ -43,7 +43,7 @@ export class TankScene {
     this.tickClock = 0;
     /** False while nobody can see the tank: actions then change the numbers but skip the animation (FR-22). */
     this.visible = true;
-    /** The "feed until full" loop, or null. */
+    /** The "Feed everyone" loop, or null. */
     this.feeding = null;
     this.pointer = new PointerTracker();
     /** Called with a short text for the player (window mode shows it as a toast). */
@@ -301,22 +301,22 @@ export class TankScene {
   }
 
   /**
-   * A pellet from the stash at (x, y) for the nearest fish that is not full (FR-6, FR-7). The numbers change in the
+   * A pellet from the stash at (x, y) for the nearest fish that may still eat (FR-6, FR-7). The numbers change in the
    * repository right now (D1); the pellet then sinks and the fish eats it. Nothing happens on the sand, with no
-   * fish, with everyone full or with an empty stash (FR-46). `fish` gives the pellet to that fish instead, when it
-   * is hungry (the tray). Returns the result of the repository, or `{ ok: false, reason }`.
+   * fish, when no fish may eat or with an empty stash (FR-46). `fish` gives the pellet to that fish instead, when it
+   * may eat (the tray). Returns the result of the repository, or `{ ok: false, reason }`.
    */
   dropAt(x, y, { animate = this.visible, quiet = false, fish: target = null } = {}) {
     const layout = this.layout;
     if (!layout) return { ok: false, reason: 'no_layout' };
     if (this.fishes.size === 0) return { ok: false, reason: 'no_fish' };
     if (y >= layout.sandTop) return { ok: false, reason: 'sand' };
-    const hungry = [...this.fishes.values()].filter((fish) => !this.repository.isFull(fish.id));
-    if (hungry.length === 0) {
-      this.say(MESSAGES.all_full);
-      return { ok: false, reason: 'all_full' };
+    const eaters = [...this.fishes.values()].filter((fish) => this.repository.canEat(fish.id));
+    if (eaters.length === 0) {
+      this.say(MESSAGES.enough_today);
+      return { ok: false, reason: 'enough_today' };
     }
-    const fish = target && hungry.includes(target) ? target : this.food.nearestFish(x, y, hungry);
+    const fish = target && eaters.includes(target) ? target : this.food.nearestFish(x, y, eaters);
     const result = this.repository.feed(fish.id);
     if (!result.ok) {
       this.say(MESSAGES[result.reason] ?? '');
@@ -330,49 +330,61 @@ export class TankScene {
   }
 
   /**
-   * The hungry fish that needs a meal most: the emptiest, then the one that waited longest since its last meal (or
-   * since it hatched), so every fish gets its turn whatever depth it swims at. Null when everyone is full.
+   * The fish that may eat and has waited longest since its last meal (or since it hatched), so every fish gets its
+   * turn whatever depth it swims at. `skip` is a set of fish ids to pass over. Null when no fish is left.
    */
-  hungriestFish() {
+  longestWaitingFish(skip = null) {
     const records = new Map(this.repository.getState().fish.map((r) => [r.id, r]));
     let best = null;
-    let bestKey = null;
+    let bestSince = Infinity;
     for (const fish of this.fishes.values()) {
       const record = records.get(fish.id);
-      if (!record || this.repository.isFull(fish.id)) continue;
-      const key = [record.fullness, record.lastFedAt ?? record.createdAt];
-      if (!bestKey || key[0] < bestKey[0] || (key[0] === bestKey[0] && key[1] < bestKey[1])) {
+      if (!record || skip?.has(fish.id) || !this.repository.canEat(fish.id)) continue;
+      const since = record.lastFedAt ?? record.createdAt;
+      if (since < bestSince) {
         best = fish;
-        bestKey = key;
+        bestSince = since;
       }
     }
     return best;
   }
 
   /**
-   * The tray items "Feed a pellet" and "Feed until full" (FR-6, D28): the player cannot aim, so the pellet goes to
-   * the hungriest fish and is dropped just under the surface above it.
+   * The tray items "Feed a pellet" and "Feed everyone" (FR-6, D28): the player cannot aim, so the pellet goes to
+   * the fish that has waited longest (not one of `skip`) and is dropped just under the surface above it.
    */
-  feedOne(options) {
+  feedOne(options = {}, skip = null) {
     const band = this.layout?.dropBand;
     if (!band) return { ok: false, reason: 'no_layout' };
-    const fish = this.hungriestFish();
-    if (!fish) return this.dropAt(band.x + band.width / 2, band.y + band.height / 2, options); // says "all full"
+    const fish = this.longestWaitingFish(skip);
+    // Nobody is left: after some meals of a "Feed everyone" round that is the end of it; otherwise dropAt says why.
+    if (!fish) {
+      if (skip?.size) return { ok: false, reason: 'everyone_served' };
+      return this.dropAt(band.x + band.width / 2, band.y + band.height / 2, options);
+    }
     // A little to the side at random, so pellets for the same fish do not fall on one line.
     const jitter = (Math.random() - 0.5) * 6 * this.layout.unit;
     const x = Math.min(band.x + band.width, Math.max(band.x, fish.pos.x + jitter));
     return this.dropAt(x, band.y + band.height / 2, { ...options, fish });
   }
 
-  /** "Feed until full": a pellet about every 2 seconds of scene time until everyone is full or the stash is empty. */
+  /**
+   * "Feed everyone": one pellet for each fish that may still eat, the one that has waited longest first, about every
+   * 2 seconds of scene time. It ends when each of them has had one or the stash is empty.
+   */
   startFeeding() {
     if (this.feeding) return;
+    const served = new Set();
     if (!this.visible) {
       // Nobody is looking: apply every meal at once, without animation.
-      while (this.feedOne({ animate: false }).ok);
+      for (;;) {
+        const result = this.feedOne({ animate: false }, served);
+        if (!result.ok) break;
+        served.add(result.fish.id);
+      }
       return;
     }
-    this.feeding = { timer: 0 };
+    this.feeding = { timer: 0, served };
   }
 
   stopFeeding() {
@@ -399,7 +411,7 @@ export class TankScene {
     return result;
   }
 
-  /** The once-a-second tick: pellets and hunger by the clock, and the drowsy look (FR-1, FR-8, FR-10). */
+  /** The once-a-second tick: pellets and meals by the clock, and the drowsy look (FR-1, FR-10). */
   tick() {
     this.repository.tick();
     for (const fish of this.fishes.values()) fish.setDrowsy(this.repository.isDrowsy(fish.id));
@@ -563,9 +575,11 @@ export class TankScene {
       this.feeding.timer -= dt;
       if (this.feeding.timer <= 0) {
         this.feeding.timer = visual.food.feedLoopSeconds;
-        // It ends when a drop fails: everyone is full, the stash is empty, or there is no fish.
+        // It ends when a drop fails: every fish has had one, the stash is empty, or there is no fish.
         // The loop runs from the tick, so it makes no sound (sounds only answer a click or a menu action).
-        if (!this.feedOne({ quiet: true }).ok) this.stopFeeding();
+        const result = this.feedOne({ quiet: true }, this.feeding.served);
+        if (result.ok) this.feeding.served.add(result.fish.id);
+        else this.stopFeeding();
       }
     }
     for (let i = 0; i < this.sway.length; i++) this.sway[i].update(this.time);
