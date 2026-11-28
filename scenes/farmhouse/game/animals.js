@@ -28,7 +28,7 @@ export const HERD = Object.freeze([
     id: 'horse-beige',
     kind: 'horse',
     coat: 'beige',
-    home: [0.68, 0.64],
+    home: [0.76, 0.5],
     range: [0.04, 0.1],
     period: 61,
   },
@@ -44,8 +44,8 @@ export const HERD = Object.freeze([
     id: 'cow-2',
     kind: 'cow',
     coat: 'tan-white',
-    home: [0.95, 0.84],
-    range: [0.03, 0.08],
+    home: [0.98, 0.84],
+    range: [0.02, 0.08],
     period: 66,
   },
   {
@@ -74,7 +74,7 @@ export const HERD = Object.freeze([
   },
 ]);
 /** The sheep stay in a loose flock whose centre wanders on its own. */
-const FLOCK = Object.freeze({ id: 'flock', home: [0.5, 0.2], range: [0.05, 0.1], period: 60 });
+const FLOCK = Object.freeze({ id: 'flock', home: [0.53, 0.2], range: [0.02, 0.1], period: 60 });
 
 /** The field in front of the fence: never at the fence line itself, never off the bottom. */
 export const FIELD = Object.freeze({ depthMin: 0.04, depthMax: 0.96, xMin: 0.04, xMax: 0.96 });
