@@ -5,6 +5,11 @@
 //
 // The field is one rectangle in the scene's own units: `x` from 0 (left) to 1 (right) across the painted width, `depth`
 // from 0 at the fence to 1 at the bottom of the screen. The size follows the depth (R7): `depthScale`.
+//
+// The homes and ranges in `x` below are shares of the width that is on the screen for the animals (`bounds`: the part of
+// the field between the edges of the screen, less the icon strip), not of the painted width: on a narrow or a wide screen
+// the herd keeps its order and its spacing instead of piling up against the edge it was clamped to (the cow and the
+// brown horse overlapped on a 16:9 screen, `Re W-47`).
 
 import { progressOf, seen, walked } from './barn.js';
 import { lerp, smooth, unit } from './hash.js';
@@ -15,32 +20,32 @@ export const HERD = Object.freeze([
     id: 'horse-brown',
     kind: 'horse',
     coat: 'brown',
-    home: [0.27, 0.52],
-    range: [0.08, 0.15],
+    home: [0.3, 0.42],
+    range: [0.04, 0.1],
     period: 55,
   },
   {
     id: 'horse-beige',
     kind: 'horse',
     coat: 'beige',
-    home: [0.78, 0.3],
-    range: [0.08, 0.15],
+    home: [0.76, 0.5],
+    range: [0.04, 0.1],
     period: 61,
   },
   {
     id: 'cow-1',
     kind: 'cow',
     coat: 'brown-white',
-    home: [0.09, 0.84],
-    range: [0.06, 0.1],
+    home: [0.05, 0.9],
+    range: [0.03, 0.1],
     period: 70,
   },
   {
     id: 'cow-2',
     kind: 'cow',
     coat: 'tan-white',
-    home: [0.87, 0.66],
-    range: [0.06, 0.12],
+    home: [0.98, 0.84],
+    range: [0.02, 0.08],
     period: 66,
   },
   {
@@ -69,7 +74,7 @@ export const HERD = Object.freeze([
   },
 ]);
 /** The sheep stay in a loose flock whose centre wanders on its own. */
-const FLOCK = Object.freeze({ id: 'flock', home: [0.48, 0.3], range: [0.14, 0.16], period: 60 });
+const FLOCK = Object.freeze({ id: 'flock', home: [0.53, 0.2], range: [0.02, 0.1], period: 60 });
 
 /** The field in front of the fence: never at the fence line itself, never off the bottom. */
 export const FIELD = Object.freeze({ depthMin: 0.04, depthMax: 0.96, xMin: 0.04, xMax: 0.96 });
@@ -213,6 +218,7 @@ export function animalsAt(
     const toRest = smooth(rest);
     x = lerp(x, resting[0], toRest);
     depth = lerp(depth, resting[1], toRest);
+    x = xMin + x * (xMax - xMin); // from a share of the width on the screen to the field's x (the hay's spot is not a share)
     // On its way to the barn an animal lets go of the hay.
     const progress = barn ? progressOf(barn.shelter, spec.id) : 0;
     const toBarn = barn ? walked(progress) : 0;
