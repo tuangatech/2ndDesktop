@@ -2,7 +2,7 @@
 // through the real day, the season and the weather. This file is the scene's skeleton: the layers in their order, the
 // fit to the screen, the record and the tray; the art of each layer is drawn by the steps that follow (P2 plan S4 to S7).
 // Everything the scene shows is a function of the clock (R1), computed by the pure rules in `game/`.
-import { Container, Graphics, Sprite } from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { canScatter, HAY, hayWeight, HERD } from './game/animals.js';
 import { BARN } from './game/barn.js';
 import { motionAt, slowAt } from './game/view.js';
@@ -13,7 +13,8 @@ import { smooth } from './game/hash.js';
 
 const hexNumber = (hex) => parseInt(hex.slice(1), 16);
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
-import { animalPicture, coatKey, hayPicture, legKey, legPictures } from './art/animals.js';
+import { createAnimalView } from './animalView.js';
+import { animalPicture, coatKey, hayPicture, legKey, legPieces } from './art/animals.js';
 import { BARN_DOOR, BARN_LANTERN, barnPicture } from './art/barn.js';
 import { blend, skyColours, skyKey, timeOfDay, fallingAt } from './game/sky.js';
 import { createWeatherView } from './weatherView.js';
@@ -244,21 +245,18 @@ export default async function create(host) {
   // The animals: one texture for each coat (five for seven animals), one box for each animal (placed, mirrored and scaled
   // by depth) holding a body that tilts to graze, and the hay under them.
   let weatherView = null; // made once the first pictures are drawn
-  const herd = new Map(); // id -> {box, body, tilt, swing, phase, legs, last}
+  const herd = new Map(); // id -> the animal's view (animalView.js)
   const hay = { sprite: null, key: 'hay' };
   const animalTextures = new Map();
-  const legTextures = new Map(); // legKey -> {far, near}
+  const legTextures = new Map(); // legKey -> {far, near} of {thigh, shin}, each {texture, picture}
   const FIELD_Y = 690; // the fence line of the field and how far down it reaches (the concept's numbers)
   const FIELD_DEPTH = 185;
   const fieldY = (depth) => FIELD_Y + depth * FIELD_DEPTH;
-  const TILT = { stand: 0, walk: 0, graze: 0.2, eat: 0.32 };
-  /** One full step of the legs (all four back where they began) takes about 4 times a leg's length on the ground. */
-  const strideOf = (legs) => 4 * legs.length * Math.sin(legs.amp);
   function placeAnimals(dt) {
     motion.animals.forEach((a, i) => {
       const view = herd.get(a.id);
       if (!view) return;
-      const { box, body } = view;
+      const { box } = view;
       const x = a.x * DESIGN.width;
       const y = fieldY(a.depth);
       box.position.set(x, y);
@@ -266,23 +264,7 @@ export default async function create(host) {
       layers.animals.setChildIndex(box, 2 + i); // far ones first (the barn and the hay are under them)
       box.alpha = a.alpha; // 0 in the barn: faded in its door
       box.visible = a.alpha > 0.01;
-      const want = TILT[a.pose] ?? 0;
-      view.tilt += (want - view.tilt) * Math.min(1, dt * 5);
-      // The legs: the walk's phase advances with the ground covered (in the animal's own size), so the feet keep up with
-      // the body and do not skate; how far the legs swing eases in and out with the pose.
-      // An animal that is pushed aside by another moves its legs too, so the walk is also asked for by the ground covered.
-      let walking = a.pose === 'walk';
-      if (view.last) {
-        const ground = Math.hypot(x - view.last[0], y - view.last[1]) / a.scale;
-        view.phase = (view.phase + (ground / strideOf(view.legs)) * Math.PI * 2) % (Math.PI * 2);
-        if (dt > 0 && ground / dt > 9) walking = true;
-      }
-      view.last = [x, y];
-      view.swing += ((walking ? 1 : 0) - view.swing) * Math.min(1, dt * 6);
-      for (const hip of view.legs.hips)
-        hip.node.rotation = Math.sin(view.phase + hip.pair * Math.PI) * view.legs.amp * view.swing;
-      body.rotation = view.tilt + Math.sin(view.phase) * 0.02 * view.swing;
-      body.position.y = -Math.abs(Math.sin(view.phase)) * 2.5 * view.swing - 50;
+      view.update(a, x, y, dt); // the legs, the tilt of the body
     });
     const w = hayWeight(now(), hayStartedAt);
     if (hay.sprite) {
@@ -408,50 +390,33 @@ export default async function create(host) {
         animalTextures.set(key, rasterize(picture, host.app.renderer));
         art.builds++;
       }
-      const sprite = new Sprite(animalTextures.get(key));
-      sprite.position.set(picture.x, picture.y + 50); // the body's pivot is 50 above the hooves
-      sprite.width = picture.width;
-      sprite.height = picture.height;
-      const body = new Container();
-      body.pivot.set(0, 0);
-      body.position.set(0, -50);
-      // The legs of the far side behind the body, those of the near side in front of it; each swings about its hip.
+      // The pieces of the legs: an upper and a lower piece for each side, drawn once for each set (a horse's follow its coat).
       const lk = legKey(spec);
-      const legs = legPictures(spec.kind, spec.coat);
+      const pieces = legPieces(spec.kind, spec.coat);
       if (!legTextures.has(lk)) {
-        legTextures.set(lk, {
-          far: rasterize(legs.far, host.app.renderer),
-          near: rasterize(legs.near, host.app.renderer),
-        });
-        art.builds += 2;
+        const made = {};
+        for (const side of ['far', 'near']) {
+          made[side] = {};
+          for (const part of ['thigh', 'shin']) {
+            made[side][part] = {
+              picture: pieces[side][part],
+              texture: rasterize(pieces[side][part], host.app.renderer),
+            };
+            art.builds++;
+          }
+        }
+        legTextures.set(lk, made);
       }
-      const hipOf = (hip) => {
-        const picture = legs[hip.layer];
-        const node = new Container();
-        node.position.set(hip.x, hip.y + 50);
-        const leg = new Sprite(legTextures.get(lk)[hip.layer]);
-        leg.position.set(picture.x, picture.y);
-        leg.width = picture.width;
-        leg.height = picture.height;
-        node.addChild(leg);
-        return { ...hip, node };
-      };
-      const hips = legs.hips.map(hipOf);
-      for (const hip of hips) if (hip.layer === 'far') body.addChild(hip.node);
-      body.addChild(sprite);
-      for (const hip of hips) if (hip.layer === 'near') body.addChild(hip.node);
-      const box = new Container();
-      box.addChild(body);
-      layers.animals.addChild(box);
-      herd.set(spec.id, {
-        box,
-        body,
-        tilt: 0,
-        swing: 0,
-        phase: (i * 1.9) % (Math.PI * 2),
-        legs: { ...legs, hips },
-        last: null,
-      });
+      herd.set(
+        spec.id,
+        createAnimalView({
+          spec,
+          parent: layers.animals,
+          body: { texture: animalTextures.get(key), picture },
+          legs: legTextures.get(lk),
+          phase: i * 0.31,
+        }),
+      );
     }
   }
   /** What the pictures should look like now: the key of the palette group and of each tree. */

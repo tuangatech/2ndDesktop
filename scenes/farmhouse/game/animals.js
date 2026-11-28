@@ -19,13 +19,14 @@ import { NOMINAL, roam } from './roam.js';
 // the back of the field, the two cows the left and right halves and the front, so two of a kind never meet (a gap of 0.14
 // of the width between their zones) and a horse and a cow are kept apart in depth by `keepApart` below. `home` is where
 // the region of a cycle is drawn towards, `speed` is the pace in design units a second.
-const BIG = { cycle: 360, stops: 7, stay: 0.25, pull: 0.2, local: [0.13, 0.16] };
+const BIG = { cycle: 240, stops: 7, stay: 0.1, pull: 0.2, local: [0.3, 0.3], minStop: 14 };
 const zone = (x, depth, home, speed) => ({ ...BIG, x, depth, home, speed });
 /** A sheep roams a small zone round its place in the flock (shares); the flock's centre roams the field (below). */
 const SHEEP = {
-  cycle: 180,
+  cycle: 150,
   stops: 6,
-  stay: 0.35,
+  stay: 0.25,
+  minStop: 12,
   pull: 0,
   x: [-0.06, 0.06],
   depth: [-0.06, 0.06],
@@ -40,14 +41,14 @@ export const HERD = Object.freeze([
     kind: 'horse',
     coat: 'brown',
     home: [0.22, 0.3],
-    roam: zone([0.03, 0.43], [0.04, 0.42], [0.22, 0.26], 38),
+    roam: zone([0.03, 0.43], [0.04, 0.42], [0.22, 0.26], 30),
   },
   {
     id: 'horse-beige',
     kind: 'horse',
     coat: 'beige',
     home: [0.78, 0.3],
-    roam: zone([0.57, 0.97], [0.04, 0.42], [0.78, 0.26], 38),
+    roam: zone([0.57, 0.97], [0.04, 0.42], [0.78, 0.26], 30),
   },
   {
     id: 'cow-1',
@@ -72,15 +73,16 @@ const FLOCK = Object.freeze({
   id: 'flock',
   home: [0.5, 0.45],
   roam: {
-    cycle: 720,
-    stops: 8,
-    stay: 0.3,
+    cycle: 300,
+    stops: 7,
+    stay: 0.15,
+    minStop: 15,
     pull: 0.3,
     x: [0.12, 0.88],
     depth: [0.3, 0.6],
     home: [0.5, 0.45],
-    local: [0.06, 0.1],
-    speed: 24,
+    local: [0.2, 0.22],
+    speed: 26,
   },
 });
 

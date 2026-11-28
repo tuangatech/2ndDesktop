@@ -13,6 +13,8 @@ import { lerp, unit } from './hash.js';
 
 /** What a share of the width and of the depth stands for in design units, so that a walk takes the time it should. */
 export const NOMINAL = Object.freeze({ width: 1300, depth: 185 });
+/** The share of a stop that a walk to it may take at most. */
+const WALK_SHARE = 0.9;
 /** How long a block of standing lasts before the animal may change between grazing and standing. */
 const BLOCK = 45;
 /** The share of the grazing and standing that is grazing. */
@@ -29,6 +31,7 @@ const GRAZE = 0.55;
  * @property {number} cycle             seconds
  * @property {number} stops             stops in a cycle
  * @property {number} stay              the chance that a stop is the same place as the one before
+ * @property {number} minStop           the shortest a stop may be, in seconds
  */
 
 const plans = new Map();
@@ -43,28 +46,51 @@ function plan(seed, index, c, spec) {
   const cx = lerp(lerp(x0, x1, unit(seed, index, c, 41)), spec.home[0], spec.pull);
   const cd = lerp(lerp(d0, d1, unit(seed, index, c, 42)), spec.home[1], spec.pull);
   const clampTo = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  // Every stop lasts at least long enough to walk to it at the animal's pace from the one before (the first, which comes
+  // after the long walk from another region of the zone, at least long enough to cross the zone), so that no walk is ever
+  // quicker than the pace. The rest of the cycle is shared out by weights, mostly short and medium and a few long.
+  const minStop = spec.minStop;
+  const crossing = Math.hypot((x1 - x0) * NOMINAL.width, (d1 - d0) * NOMINAL.depth);
+  const firstMin = Math.max(minStop, crossing / (WALK_SHARE * spec.speed));
+  const bases = Array.from({ length: spec.stops }, (_, j) => (j === 0 ? firstMin : minStop));
+  const free = spec.cycle - bases.reduce((sum, v) => sum + v, 0);
+  if (free <= 0) throw new Error('roam: the stops do not fit in the cycle');
+  const reach = spec.speed * WALK_SHARE * minStop; // the farthest a later stop may be from the one before
   const points = [];
+  const lengths = [];
   const weights = [];
   let sum = 0;
   for (let j = 0; j < spec.stops; j++) {
-    // Stops are of very different lengths: mostly short and medium, some long (the cube of a number from 0 to 1).
-    const w = (j === 0 ? 1 : 0.3) + 5 * unit(seed, index, c, j, 45) ** 3;
+    const w = 0.3 + 5 * unit(seed, index, c, j, 45) ** 3; // the cube of a number from 0 to 1
     weights.push(w);
     sum += w;
+  }
+  for (let j = 0; j < spec.stops; j++) {
+    lengths.push(bases[j] + (free * weights[j]) / sum);
     if (j > 0 && unit(seed, index, c, j, 43) < spec.stay) {
       points.push(points[j - 1]);
-    } else {
-      points.push([
-        clampTo(cx + (unit(seed, index, c, j, 46) * 2 - 1) * spec.local[0], x0, x1),
-        clampTo(cd + (unit(seed, index, c, j, 47) * 2 - 1) * spec.local[1], d0, d1),
-      ]);
+      continue;
     }
+    const point = [
+      clampTo(cx + (unit(seed, index, c, j, 46) * 2 - 1) * spec.local[0], x0, x1),
+      clampTo(cd + (unit(seed, index, c, j, 47) * 2 - 1) * spec.local[1], d0, d1),
+    ];
+    if (j > 0) {
+      const before = points[j - 1];
+      const away = moved(before, point);
+      if (away > reach) {
+        const k = reach / away; // nearer along the same line (inside the zone, which is convex)
+        point[0] = before[0] + (point[0] - before[0]) * k;
+        point[1] = before[1] + (point[1] - before[1]) * k;
+      }
+    }
+    points.push(point);
   }
   const starts = [];
   let t = 0;
-  for (const w of weights) {
+  for (const length of lengths) {
     starts.push(t);
-    t += (w / sum) * spec.cycle;
+    t += length;
   }
   const made = { points, starts, length: spec.cycle };
   if (plans.size > 512) plans.clear();
@@ -111,7 +137,7 @@ export function roam(seed, spec, index, seconds) {
   const { from, to } = segment(seed, index, c, j, spec);
   const distance = moved(from, to);
   // A steady pace; a stop too short to get there at that pace is reached a little faster.
-  const walkTime = distance > 0 ? Math.min(distance / spec.speed, length * 0.9) : 0;
+  const walkTime = distance > 0 ? Math.min(distance / spec.speed, length * WALK_SHARE) : 0;
   const u = t - now.starts[j];
   const f = walkTime > 0 ? u / walkTime : 1;
   const e = ease(f);

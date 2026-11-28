@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HERD } from '../game/animals.js';
-import { LEGS, animalPicture, coatKey, hayPicture, legKey, legPictures } from '../art/animals.js';
+import { animalPicture, coatKey, hayPicture, legKey, legPieces } from '../art/animals.js';
+import { RIGS } from '../game/gait.js';
 
 describe('the animal art', () => {
   it('has a picture for every animal of the herd, and five coats for the seven animals', () => {
@@ -32,7 +33,7 @@ describe('the animal art', () => {
     expect(brown.ops.some((op) => op.t === 'clip')).toBe(true);
   });
 
-  it('draws the four legs apart from the body, swinging about the hip, a diagonal pair together', () => {
+  it('draws each leg as two pieces, apart from the body, with the size the rig says', () => {
     expect(new Set(HERD.map(legKey)).size).toBe(4); // a horse's legs follow its coat; cows and sheep share theirs
     for (const [kind, coat] of [
       ['horse', 'brown'],
@@ -40,29 +41,24 @@ describe('the animal art', () => {
       ['cow', 'brown-white'],
       ['sheep', 'white'],
     ]) {
-      const legs = legPictures(kind, coat);
-      expect(legs.hips).toHaveLength(4);
-      expect(legs.hips.filter((h) => h.layer === 'far')).toHaveLength(2);
-      expect(legs.hips.filter((h) => h.pair === 0)).toHaveLength(2);
-      expect(legs.length).toBe(LEGS[kind].length);
-      // each hip at its leg's top, a hind leg left of a fore leg (the nose is to the right)
-      for (const layer of ['far', 'near']) {
-        const [hind, fore] = legs.hips.filter((h) => h.layer === layer);
-        expect(hind.x).toBeLessThan(fore.x);
-        expect(hind.y).toBe(-legs.length);
-        expect(hind.pair).not.toBe(fore.pair);
+      const rig = RIGS[kind];
+      const legs = legPieces(kind, coat);
+      for (const side of ['far', 'near']) {
+        const { thigh, shin } = legs[side];
+        // the upper piece hangs from the hip, the lower one from the knee, each down its own length
+        expect(thigh.y).toBeLessThan(0);
+        expect(thigh.y + thigh.height).toBeGreaterThan(rig.thigh);
+        expect(shin.y).toBeLessThan(0);
+        expect(shin.y + shin.height).toBeGreaterThan(rig.shin);
+        for (const piece of [thigh, shin]) {
+          expect(piece.ops.length).toBeGreaterThan(1);
+          expect(JSON.stringify(piece.ops)).not.toMatch(/NaN|undefined|Infinity/);
+        }
       }
-      // the near hind goes with the far fore (a diagonal)
-      const [farHind, farFore, nearHind, nearFore] = legs.hips;
-      expect(nearHind.pair).toBe(farFore.pair);
-      expect(nearFore.pair).toBe(farHind.pair);
-      for (const picture of [legs.far, legs.near]) {
-        expect(picture.ops.length).toBeGreaterThan(0);
-        expect(picture.y + picture.height).toBeGreaterThanOrEqual(legs.length); // down to the ground
-        expect(JSON.stringify(picture.ops)).not.toMatch(/NaN|undefined|Infinity/);
-      }
-      expect(legs.amp).toBeGreaterThan(0.2);
-      expect(legs.amp).toBeLessThan(0.7);
+      // hooves on the lower piece of the horses' and cows' near legs
+      const hooves = (piece) => piece.ops.filter((op) => op.t === 'rect').length;
+      expect(hooves(legs.near.shin)).toBe(kind === 'sheep' ? 1 : 2);
+      expect(hooves(legs.far.shin)).toBe(1);
     }
     // the body picture has no leg rectangles left in it
     const bodyOps = animalPicture('cow', 'brown-white').ops.filter((op) => op.t === 'rect');

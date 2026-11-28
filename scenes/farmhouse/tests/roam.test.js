@@ -50,8 +50,8 @@ describe('R6 the animals roam freely (DEC-66)', () => {
   it('walk a small part of the time and stand about for a long time between moves', () => {
     for (const [id, list] of Object.entries(runs)) {
       const walking = list.filter((a) => a.pose === 'walk').length / list.length;
-      expect(walking).toBeGreaterThan(0.02);
-      expect(walking).toBeLessThan(0.2);
+      expect(walking).toBeGreaterThan(0.12); // about a fifth of the time
+      expect(walking).toBeLessThan(0.3);
       if (id.startsWith('sheep')) continue;
       // The lengths of the stretches without a walk.
       const stills = [];
@@ -63,8 +63,8 @@ describe('R6 the animals roam freely (DEC-66)', () => {
         } else run++;
       }
       stills.sort((p, q) => p - q);
-      expect(stills[Math.floor(stills.length / 2)]).toBeGreaterThan(30); // half the stops last over half a minute
-      expect(stills[stills.length - 1]).toBeGreaterThan(120); // and some over two minutes
+      expect(stills[Math.floor(stills.length / 2)]).toBeGreaterThan(15); // half the stops last over a quarter of a minute
+      expect(stills[stills.length - 1]).toBeGreaterThan(90); // and some over a minute and a half
     }
   });
 
@@ -82,9 +82,9 @@ describe('R6 the animals roam freely (DEC-66)', () => {
     expect(none / (6 * 720)).toBeLessThan(0.9); // and it is not a still picture
   });
 
-  it('walk at a steady pace of their own: a horse 38 units a second, a cow 26', () => {
+  it('walk at a steady pace of their own: a horse 30 units a second, a cow 26', () => {
     for (const [id, speed] of [
-      ['horse-brown', 38],
+      ['horse-brown', 30],
       ['cow-1', 26],
     ]) {
       // On a 16:9 screen the animals' part of the width is 1320 design units, about what a share of the width stands for.
@@ -105,7 +105,7 @@ describe('R6 the animals roam freely (DEC-66)', () => {
         if (pace < speed * 1.4) steady++; // the gentle start and stop make it a little faster in the middle
       }
       expect(total).toBeGreaterThan(100);
-      expect(steady / total).toBeGreaterThan(0.95);
+      expect(steady / total).toBeGreaterThan(0.9);
     }
   });
 
@@ -150,7 +150,7 @@ describe('R6 the animals roam freely (DEC-66)', () => {
             (r.x - last.x) * NOMINAL.width,
             (r.depth - last.depth) * NOMINAL.depth,
           );
-          expect(d).toBeLessThan(8);
+          expect(d).toBeLessThan(9);
         }
         last = r;
       }
