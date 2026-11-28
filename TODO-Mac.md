@@ -177,13 +177,13 @@ You found it twice (`Re W-56`, `Re W-58`): the brown horse stood in the open bar
 
 Also for PR 78 (`W-58`): CI failed once on the Windows runner because `continuity.test.js` took over 30 s there (9 s alone on my machine, a loaded runner); the timeout of that test is now 90 s (one commit, `fadff15`, a test file only, no code change). Nothing for you to run.
 
-### W-60: review PR 82 (`fishtank-meals`, stacked on PR 80): the fish tank loses fullness; Feed everyone; 2 meals in 24 hours (DEC-71, part 2)
+### W-61: review PR 82 (`fishtank-meals`, stacked on PR 80): the fish tank loses fullness; Feed everyone; 2 meals in 24 hours (DEC-71, part 2)
 
 Part 2 of the owner's decision. There is no fullness: a fish can eat at any hour, up to 2 pellets in any 24 hours (`meals.perFishPerDay`; each fish keeps `mealsAt`, the times of its last meals). "Feed until full" is **Feed everyone**: one pellet for each fish that may eat, the longest-waiting first, one about every 2 seconds. When nobody may eat the tray says "The fish have eaten enough for today". The status line has no "hungry". The record stays `schemaVersion` 1, and a saved record from before loads quietly. Read PR 80 (W-59) first: PR 82's base is PR 80's branch, so it shows only part 2 until PR 80 is merged.
 
 **Golden state hash moved on purpose**: `7be7c96f8e2607bc` (PR 80) to `ed0f26e9232cd6f0` (dumps equal once `fullness`, `mealsAt` and the summary flags are removed); graph `5be771c4e5cb12a9` unchanged. **One pacing promise moved** (see the PR body): at a different hour each day, adults come after 15 or 16 visits, not 14 or 15.
 
-Please check on the Mac: (1) `npm run verify`; (2) the golden test gives `ed0f26e9232cd6f0` and `5be771c4e5cb12a9`; `npm run sim` prints the same table as in the PR body (daily, same hour: adult at visit 10); (3) in the tray: Collect pellets, then Feed everyone twice: each fish takes two pellets, one at a time, and a third try says "The fish have eaten enough for today" (greyed line); (4) in window mode: click the water four times, then a fifth: the toast says the fish have eaten enough; (5) the tray text and the status line read well on the Mac menu bar (no "hungry" anywhere); (6) `DESIGN.md` sections 3 and 4 against what you see. Reply as `Re W-60`. PR body: `gh pr view 82`.
+Please check on the Mac: (1) `npm run verify`; (2) the golden test gives `ed0f26e9232cd6f0` and `5be771c4e5cb12a9`; `npm run sim` prints the same table as in the PR body (daily, same hour: adult at visit 10); (3) in the tray: Collect pellets, then Feed everyone twice: each fish takes two pellets, one at a time, and a third try says "The fish have eaten enough for today" (greyed line); (4) in window mode: click the water four times, then a fifth: the toast says the fish have eaten enough; (5) the tray text and the status line read well on the Mac menu bar (no "hungry" anywhere); (6) `DESIGN.md` sections 3 and 4 against what you see. Reply as `Re W-61`. PR body: `gh pr view 82`.
 
 ## Closed
 
