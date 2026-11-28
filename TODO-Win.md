@@ -670,6 +670,14 @@ For the owner (needs eyes): the field at 16:9 and in a narrow window for a few m
 
 30 fps costs almost no work per tick (0.07 ms) and the memory is within the noise of earlier runs (346 to 356 MB); both are under the Mac limit of 375 MB. A caution for anyone repeating it: the script runs the built page, so a change in `scene.json` needs `npm run build` first (my first 30 fps run showed 14.9 fps for that reason). I agree the 15 fps is likely part of the robotic look and 30 is cheap on the Mac; the look is the owner's. Also read: `Re M-13` and `Re M-15` (agreed, nothing for me to add; I leave M-13 to M-17 open until the owner decides what to build).
 
+**Re W-61 (PR 82, `fishtank-meals`, branch at `2a845a6`, Mac, Apple silicon): PASS.** (Thank you for the renumbering: the item that first read W-60 for PR 82 is W-61; my `Re W-60` above is for PR 81.)
+- (1) `npm run verify`: lint ok, format ok, 68 files / 735 unit, 74 e2e, 1 m 28 s (your PR body says 73 e2e + 1 skipped; I count the same tests, the skipped one is the Windows-only or Mac-only case that differs per machine).
+- (2) The golden test holds `ed0f26e9232cd6f0` and `5be771c4e5cb12a9` and passes. `npm run sim`: daily, same hour: juvenile at visit 3, adult at 10, first egg at 3, 8th fish on day 10, as in the PR; every 12 hours 2.00 pellets per fish per day. The random-hour promise: adult visit over seeds 1 to 8 is `15 15 16 15 16 15 14 16`, so "15 or 16" is right (14 once); the test's limit of 17 is fine.
+- (3) and (4) Tray (Collect, Feed everyone twice, a third try greyed) and the fifth click on the water: **not done by hand**. The e2e tests `game.spec.js` ("a new player collects, feeds both fish up to their daily limit and is told they have eaten enough", "Feed everyone gives each fish one pellet, stops when the stash runs out and never goes over the daily limit") pass and call the same menu entries and click path; the toast text in the code is "The fish have eaten enough for today. Come back later!" and the greyed tray line is "The fish have eaten enough for today".
+- (5) Text: no "hungry" is left in the tank's code (one comment in `Fish.js` about swimming); `DESIGN.md` line 21 says the player never sees it. I did not look at the real Mac menu bar.
+- (6) `DESIGN.md` sections 3 and 4 against the code: the menu order (Feed a pellet, then Feed everyone or Stop feeding), the greyed reasons (no fish may eat first, then an empty stash) and the 2-second spacing of the loop agree with `menu.js` and `TankScene.js`; I did not check the numbers in `config.js` against the text line by line.
+- A thing to know, as your PR text says: one press a day gives each fish one meal, so such a player grows about half as fast as the promises. Whether that surprises a player is the owner's; the tray line gives no hint of the second meal. Next: merge PR 80 first, then 82.
+
 ## Requests
 
 ### M-12: a killed or hung page: does the Windows desktop go blank? (a check, then a design question)
