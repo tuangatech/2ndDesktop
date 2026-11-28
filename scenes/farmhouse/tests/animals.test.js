@@ -40,6 +40,27 @@ describe('R6 the herd', () => {
   });
 });
 
+describe('R6 the brown horse and the left cow keep apart', () => {
+  // The Mac saw the horse standing partly behind the left cow in two frames (`Re W-47`): the cow is large near the bottom
+  // of the field, so their reaches must not come close in x. Home minus range on the horse's side, home plus range on
+  // the cow's side: at least 0.065 of the width between them (it was 0.04 with the horse's home at x 0.27).
+  it('the two reaches in x are at least 0.065 apart', () => {
+    const horse = HERD.find((a) => a.id === 'horse-brown');
+    const cow = HERD.find((a) => a.id === 'cow-1');
+    const gap = horse.home[0] - horse.range[0] - (cow.home[0] + cow.range[0]);
+    expect(gap).toBeGreaterThanOrEqual(0.065);
+  });
+
+  it('they are never within 0.06 of each other in x over three days', () => {
+    let nearest = 1;
+    for (let s = 0; s < 3 * 24 * 3600; s += 20) {
+      const herd = byId(at(s));
+      nearest = Math.min(nearest, Math.abs(herd['horse-brown'].x - herd['cow-1'].x));
+    }
+    expect(nearest).toBeGreaterThan(0.06);
+  });
+});
+
 describe('R7 near and far', () => {
   it('the size follows the depth: about half at the fence to 1.5 times at the bottom', () => {
     expect(depthScale(0)).toBe(0.5);
