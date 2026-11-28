@@ -26,6 +26,58 @@ The same rules as in `TODO-Mac.md` (that file is the master copy; if the two eve
 
 **Mac (this file's writer):** Apple silicon (arm64), Darwin 27.2, zsh, a 1512 x 982 built-in display. The Mac's default Node is 26 (the repository pins 24): `brew install fnm`, then `eval "$(fnm env)" && fnm use 24` in each shell (Node 24.22, npm 11.19). After `npm ci`, `node_modules/electron/dist` is missing (npm holds back the install script); `node node_modules/electron/install.js` fixes it. The session has no Accessibility and no Screen Recording permission, so it cannot read the menu bar or take a picture of the screen; things that need eyes are listed as "owner to look".
 
+## Backlog (the owner's planning list)
+
+The one place to choose what to do next. **Written by the Windows session at the owner's request (2026-11-28), an exception to "written only by the Mac session".** Either session may add a line with the next free `B-n` (never reuse an id) and move it to "Done" with the PR number when it is finished. A line points to where the full text is (a request `M-n` below, `docs/STATUS.md`, the review documents) and does not repeat it. Size: S = a check, a measurement or a small PR; M = one or two PRs; L = a design step. **Owner** = the owner has to decide first. State as of 2026-11-28, taken from `docs/STATUS.md`, `docs/DECISIONS.md` and the requests below; check a line against the code before you start it.
+
+### A. Farm house: code review of 2026-11-28 (Windows session; nothing was changed)
+
+Not urgent. PRs 75 to 78 are still changing the animals, so do the cleanups after them (one concern per PR, never mix a move with a rename). The pure rules cost about 0.05 ms once a second and 0.01 ms a frame, with about 60 bytes of garbage a frame: **no speed work is needed**.
+
+- **B-1 (S, owner: which look?)** The barn picture is added to `barnBox` after the weathervane and the owl, so it covers them. At night with the owl out, only its two glowing eyes show in the dark window; the brown body, face, ears and beak (`scenes/farmhouse/extrasView.js` 32 to 39) are never seen. Either move the barn sprite to the bottom of `barnBox` (as `drawPiece` does for the sky, house, drive and field) or delete the unseen body drawing. A test on the child order would keep it.
+- **B-2 (M)** One shared module for what is written twice: the colour code (`game/sky.js` `toRgb`, `toHex`, `blend`, `multiply` repeats `art/colour.js` `mix`), `hexNumber` (in `index.js` and `weatherView.js`, and a third parse in `art/draw.js`), `clamp01` and about ten hand-written clamps (`hash.js` could hold `clamp`), the day and minute constants (`86_400_000` three times), and the latitude shift of `weather.js` `meanTemperature` and `flowering.js`.
+- **B-3 (M)** The art modules each declare their own `rect`, `path` and ellipse builders (`art/animals.js`, `barn.js`, `house.js`, `trees.js`, `landscape.js`) with different signatures; `landscape.js` `picture()` does what `makePicture` does; `makePicture` hard-codes `2100`; `W / 1600` appears five times in `art/trees.js` while `landscape.js` has it as `DENSITY`. Move the builders and the constants to `art/draw.js` and `layout.js`.
+- **B-4 (S)** Names that hide each other: `const now = wanted()` shadows the scene's `now()` (`index.js` 469, 507); `picture` in `hipOf` shadows the outer one (427); a local `snowy` in `art/trees.js` `grassColours` shadows the imported one with another factor; `seen` means two things (`state.js` and `game/barn.js`); `61` to `64` in `weatherView.js` are both hash salts and kinds; `setChildIndex(box, 2 + i)` assumes the barn and the hay are the first two children (`index.js` 266).
+- **B-5 (S)** Dead or unneeded code: `click() {}`, the `visible` flag (only the debug helper reads it), `let seen` in `extrasView.js` (never reassigned), the `fieldY` wrapper in `index.js` 235, `export { LEGS }` (one test), and about 25 exports that only tests import (`MONTHS`, `TRIP_MINUTE`, `HALF_YEAR`, `FOREST_BOTTOM`, `DAYS_PER_DEGREE`, ...).
+- **B-6 (S)** Small simplifications in the rules: `view.js` recomputes `dayIndexOf(parts)` every frame (it is `slow.when.dayIndex`) and `shelterAt` twice; `weather.js` and `flowering.js` call `seasonAt(...)` only to read `.name` (use `seasonName(northernDay(...))`), write `365` instead of `YEAR`, repeat the "no fog in the afternoon, no summer storm in the morning" rule twice, and `KINDS` repeats the keys of `LOOK`; `clockRules.js` `truckAt` has `1 - (1 - (1 - k) ** 2)` (it is `(1 - k) ** 2`) and `windowLights` calls `WINDOWS.indexOf(id)` inside a loop over `WINDOWS`; `extrasView.js` does `animals.find` per puff per frame.
+
+### B. From the Mac's code review of 2026-11-28 (the full text is in "Requests" below)
+
+- **B-10 (S check, then M, owner: 0.2 or 0.3?)** A killed or hung page: does the Windows desktop go blank? `M-12`.
+- **B-11 (S read, then M)** The save race at a scene switch and no limit on the record channels. `M-13`.
+- **B-12 (S check)** Uncaught exceptions in the main process and the Windows restart after a crash. `M-14`.
+- **B-13 (M, owner, due before 0.3, DEC-46)** Electron fuses, and the CI actions pinned by tag (Dependabot for `github-actions`, required check names). `M-15`.
+- **B-14 (S measurement, owner)** Should the farm house run at 30 fps instead of 15? `M-16`.
+- **B-15 (S docs, owner)** Two items for the 1.2 plan: the scene bridge is in the page's main world, and `budget.memoryMB` and `capabilities` are read by nothing. `M-17`.
+- **B-16 (S)** `M-10` and `M-11` look finished (DEC-54 and DEC-55 are in the log and `migrate-data.js` is gone from `main`): the Mac to move them to "Closed".
+
+### C. Open from the farm house and 0.2 (`docs/STATUS.md`, "The farm house")
+
+- **B-20 (S, owner)** Open PRs 77 (`farmhouse-far`) and 78 (`farmhouse-leaves`): review, CI, merge.
+- **B-21 (M, owner)** The Mac memory against the limit (375 MB since DEC-63; the Mac measured 349 to 354 MB lately). The cuts proposed in STATUS: field and lawn at half resolution, the fence as a tile, the stars and the vignette smaller.
+- **B-22 (S, owner)** The look points still open in STATUS: the hill is soft on a retina screen; a cow hides a horse a little more often (`Re W-57`); the hand checks of the design's section 9 (8 hours on Windows, 4 on the Mac, the tray dip by feel).
+- **B-23 (owner)** The weather provider (Open-Meteo is proposed) before 0.4.
+- **B-24 (S)** Measure the Windows memory limit again with the finished farm house and animals: the last Windows reading is 231 to 237 MB against 250 (before the barn, the legs and the new animal parts).
+
+### D. Hand checks and platform (0.1 / 0.2 closing)
+
+- **B-30 (S, owner at the keyboard)** Windows, installed build: launch at login; unplug a display or change the resolution in desktop mode; a scene on a screen that is not the main one.
+- **B-31 (S, owner at the keyboard)** Mac: the menu bar and tray icon by eye, the Dock, the first open of a downloaded unsigned build ("Not Opened"), the F11 fix, About above an always-on-top tank window (`W-7`, `W-10`).
+- **B-32 (S)** Tag the end of 0.1 (`v0.1.0`) once the hand checks of 0.1 pass, and refresh the "Where we are" lines of `docs/STATUS.md` (they still say "next: step 6").
+- **B-33 (S)** Windows memory check of the diagnostics seen on 2026-11-26 (paused desktop mode averaged 272 MB, above 250, from three samples): measure properly with the tank.
+
+### E. Decisions waiting for the owner
+
+- **B-40** The Dependabot alert on `minimatch` (development scope, via `electron-builder`): leave open or dismiss.
+- **B-41** Squash and rebase merging are still enabled on the repository (BOOTSTRAP section 3 says they may stay off).
+- **B-42** A new tray icon (the owner called the current one weak on 2026-11-26; `assets/tray/`).
+- **B-43** A `docs/DECISIONS.md` line for "About is a window because a message box cannot lay out the version and the text" (PR 22), if wanted.
+- **B-44** Require one approving review for `app/main/`, `package.json`, the lock file, CI and the build config before the first outside contributor (the owner is the only contributor until after 0.5).
+
+### Done
+
+(Move a line here with the PR number.)
+
 ## Replies
 
 All replies tested on a clean tree, in a clone with the no-reply identity (checked: both lines from `.git/config`). Commits tested: `1e2edf3` (W-1), `902c508` (W-2), `1a07252` = `main` after PR 4 (W-3, W-4). Nothing outside `release/` and the data folders was written; `git status` clean after every run.
