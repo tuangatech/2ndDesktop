@@ -1,4 +1,4 @@
-// The stone house with its porch, the drive and the old farm truck (docs/scenes/farmhouse.md section 5, items
+// The stone house with its porch, the drive and the blue and white pick-up truck (docs/scenes/farmhouse.md section 5, items
 // 6 and 8; the concept picture docs/scenes/farmhouse/farmhouse-autumn-preview.png is the look). Pure, like
 // landscape.js: a seed (and the snow) in, a list of drawing operations out (draw.js). The lit windows, the smoke and the
 // truck's movement are the scene's, drawn over these pictures (`WINDOW_RECTS`, `DOOR_GLASS`, `CHIMNEY_TOP`, `TRUCK`).
@@ -15,7 +15,6 @@ const X = DESIGN.houseX - 810;
 const GROUND = 560;
 const CREAM = '#efe9da';
 const SHUTTER = '#5e7260';
-const WOOD = '#a07c55';
 
 const pick = (rng, list) => list[rng.int(0, list.length - 1)];
 const rect = (x, y, w, h, fill, extra = {}) => ({
@@ -223,64 +222,119 @@ export function drivePicture(seed = 6) {
 export const TRUCK = Object.freeze({
   x: 1056 + X,
   y: 614,
-  width: 190,
+  width: 210,
   height: 96,
   left: -14,
   top: -84,
 });
 
 /**
- * An old farm truck seen from the side: round fenders, an upright cab, a wooden stake bed with a hay bale. Drawn in its own
- * space (`TRUCK`), the scene places it and mirrors it when it faces right.
+ * A late-1970s square-body step-side pick-up (the owner's reference was a Chevrolet C10; this drawing is made here from
+ * drawing operations: no badge, no lettering, nothing traced), seen from the side in blue and white: a blue hood, doors
+ * and bed, a white roof, white fender flares and bumpers, a hay bale in the bed. Drawn in its own space (`TRUCK`), the
+ * scene places it and mirrors it when it faces right. Its nose is to the left; the ground is y 0.
  */
 export function truckPicture() {
-  const BODY = (y0, y1) => gradient(y0, y1, '#8faea3', '#648178');
-  const D = '#5c766e';
+  const BLUE = (y0, y1) => gradient(y0, y1, '#4a7fb4', '#2f5f93');
+  const BLUE_LINE = '#264e7a';
+  const CREAM_BODY = (y0, y1) => gradient(y0, y1, '#f3efe4', '#d9d5c8');
+  const CREAM_LINE = '#aeb2b0';
+  const GLASS = gradient(-66, -48, '#dbe7ec', '#a3bac6');
+  const CHROME = '#d6d8d4';
+  const DARK = '#2e2a26';
+  const WHEELS = [34, 142];
   const ops = [
-    rect(-6, -22, 182, 8, '#4d4a46', { rx: 3 }),
-    rect(104, -36, 70, 8, WOOD, { rx: 2.5 }),
-    rect(110, -58, 48, 22, gradient(-58, -36, '#e2c46a', '#c9a74e'), { rx: 5 }),
-    path('M 126 -58 L 126 -36 M 142 -58 L 142 -36', null, {
+    { t: 'ellipse', x: 90, y: 1, rx: 98, ry: 5, fill: DARK, alpha: 0.22 },
+    // under the body, between the wheels
+    rect(8, -25, 170, 9, '#3a3733', { rx: 3 }),
+    // the hay bale standing in the bed (it shows above the rail)
+    rect(134, -60, 34, 16, gradient(-60, -44, '#e3c66e', '#c9a74e'), { rx: 3.5 }),
+    path('M 145 -60 L 145 -45 M 157 -60 L 157 -45', null, {
       stroke: '#8a7440',
-      width: 2,
+      width: 1.6,
       cap: 'round',
     }),
+    // the bed: a blue side with a cream rail, and the step behind the cab
+    rect(108, -45, 77, 24, BLUE(-45, -21), { rx: 2, stroke: BLUE_LINE, width: 1.6 }),
+    rect(107, -48, 79, 4, CREAM_BODY(-48, -44), { rx: 2, stroke: CREAM_LINE, width: 1 }),
+    path('M 112 -37 L 128 -37 M 112 -30 L 128 -30', null, {
+      stroke: BLUE_LINE,
+      width: 1,
+      alpha: 0.7,
+    }),
+    rect(105, -23, 16, 5, CHROME, { rx: 2 }),
+    // the rear fender of a step-side: a cream flare that stands out of the bed side
+    path(
+      'M 119 -21 L 119 -35 Q 119 -47 133 -47 L 152 -47 Q 168 -47 171 -34 L 172 -21 Z',
+      CREAM_BODY(-47, -21),
+      {
+        stroke: CREAM_LINE,
+        width: 1.6,
+      },
+    ),
+    path('M 125 -37 Q 128 -43 136 -43 L 152 -43', null, {
+      stroke: '#fff6e6',
+      width: 1.2,
+      alpha: 0.6,
+      cap: 'round',
+    }),
+    // the hood
+    path('M -2 -23 L -2 -39 Q -2 -45 5 -46 L 51 -49 L 53 -22 Z', BLUE(-49, -22), {
+      stroke: BLUE_LINE,
+      width: 1.8,
+    }),
+    path('M 2 -45 L 50 -48', null, { stroke: '#7ba3cb', width: 1.4, cap: 'round' }),
+    // the cab: blue body, cream roof, a door with its window
+    path(
+      'M 50 -22 L 50 -45 L 63 -69 Q 64 -71 68 -71 L 104 -71 Q 108 -71 108 -67 L 108 -22 Z',
+      BLUE(-71, -22),
+      {
+        stroke: BLUE_LINE,
+        width: 1.8,
+      },
+    ),
+    path(
+      'M 59.2 -62 L 63 -69 Q 64 -71 68 -71 L 104 -71 Q 108 -71 108 -67 L 108 -62 Z',
+      CREAM_BODY(-71, -62),
+      {
+        stroke: CREAM_LINE,
+        width: 1.2,
+      },
+    ),
+    path('M 62 -48 L 68 -65 L 102 -65 Q 104.5 -65 104.5 -62.5 L 104.5 -48 Z', GLASS, {
+      stroke: '#efeadf',
+      width: 2.4,
+    }),
+    path('M 77 -65 L 77 -48', null, { stroke: '#efeadf', width: 1.8 }),
+    path('M 53 -45 L 53 -23 M 105.5 -46 L 105.5 -23', null, { stroke: BLUE_LINE, width: 1.2 }),
+    rect(91, -44, 9, 2.6, '#ebe6da', { rx: 1.3 }),
+    // a chrome strip along the side, and the lower door trim
+    path('M 4 -37 L 107 -37', null, { stroke: '#ebe6da', width: 1.8, cap: 'round' }),
+    rect(55, -27, 48, 4, '#c9cbc7', { rx: 2 }),
+    // the mirror
+    path('M 58 -57 L 62 -53', null, { stroke: DARK, width: 1.6, cap: 'round' }),
+    rect(54, -60, 6.5, 9, DARK, { rx: 2 }),
+    // the nose: a cream grille, a round lamp, an amber lamp, the bumpers
+    rect(-4, -43, 8, 17, CREAM_BODY(-43, -26), { rx: 2, stroke: CREAM_LINE, width: 1 }),
+    path('M -2 -39 L 2 -39 M -2 -35 L 2 -35 M -2 -31 L 2 -31', null, {
+      stroke: '#8d9290',
+      width: 1,
+    }),
+    ball(-0.5, -41.5, 2.6, '#f0e2a8'),
+    rect(-3.5, -27, 5, 2.6, '#e8a73a', { rx: 1.2 }),
+    rect(-9, -22, 15, 7, CHROME, { rx: 3 }),
+    rect(177, -22, 13, 7, CHROME, { rx: 3 }),
+    rect(182.5, -40, 3.6, 9, '#b9392f', { rx: 1.2 }),
   ];
-  for (const x of [105, 128, 151, 172]) ops.push(rect(x - 2, -62, 4.5, 28, '#8a6a48', { rx: 2 }));
-  ops.push(
-    rect(104, -60, 71, 4.5, WOOD, { rx: 2 }),
-    rect(104, -47, 71, 4, WOOD, { rx: 2 }),
-    path('M -4 -22 L -4 -38 Q -4 -46 6 -47 L 46 -48 L 50 -22 Z', BODY(-48, -22), {
-      stroke: D,
-      width: 3,
-    }),
-    rect(-2, -41, 5, 16, '#a9b3ad', { rx: 2 }),
-    path('M 48 -22 L 51 -73 Q 52 -78 58 -78 L 92 -78 Q 98 -78 99 -72 L 101 -22 Z', BODY(-78, -22), {
-      stroke: D,
-      width: 3,
-    }),
-    rect(58, -71, 35, 24, gradient(-71, -47, '#cdd8d4', '#a3b4b0'), { rx: 6 }),
-    rect(74, -71, 3, 24, D),
-    rect(56, -44, 40, 21, null, { rx: 3, stroke: D, width: 2 }),
-    rect(60, -38, 8, 3, '#d9dfda', { rx: 1.5 }),
-  );
-  for (const wx of [30, 138]) {
+  for (const wx of WHEELS) {
     ops.push(
-      { t: 'ellipse', x: wx, y: -14, rx: 25, ry: 25, fill: BODY(-39, 11), stroke: D, width: 3 },
-      { t: 'ellipse', x: wx, y: -12, rx: 20, ry: 20, fill: '#3f3a36' },
+      { t: 'ellipse', x: wx, y: -16, rx: 19.5, ry: 19.5, fill: DARK },
+      { t: 'ellipse', x: wx, y: -16, rx: 16.5, ry: 16.5, fill: '#34312d' },
+      { t: 'ellipse', x: wx, y: -16, rx: 10.5, ry: 10.5, fill: '#efeadf' },
+      { t: 'ellipse', x: wx, y: -16, rx: 7.5, ry: 7.5, fill: '#b8bcba' },
+      { t: 'ellipse', x: wx, y: -16, rx: 2.8, ry: 2.8, fill: '#767c7a' },
     );
   }
-  ops.push(
-    { t: 'ellipse', x: 22, y: -30, rx: 9, ry: 4, fill: '#a8664a', alpha: 0.45 },
-    { t: 'ellipse', x: 146, y: -34, rx: 7, ry: 3.5, fill: '#a8664a', alpha: 0.4 },
-  );
-  for (const wx of [30, 138])
-    ops.push(
-      ball(wx, -10, 16, '#3b3e42'),
-      ball(wx, -10, 7.5, '#b6b7b3'),
-      ball(wx, -10, 2.5, '#8d8e8b'),
-    );
-  ops.push(ball(-2, -34, 5, '#ecdca4'), rect(-10, -24, 9, 5, '#b9bcb8', { rx: 2.5 }));
   return makePicture(
     { x: TRUCK.left, y: TRUCK.top, width: TRUCK.width, height: TRUCK.height, resolution: 1 },
     ops,
