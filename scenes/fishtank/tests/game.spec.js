@@ -181,8 +181,6 @@ test('a click goes to a pellet first, then a fish, then the water, and the sand 
     const result = await page.evaluate(() => {
       const { scene, repository } = window.__scene;
       const fish = [...scene.fishes.values()];
-      let touched = 0;
-      scene.onFishTouched = () => touched++;
       // One pellet in the middle with a fish right under it; the other pellets and fish are far away.
       // The clicked pellet is the newest, so the test sees that the clicked one flies, not the oldest.
       const others = scene.floating.active.slice(0, -1);
@@ -197,13 +195,13 @@ test('a click goes to a pellet first, then a fish, then the water, and the sand 
       fish[0].placeAt(p.x, p.y);
       fish[1].placeAt(scene.layout.width, scene.layout.swim.y);
       const first = scene.click(p.x, p.y);
-      const afterPellet = { stash: repository.getStash(), touched };
+      const afterPellet = { stash: repository.getStash() };
       const flown = {
         clicked: pellet.state,
         othersStay: others.every((e) => scene.floating.active.includes(e)),
       };
       const second = scene.click(p.x, p.y);
-      const afterFish = { touched, stash: repository.getStash() };
+      const afterFish = { stash: repository.getStash() };
       repository.dev.addStash(2);
       // Both fish far from the spot, so the click must reach the water and drop a pellet, not touch a fish.
       fish[0].placeAt(scene.layout.width, scene.layout.swim.y);
@@ -221,20 +219,18 @@ test('a click goes to a pellet first, then a fish, then the water, and the sand 
         afterFish,
         third,
         dropCost,
-        touchedAfter: touched,
         sand,
         sandCost,
       };
     });
     expect(result.first).toMatchObject({ ok: true, collected: 1 });
-    expect(result.afterPellet).toEqual({ stash: 1, touched: 0 });
+    expect(result.afterPellet).toEqual({ stash: 1 });
     expect(result.flown).toEqual({ clicked: 'flying', othersStay: true });
     expect(result.second.touched).toBeTruthy();
-    expect(result.afterFish).toEqual({ touched: 1, stash: 1 });
+    expect(result.afterFish).toEqual({ stash: 1 });
     expect(result.third.ok).toBe(true);
     expect(result.third.touched).toBeUndefined(); // the water, not a fish
     expect(result.dropCost).toBe(1);
-    expect(result.touchedAfter).toBe(1); // still only the earlier touch
     // A click on the sand drops nothing and costs no pellet.
     expect(result.sand).toMatchObject({ ok: false, reason: 'sand' });
     expect(result.sandCost).toBe(0);
@@ -301,11 +297,11 @@ test('an egg hatches into a new fish; a full tank keeps the egg', async () => {
   }
 });
 
-test('touching a fish shows its label, and a fish can be renamed', async () => {
+test('touching a fish only makes it wiggle: no label, no name', async () => {
   const { page, close } = await launch();
   try {
-    await page.evaluate(() => {
-      const { scene } = window.__scene;
+    const result = await page.evaluate(() => {
+      const { scene, repository } = window.__scene;
       // A click goes to an egg first, then a floating pellet, then a fish (FR-46). The pellets float at random
       // places, so one can lie under the fish and take the click: park them far to the left first.
       scene.floating.active.forEach((pellet, i) => {
@@ -314,26 +310,21 @@ test('touching a fish shows its label, and a fish can be renamed', async () => {
       });
       const fish = [...scene.fishes.values()][0];
       fish.placeAt(scene.layout.width * 0.5, scene.layout.height * 0.4);
-      scene.click(fish.pos.x, fish.pos.y);
+      const before = JSON.stringify(repository.getState());
+      const clicked = scene.click(fish.pos.x, fish.pos.y);
+      return {
+        clicked,
+        id: fish.id,
+        wiggling: fish.wiggleTimer > 0,
+        unchanged: JSON.stringify(repository.getState()) === before,
+        hasName: 'name' in fish || repository.getState().fish.some((f) => 'name' in f),
+      };
     });
-    const label = page.locator('#label');
-    await expect(label).toHaveClass(/show/);
-    await expect(label.locator('.detail')).toHaveText('Fry · Hungry');
-    await label.getByRole('button', { name: 'Rename' }).click();
-    const input = label.locator('input');
-    await input.fill('Bubbles');
-    await input.press('Enter');
-    await expect(label.locator('.title')).toHaveText('Bubbles');
-    const names = await page.evaluate(() =>
-      window.__scene.repository.getState().fish.map((f) => f.name),
-    );
-    expect(names).toContain('Bubbles');
-
-    // A name with a character that is not allowed is refused with a message and nothing changes.
-    await label.getByRole('button', { name: 'Rename' }).click();
-    await input.fill('<b>');
-    await input.press('Enter');
-    await expect(page.locator('#toast')).toHaveText(/letters, numbers and spaces/i);
+    expect(result.clicked).toMatchObject({ ok: true, touched: result.id });
+    expect(result.wiggling).toBe(true);
+    expect(result.unchanged).toBe(true);
+    expect(result.hasName).toBe(false);
+    await expect(page.locator('#label')).toHaveCount(0);
   } finally {
     await close();
   }
@@ -385,7 +376,7 @@ test('a curious fish comes over to a moving pointer and a shy fish swims away', 
 test.describe('the saved record', () => {
   const readRecord = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 
-  test('quit and relaunch keeps the fish, the stash, the growth, the names and the eggs', async () => {
+  test('quit and relaunch keeps the fish, the stash, the growth and the eggs', async () => {
     const dataDir = makeDataDir();
     try {
       let saved;
@@ -398,7 +389,6 @@ test.describe('the saved record', () => {
           fishtank.onMenu('feed');
           fishtank.onMenu('feed');
           step(20);
-          repository.renameFish(repository.getState().fish[0].id, 'Bubbles');
           repository.dev.addFed(12);
           return repository.getState();
         })()`);
@@ -418,7 +408,6 @@ test.describe('the saved record', () => {
         expect(loaded.state.tank.stash).toBe(saved.tank.stash);
         expect(loaded.state.tank.totalFed).toBe(saved.tank.totalFed);
         expect(loaded.state.tank.decorSeed).toBe(saved.tank.decorSeed);
-        expect(loaded.state.fish.some((f) => f.name === 'Bubbles')).toBe(true);
         expect(loaded.eggs).toBe(1);
         expect(loaded.shown.reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
       } finally {

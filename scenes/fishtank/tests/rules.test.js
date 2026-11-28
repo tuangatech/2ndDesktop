@@ -9,7 +9,6 @@ import {
   isFull,
   newFish,
   newTankState,
-  renameFish,
   settleFish,
   settlePellets,
   sizeOf,
@@ -26,7 +25,6 @@ const fishAt = (overrides = {}) => ({
   id: 'f1',
   species: 'tetra',
   seed: 1,
-  name: null,
   growthPoints: 0,
   fullness: 0,
   fullnessUpdatedAt: T0,
@@ -278,20 +276,6 @@ describe('eggs', () => {
   });
 });
 
-describe('renameFish', () => {
-  it('trims, rejects 17 characters and bad characters, and clears on empty', () => {
-    const state = stateWith();
-    expect(renameFish(state, 'f1', '  Bubbles  ').state.fish[0].name).toBe('Bubbles');
-    expect(renameFish(state, 'f1', 'a'.repeat(16)).ok).toBe(true);
-    expect(renameFish(state, 'f1', 'a'.repeat(17))).toEqual({ ok: false, reason: 'bad_name' });
-    expect(renameFish(state, 'f1', 'no <tags>')).toEqual({ ok: false, reason: 'bad_name' });
-    expect(renameFish(state, 'f1', 'Étoile 2').ok).toBe(true);
-    const named = renameFish(state, 'f1', 'Bubbles').state;
-    expect(renameFish(named, 'f1', '   ').state.fish[0].name).toBe(null);
-    expect(renameFish(state, 'x', 'A')).toEqual({ ok: false, reason: 'unknown_fish' });
-  });
-});
-
 describe('newTankState', () => {
   it('has 2 fry of different species, 4 floating pellets and an empty stash', () => {
     for (let seed = 1; seed <= 20; seed++) {
@@ -340,7 +324,6 @@ describe('purity', () => {
       collect(state, 2, T0 + H);
       feed(state, 'f1', T0 + H);
       hatchEgg(state, fry, T0);
-      renameFish(state, 'f1', 'Bob');
       summarize(state, T0 + 5 * H);
     }).not.toThrow();
   });

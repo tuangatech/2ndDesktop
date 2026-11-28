@@ -91,10 +91,7 @@ export default async function create(host) {
       scene.resize(width, height);
       aimCollect();
     },
-    update: (dt) => {
-      scene.update(dt);
-      hud?.update();
-    },
+    update: (dt) => scene.update(dt),
     setVisible: (visible) => scene.setVisible(visible),
     // The pointer is over the scene at (x, y); `pointer(null)` says it left.
     pointer: (x, y) => (x == null ? scene.clearPointer() : scene.setPointer(x, y)),

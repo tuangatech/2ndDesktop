@@ -1,4 +1,4 @@
-/* The HTML of the tank (window mode only, D31). The host's #hud lets clicks through; only the label takes them. */
+/* The HTML of the tank (window mode only, D31). The host's #hud lets clicks through. */
 #stash {
   position: absolute;
   top: 28px;
@@ -67,64 +67,6 @@
 /* A message that appears while the hint is open goes above it, so the two never overlap. */
 #hud:has(#hint.show) #toast {
   bottom: 84px;
-}
-
-#label {
-  position: absolute;
-  left: 0;
-  top: 0;
-  min-width: 96px;
-  padding: 6px 10px 7px;
-  border-radius: 10px;
-  background: rgba(14, 47, 85, 0.72);
-  font-size: 12px;
-  line-height: 1.35;
-  text-align: center;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s ease;
-}
-
-#label.show {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-}
-
-#label .title {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-#label .detail {
-  opacity: 0.85;
-}
-
-#label button,
-#label input {
-  margin-top: 4px;
-  font: inherit;
-  font-size: 11px;
-  border-radius: 6px;
-  border: 0;
-  padding: 2px 8px;
-}
-
-#label button {
-  background: rgba(255, 255, 255, 0.2);
-  color: inherit;
-  cursor: pointer;
-}
-
-#label button:hover {
-  background: rgba(255, 255, 255, 0.32);
-}
-
-#label input {
-  width: 110px;
-  margin-top: 0;
-  user-select: text;
-  color: #12324f;
 }
 
 /* The slice's development panel (DESKTOP2_DEV=1, window mode only). */
