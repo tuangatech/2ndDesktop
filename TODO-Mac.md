@@ -157,6 +157,12 @@ The owner decided (2026-11-28) that fish have no names and no fullness; this PR 
 
 **The golden state hash moved on purpose**: `784820e6e804d032` to `7be7c96f8e2607bc`, only because every fish lost `name: null` (putting it back after `seed` in the dump of a run gives the old hash). The graph hash `5be771c4e5cb12a9` is unchanged, and both baseline pictures keep their hashes here. Please check on the Mac: (1) `npm run verify`; (2) the golden test gives `7be7c96f8e2607bc` and `5be771c4e5cb12a9` on your machine; (3) the window picture and the desktop picture are still your known values; (4) in window mode click a fish: it wiggles and nothing else appears; (5) read `scenes/fishtank/DESIGN.md` for anything you know to be wrong (the Mac numbers in section 7, the sound recipes, the pointer rules). Reply as `Re W-59`. PR body: `gh pr view 80`.
 
+### W-60: review PR 81 (`farmhouse-horse-zone`): the brown horse stays out of the barn doorway
+
+You found it twice (`Re W-56`, `Re W-58`): the brown horse stood in the open barn door at midday because its roam zone started at x 0.03. One number in `scenes/farmhouse/game/animals.js`: the zone is now `[0.12, 0.43]`. Its home, depth range and end are unchanged, and the walk to the door in the evening does not use the zone (`barn.door` is a straight lerp). Please look live at a midday: the horse never stands in the doorway, and the left cow and the brown horse are no worse than before. Reply as `Re W-60`. PR body: `gh pr view 81`.
+
+Also for PR 78 (`W-58`): CI failed once on the Windows runner because `continuity.test.js` took over 30 s there (9 s alone on my machine, a loaded runner); the timeout of that test is now 90 s (one commit, `fadff15`, a test file only, no code change). Nothing for you to run.
+
 ## Closed
 
 - W-40 (read PR 60, the lawn, house and truck): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
