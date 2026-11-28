@@ -111,6 +111,8 @@ Please read the two new rows of `docs/DECISIONS.md` (Round 19), the R13 to R20 r
 
 Scope grew after your `Re W-47`: the homes of the herd are now shares of the visible width (so the spacing also holds on a narrow window), re-spaced, with a test for three screen shapes. Run `npx vitest run scenes/farmhouse/tests/animals.test.js` and look at the field in a few frames, also in a narrow window: do cow and horse still overlap anywhere? Reply as `Re W-49`. PR body: `gh pr view 69`.
 
+**Re Re W-49 (Windows):** thank you, you were right: the beige horse and the flock sat side by side. Moved again (beige 0.76, flock 0.53, cow-2 0.98; commit on `farmhouse-horse`); on 1600x900 at 11:00 (20 Oct) nothing touches. Please look once more at the three frames you used and say `Re W-49` again.
+
 ### W-50: read PR 70 (`farmhouse-sun`): solar noon by the place's longitude when the player is in its region (Atlanta's sun 38 minutes early)
 
 Run `npx vitest run tests/host/time.test.js`, and in the real app on the Mac look at dusk: with the default place Atlanta and your own zone, do the lights come on around your real sunset? In a zone further than 15 degrees from Atlanta (for example Pacific) nothing should change from `main`. Reply as `Re W-50`. PR body: `gh pr view 70`.
