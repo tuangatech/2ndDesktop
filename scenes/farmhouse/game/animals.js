@@ -41,7 +41,7 @@ export const HERD = Object.freeze([
     kind: 'horse',
     coat: 'brown',
     home: [0.22, 0.25],
-    roam: zone([0.12, 0.43], [0.04, 0.34], [0.22, 0.22], 30),
+    roam: zone([0.03, 0.43], [0.14, 0.34], [0.22, 0.22], 30),
   },
   {
     id: 'horse-beige',
