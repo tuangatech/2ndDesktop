@@ -4,7 +4,7 @@ Kept current at every merge. A new session reads this right after `CLAUDE.md`.
 
 ## Where we are
 
-- Version being worked on: **0.1** (the tank in the new repository, nothing changed), then 0.2.
+- Version being worked on: **0.2** (the farm house, P2: built and merged, final hand checks and owner decisions open, see "The farm house (P2)" below). 0.1 and P1 are done.
 - Last step done: BOOTSTRAP 7.2 steps 1 to 3. The first commit is on `main`; the import (PR 1) is merged as `1e2edf3` and tagged `v0.0.0-import`; the rename (PR 2) is merged as `902c508`. The ruleset of BOOTSTRAP section 3 and the repository settings are applied.
 - Step 4 (the move into the new layout, PR 3) is merged as `ee7cb5b`. Step 5 (the documents, PR 4) is merged as `73abb88`. The README is rewritten (PR 5, merged as `3377802`); CI now skips lint, tests, build and e2e when only `.md` files changed (PR 6, merged as `825a700`; the reduced path has not run on a real docs-only PR yet). Next: step 6 (the hand checks on both machines), then step 7 (P1). The Mac reports on W-1 (the import), W-2 (the rename) and W-3 (the move, with `dist:test`) in parallel.
 
@@ -92,6 +92,15 @@ The pictures were taken twice on the Windows machine and the hashes were identic
 **Main display switch (owner, 2026-11-26, three screens, installed build):** after "Make this my main display" in Windows the scene is on the new main screen and the tray menu still works (collecting pellets). PASS. Not yet tried: unplugging a screen, a resolution change, and a scene on a screen that is not the main one (the app uses only the primary display; the cover check also looks only at it).
 
 Still open on Windows: unplugging a display or changing its resolution, launch at login (with the installed build). Open on the Mac: the menu bar and tray icon by eye, the Dock, the first open of a downloaded unsigned build, and the F11 pause (Mac session, W-7).
+
+## The farm house (P2, 0.2)
+
+Built from `docs/scenes/farmhouse.md` in the steps of the local plan (S0 to S9); PRs 53 to 67 are merged, each after green CI on both runners and the Mac's review (`Re W-33 to W-39`, `Re W-40 to W-46`, `Re W-47`). The farm house is listed for players (the `dev` flag is gone, PR 66). DEC-61 and DEC-62 are the new rows of the log.
+
+- **Proofs on `main` (`455c1ec`, Windows, 2026-11-27):** `npm run verify`: lint ok, format ok, 62 files / 672 unit, 71 e2e (1 skipped). The golden hash is unchanged (state `784820e6e804d032`, graph `5be771c4e5cb12a9`); the two baseline pictures give the same hashes as above (`B7FDD3D1...E38251`, `231D72E8...16BE2DC`).
+- **Weathers and months:** `scenes/farmhouse/tests/matrix.test.js` (all 12 months x morning, midday, night x the simulation and each of 8 kinds, Atlanta and Sydney, the four season previews and 12 real days of Fast mode), an e2e test of every season x six kinds in the real page, `continuity.test.js` (walks the real rules a second at a time through dusk, dawn, storm starts and midnight: nothing steps), and a contact sheet of 22 shots by eye (not kept in the repository).
+- **Memory (Windows, window mode, `npm run measure:switch -- --switches 20 --scene farmhouse --seconds 8 --settle 15`):** 231 to 237 MB 15 s after the start, 222 to 228 MB after 20 switches (no growth), against 250; the tip of PR 66 gives the same 231 on the same machine, so PR 67 added nothing; an earlier reading of 224.7 MB was lower for the same code (spread of about 10 MB between runs). Frame work 1.1 ms at 15 fps; a switch to ready 76 ms. **The Mac, desktop mode: 345 to 347 MB against 350 (PR 66 tip, not measured again).**
+- **Open for the owner:** (1) the Mac memory: cut about 4 MB of textures (field and lawn at half resolution, the fence as a tile, stars and vignette at half size: the Mac near 341 MB) or raise the Mac limit; (2) the cow and the brown horse overlap on screen in some frames (the Mac suggests the horse's home at x 0.30); (3) sun times in Atlanta come about 35 minutes early; (4) the hill is soft on a retina screen; (5) the weather provider (Open-Meteo is proposed) before 0.4; (6) the hand checks of the design's section 9 (8 hours on Windows, 4 on the Mac, the tray dip by feel); (7) a proposal of 2026-11-27 for the owner: animals go to a red barn at night, Scatter hay only by day (after the memory cuts, one PR).
 
 ## Waiting for the owner
 

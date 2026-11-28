@@ -103,40 +103,16 @@ The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDe
 
 The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
 
-### W-40: read PR 60 (`farmhouse-house`): the lawn, the house with its porch, lit windows, chimney smoke, the drive and the truck (S5, stacked on PR 59)
-
-Look at `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T12:00 npm run shot -- s5 1600x900 window 2` and the same at 23:30 (lit windows, lamp) against `scenes/farmhouse/design/farmhouse-autumn-preview.png`. Reply as `Re W-40`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 60`.
-
-### W-41: read PR 61 (`farmhouse-ground`): the trees, the grass, the field and the fence follow the season (S6a, stacked on PR 60)
-
-Shots with `__scene.fishtank.debug.preview({season:'spring'})` (and summer, winter) as the fifth argument of `npm run shot`: are the blossom, fruit, autumn colour and snow right? Reply as `Re W-41`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 61`.
-
-### W-42: read PR 62 (`farmhouse-animals`): the seven animals and Scatter hay (S6b, stacked on PR 61)
-
-Look at the animals on a retina screen (their size, the walk, the pose at rest) and try Scatter hay from the tray. Reply as `Re W-42`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 62`.
-
-### W-43: read PR 63 (`farmhouse-weather`): the sky, sun, moon, clouds, fog, rain, snow and the grade (S7, stacked on PR 62)
-
-The questions in the PR body: is the night dark enough or too dark, is the fog as thick as the concept? Reply as `Re W-43`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 63`.
-
-### W-44: read PR 64 (`farmhouse-modes`): Calendar and Fast season modes and the tray items (S8, stacked on PR 63)
-
-Try the tray items on the Mac: switch to Fast and back, cycle the previews; does the dip feel too slow? Reply as `Re W-44`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 64`.
-
-### W-45: read PR 65 (`farmhouse-fixes`): your three defects and two number points of `Re W-33 to W-39`, fixed (stacked on PR 64)
-
-Please read the diff of `game/view.js`, `game/clockRules.js` and `game/animals.js` and run `npx vitest run scenes/farmhouse/tests/continuity.test.js`; it fails on the old code with your 0.171. Left for the owner: the 35 minutes of sun time in Atlanta, the soft hill on a retina screen. Reply as `Re W-45`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 65`.
-
-### W-46: read PR 66 (`farmhouse-finish`): the farm house listed for players (dev flag removed), DEC-62 and the Windows measurements (S9, stacked on PR 65)
-
-Please measure the finished stack on the Mac, window and desktop: `npm run measure:switch -- --switches 20 --scene farmhouse --seconds 8 --settle 15`. Windows gives 224.7 MB and no growth over 20 switches; your W-39 estimate for the Mac was near 345 MB of 350. Reply as `Re W-46`. The PRs 53 to 66 are stacked or in order: they merge in that order, each after green CI, your reply and the owner's go-ahead. PR body: `gh pr view 66`.
-
-### W-47: read PR 67 (`farmhouse-polish`): your two defects and three look points of `Re W-40 to W-46`, fixed, and a test of every weather in every month (stacked on PR 66)
-
-Please run `npx vitest run scenes/farmhouse/tests/continuity.test.js scenes/farmhouse/tests/matrix.test.js` (the two new continuity checks fail on the old code) and look at the night shot (the far ridge, the horse apart from the cow), the fog shot and the dip (0.6 s in, 1.2 s out) in the tray. The memory points (cut about 4 MB of textures, or raise the Mac limit) stay with the owner; if you can, measure again after the cut is decided. Reply as `Re W-47`. PR 66 and PR 67 merge in order, each after green CI and your reply. PR body: `gh pr view 67`.
-
 ## Closed
 
+- W-40 (read PR 60, the lawn, house and truck): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
+- W-41 (read PR 61, the trees, grass, field and fence): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
+- W-42 (read PR 62, the seven animals and Scatter hay): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
+- W-43 (read PR 63, the sky, weather and grade): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
+- W-44 (read PR 64, the Calendar and Fast modes and the tray items): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
+- W-45 (read PR 65, the fixes of `Re W-33 to W-39`): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
+- W-46 (read PR 66, the farm house listed for players, DEC-62): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
+- W-47 (read PR 67, the fixes and the matrix test): PASS, merged on 2026-11-27 as `455c1ec`. Open for the owner: the cow and the brown horse overlap on screen in some frames, and the Mac memory (cut about 4 MB of textures or raise the limit). See `Re W-47` above.
 - W-33 (read PR 53, the farm house doc fixes): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
 - W-34 (read PR 54, the farm house step): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
 - W-35 (read PR 55, the farm house step): PASS, merged in order on 2026-11-27 (PRs 53 to 59, the last as `46b1243`). The three defects and the number points of `Re W-33 to W-39` are fixed or answered in PR 65 (W-45). See `Re W-33 to W-39` above.
