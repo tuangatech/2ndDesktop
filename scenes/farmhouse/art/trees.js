@@ -326,23 +326,23 @@ export function frontTreePicture(tree, state, snowCover = 0, seed = 8) {
  */
 export function grassColours(season, snowCover = 0) {
   // Snow lies thicker on the ground than on a tree: up to nine tenths white.
-  const snowy = (c, k) => mix(c, SNOW, Math.max(0, Math.min(1, k)) * 0.9);
+  const thickSnow = (c, k) => mix(c, SNOW, Math.max(0, Math.min(1, k)) * 0.9);
   const g = Math.max(0, Math.min(1, season.grass));
   const top = mix('#b3a877', '#93a95f', g);
   const bottom = mix('#948c5c', '#5a893d', g);
   return {
-    top: snowy(top, snowCover),
-    bottom: snowy(bottom, snowCover),
+    top: thickSnow(top, snowCover),
+    bottom: thickSnow(bottom, snowCover),
     stripes: [
-      snowy(mix('#b9b080', '#a4b568', g), snowCover),
-      snowy(mix('#7d7a4c', '#4f7f37', g), snowCover),
-      snowy(mix('#a09660', '#79974c', g), snowCover),
-      snowy(mix('#c4bd8c', '#b9b876', g), snowCover),
+      thickSnow(mix('#b9b080', '#a4b568', g), snowCover),
+      thickSnow(mix('#7d7a4c', '#4f7f37', g), snowCover),
+      thickSnow(mix('#a09660', '#79974c', g), snowCover),
+      thickSnow(mix('#c4bd8c', '#b9b876', g), snowCover),
     ],
     tufts: [
-      snowy(mix('#9a9060', '#79974c', g), snowCover * 0.7),
-      snowy(mix('#847b52', '#6a8d44', g), snowCover * 0.7),
-      snowy(mix('#a89f6c', '#8da85a', g), snowCover * 0.7),
+      thickSnow(mix('#9a9060', '#79974c', g), snowCover * 0.7),
+      thickSnow(mix('#847b52', '#6a8d44', g), snowCover * 0.7),
+      thickSnow(mix('#a89f6c', '#8da85a', g), snowCover * 0.7),
     ],
   };
 }

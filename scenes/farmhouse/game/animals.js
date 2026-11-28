@@ -11,7 +11,7 @@
 // the herd keeps its order and its spacing instead of piling up against the edge it was clamped to (the cow and the
 // brown horse overlapped on a 16:9 screen, `Re W-47`).
 
-import { progressOf, seen, walked } from './barn.js';
+import { progressOf, visibility, walked } from './barn.js';
 import { lerp, smooth, unit } from './hash.js';
 import { NOMINAL, roam } from './roam.js';
 
@@ -41,7 +41,7 @@ export const HERD = Object.freeze([
     kind: 'horse',
     coat: 'brown',
     home: [0.22, 0.25],
-    roam: zone([0.03, 0.43], [0.04, 0.34], [0.22, 0.22], 30),
+    roam: zone([0.03, 0.43], [0.14, 0.34], [0.22, 0.22], 30),
   },
   {
     id: 'horse-beige',
@@ -269,7 +269,7 @@ export function animalsAt(
       scale: depthScale(depth),
       facing,
       pose,
-      alpha: barn ? seen(progress) : 1,
+      alpha: barn ? visibility(progress) : 1,
       inside: barn ? progress : 0,
     };
   });

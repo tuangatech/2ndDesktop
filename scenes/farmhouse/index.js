@@ -91,7 +91,6 @@ export default async function create(host) {
   }
   let width = 1;
   let fit = coverFit(1, 1);
-  let visible = true;
   let pointer = null;
   // A tray preview of a season or a kind of weather lasts for the session and is never saved.
   const preview = { season: null, kind: null };
@@ -232,8 +231,11 @@ export default async function create(host) {
     barnGlow.addChild(g);
   }
   layers.grade.addChild(barnGlow);
+  const FIELD_Y = 690; // the fence line of the field and how far down it reaches (the concept's numbers)
+  const FIELD_DEPTH = 185;
+  const fieldY = (depth) => FIELD_Y + depth * FIELD_DEPTH;
   // The owl at the loft window, the weathervane and the breath of the animals in the cold (R16 to R18).
-  const extras = createExtrasView({ layers, barnBox, fieldY: (depth) => fieldY(depth) });
+  const extras = createExtrasView({ layers, barnBox, fieldY });
   /** Puts the barn and its glow at the left edge of the screen. */
   function placeBarn() {
     const y = fieldY(BARN.depth);
@@ -249,9 +251,8 @@ export default async function create(host) {
   const hay = { sprite: null, key: 'hay' };
   const animalTextures = new Map();
   const legTextures = new Map(); // legKey -> {far, near} of {thigh, shin}, each {texture, picture}
-  const FIELD_Y = 690; // the fence line of the field and how far down it reaches (the concept's numbers)
-  const FIELD_DEPTH = 185;
-  const fieldY = (depth) => FIELD_Y + depth * FIELD_DEPTH;
+  // The barn and the hay are the first two children of the animals' layer: the animals come after them.
+  const UNDER_ANIMALS = 2;
   function placeAnimals(dt) {
     motion.animals.forEach((a, i) => {
       const view = herd.get(a.id);
@@ -261,7 +262,7 @@ export default async function create(host) {
       const y = fieldY(a.depth);
       box.position.set(x, y);
       box.scale.set(a.scale * (a.facing === 'right' ? 1 : -1), a.scale);
-      layers.animals.setChildIndex(box, 2 + i); // far ones first (the barn and the hay are under them)
+      layers.animals.setChildIndex(box, UNDER_ANIMALS + i); // far ones first
       box.alpha = a.alpha; // 0 in the barn: faded in its door
       box.visible = a.alpha > 0.01;
       view.update(a, x, y, dt, now() / 1000); // the legs, the head, the ear, the tail
@@ -446,10 +447,10 @@ export default async function create(host) {
   };
   async function drawLandscape(all) {
     const { season, snowCover } = slow;
-    const now = wanted();
-    if (all || now.sky !== art.skyKey) {
-      art.skyKey = now.sky;
-      await drawPiece('sky', skyPicture(skyColours(now.tod, slow.weather)));
+    const want = wanted();
+    if (all || want.sky !== art.skyKey) {
+      art.skyKey = want.sky;
+      await drawPiece('sky', skyPicture(skyColours(want.tod, slow.weather)));
     }
     if (all) {
       await drawPiece('far', farRidgePicture());
@@ -457,8 +458,8 @@ export default async function create(host) {
       await drawPiece('truck', truckPicture());
       drawAnimals();
     }
-    if (all || now.key !== art.key) {
-      art.key = now.key;
+    if (all || want.key !== art.key) {
+      art.key = want.key;
       await drawPiece('mid', midRidgePicture(season, snowCover));
       await drawPiece('hill', hillPicture(season, snowCover));
       await drawPiece('lawn', lawnGroundPicture(season, snowCover));
@@ -468,8 +469,8 @@ export default async function create(host) {
       await drawPiece('fence', fencePicture(season, snowCover));
     }
     for (const { tree, name } of trees) {
-      if (!all && art.treeKeys[name] === now.keys[name]) continue;
-      art.treeKeys[name] = now.keys[name];
+      if (!all && art.treeKeys[name] === want.keys[name]) continue;
+      art.treeKeys[name] = want.keys[name];
       await drawPiece(
         name,
         BACK_TREES.includes(tree)
@@ -484,11 +485,11 @@ export default async function create(host) {
   applyMotion(); // the animals are in their places from the first frame
   /** Whether every picture shows what the view of this moment asks for. */
   function landscapeCurrent() {
-    const now = wanted();
+    const want = wanted();
     return (
-      now.key === art.key &&
-      now.sky === art.skyKey &&
-      trees.every(({ name }) => art.treeKeys[name] === now.keys[name])
+      want.key === art.key &&
+      want.sky === art.skyKey &&
+      trees.every(({ name }) => art.treeKeys[name] === want.keys[name])
     );
   }
   /** Called once a second: draws again what has moved enough. */
@@ -584,9 +585,7 @@ export default async function create(host) {
       refresh();
       applyMotion(Math.min(dt, 0.1));
     },
-    setVisible(value) {
-      visible = value;
-    },
+    setVisible() {}, // the host calls it when the scene is covered or shown; the farm house catches up in `resume`
     // After a pause the scene is right at once: the view is worked out again from the clock.
     resume() {
       refresh(true);
@@ -595,7 +594,7 @@ export default async function create(host) {
     pointer(x, y) {
       pointer = x === null ? null : { x, y };
     },
-    click() {},
+    click() {}, // the page calls it on a click in window mode; the farm house has nothing to click
     status: () => {
       const season = SEASON_LABEL[slow.season.name];
       const fastNote =
@@ -660,7 +659,6 @@ export default async function create(host) {
       layers: () => LAYERS.slice(),
       fit: () => ({ ...fit }),
       hay: () => ({ startedAt: hayStartedAt, eatSeconds: HAY.eat }),
-      isVisible: () => visible,
       // For tests and measurements: draw every picture again now, and how many pictures have been drawn.
       rebuild: async () => {
         await art.building;

@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { createTime } from '../../../app/page/time.js';
 import { animalsAt, HERD } from '../game/animals.js';
-import { BARN, ORDER, hayAllowed, progressOf, seen, shelterAt, walked } from '../game/barn.js';
+import {
+  BARN,
+  ORDER,
+  hayAllowed,
+  progressOf,
+  shelterAt,
+  visibility,
+  walked,
+} from '../game/barn.js';
 import { motionAt, slowAt } from '../game/view.js';
 import { previewWeather } from '../game/weather.js';
 
@@ -63,8 +71,8 @@ describe('R13 the barn: who wants shelter, and in what order', () => {
   it('the walk is smooth and the fade in the doorway comes at the end of it', () => {
     expect(walked(0)).toBe(0);
     expect(walked(1)).toBe(1);
-    expect(seen(0.5)).toBe(1);
-    expect(seen(1)).toBe(0);
+    expect(visibility(0.5)).toBe(1);
+    expect(visibility(1)).toBe(0);
     for (let p = 0; p < 1; p += 0.01) expect(walked(p + 0.01) - walked(p)).toBeLessThan(0.05);
   });
 
