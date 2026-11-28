@@ -53,6 +53,7 @@ export function slowAt({
   // A previewed snowfall also puts snow on the ground, so the picture shows it.
   const ground = snowCoverAt(seed, when, latitude);
   const snowCover = previewKind === 'snow' ? Math.max(ground, 0.5) : ground;
+  const shelter = shelterAt(nightness, weather);
   return {
     ms,
     when,
@@ -69,8 +70,8 @@ export function slowAt({
     // `nightness` and the storm's wind), so they walk to their places and never jump.
     still: Math.max(smooth((nightness - 0.5) / 0.4), stormness(weather)),
     // How much they want shelter, and whether Scatter hay can be used (only by day, R12).
-    shelter: shelterAt(nightness, weather),
-    hayAllowed: hayAllowed(shelterAt(nightness, weather)),
+    shelter,
+    hayAllowed: hayAllowed(shelter),
     // The morning side of the change (they face away from the door while they come out).
     morning: ms < sun.noon,
     tripAllowed: (startMs) => tripAllowed(startMs, sun, weather, snowCover),
@@ -86,7 +87,7 @@ export function motionAt(ms, parts, slow, { seed, hayStartedAt = null, bounds, b
       seed,
       dayIndex: slow.when.dayIndex,
       // The resting places change at noon, when they are out walking, not at midnight when they are standing in them.
-      restDay: dayIndexOf(parts) - (parts.minuteOfDay < 720 ? 1 : 0),
+      restDay: slow.when.dayIndex - (parts.minuteOfDay < 720 ? 1 : 0),
       still: slow.still,
       hayStartedAt,
       bounds,
