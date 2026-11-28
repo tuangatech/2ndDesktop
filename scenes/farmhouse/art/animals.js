@@ -44,24 +44,31 @@ const tufts = (seed, spread) => {
   return ops;
 };
 
+// Each animal is drawn in four parts that the scene moves apart (docs/scenes/farmhouse.md rule R22, DEC-68): the body (with
+// the tufts of grass at its feet), the head with the neck, the ear (a child of the head) and the tail (none on a sheep: it
+// is under the wool). `joints` says where each one turns: the head about the base of the neck, the ear about its root, the
+// tail about where it grows. All of it is in the animal's own space, like the legs.
 function horse(coat) {
   const [c1, c2, mane] = COATS[coat];
   const g = gradient(-80, -30, c1, c2);
-  return [
-    { t: 'path', d: 'M -48 -58 C -66 -56 -70 -34 -64 -14', stroke: mane, width: 9, cap: 'round' },
-    oval(0, -52, 49, 21, g),
-    tilted(36, -82, 7, 26, 35, mane),
-    tilted(43, -76, 12, 26, 35, g),
-    tilted(69, -93, 17, 9, 38, g),
-    tilted(81, -85, 6.5, 5.5, 38, darker(c2, 0.25)),
-    tilted(60, -108, 3, 6.5, 12, c2),
-    oval(67, -96, 1.9, 1.9, '#3a312b'),
-    ...tufts(31, 44),
-  ];
+  return {
+    body: [oval(0, -52, 49, 21, g), ...tufts(31, 44)],
+    head: [
+      tilted(36, -82, 7, 26, 35, mane),
+      tilted(43, -76, 12, 26, 35, g),
+      tilted(69, -93, 17, 9, 38, g),
+      tilted(81, -85, 6.5, 5.5, 38, darker(c2, 0.25)),
+      oval(67, -96, 1.9, 1.9, '#3a312b'),
+    ],
+    ear: [tilted(60, -108, 3, 6.5, 12, c2)],
+    tail: [
+      { t: 'path', d: 'M -48 -58 C -66 -56 -70 -34 -64 -14', stroke: mane, width: 9, cap: 'round' },
+    ],
+  };
 }
 
 function sheep() {
-  const ops = [oval(0, -30, 30, 18, '#cfc6b0')];
+  const body = [oval(0, -30, 30, 18, '#cfc6b0')];
   for (const [x, y, r] of [
     [-20, -36, 14],
     [-4, -44, 17],
@@ -71,46 +78,68 @@ function sheep() {
     [-28, -30, 10],
     [25, -32, 10],
   ]) {
-    ops.push(oval(x, y, r, r, gradient(y - r, y + r, '#f2ecdc', '#e1d9c4')));
+    body.push(oval(x, y, r, r, gradient(y - r, y + r, '#f2ecdc', '#e1d9c4')));
   }
-  ops.push(
-    tilted(36, -30, 9, 11, -12, '#5a4f47'),
-    tilted(28, -38, 7, 3, 25, '#4a403a'),
-    oval(34, -48, 6, 6, '#ece5d2'),
-    oval(39, -33, 1.3, 1.3, '#d7cdbb'),
-    ...tufts(32, 36),
-  );
-  return ops;
+  body.push(...tufts(32, 36));
+  return {
+    body,
+    head: [
+      tilted(36, -30, 9, 11, -12, '#5a4f47'),
+      oval(34, -48, 6, 6, '#ece5d2'),
+      oval(39, -33, 1.3, 1.3, '#d7cdbb'),
+    ],
+    ear: [tilted(28, -38, 7, 3, 25, '#4a403a')],
+    tail: null,
+  };
 }
 
 function cow(patch) {
   const skin = mix('#f3eee1', '#e3dcc8', 0.5);
-  return [
-    { t: 'path', d: 'M -50 -70 C -60 -64 -60 -42 -57 -24', stroke: patch, width: 4, cap: 'round' },
-    oval(-57, -20, 4, 7, patch),
-    oval(0, -60, 51, 25, gradient(-85, -35, '#f3eee1', '#dcd4c0')),
-    {
-      t: 'clip',
-      x: 0,
-      y: -60,
-      rx: 51,
-      ry: 25,
-      ops: [
-        oval(-18, -70, 20, 14, patch),
-        oval(22, -52, 14, 11, patch),
-        oval(-38, -52, 10, 12, patch),
-      ],
-    },
-    oval(-18, -36, 9, 6, '#e3a79b'),
-    tilted(44, -66, 17, 19, 20, skin),
-    tilted(68, -61, 16, 11, 28, skin),
-    tilted(80, -53, 8.5, 6.5, 28, '#e3a79b'),
-    tilted(56, -76, 8, 3.8, -25, patch),
-    tilted(62, -79, 3, 5, 15, '#e6dcc0'),
-    oval(69, -65, 1.9, 1.9, '#3a312b'),
-    ...tufts(33, 46),
-  ];
+  return {
+    body: [
+      oval(0, -60, 51, 25, gradient(-85, -35, '#f3eee1', '#dcd4c0')),
+      {
+        t: 'clip',
+        x: 0,
+        y: -60,
+        rx: 51,
+        ry: 25,
+        ops: [
+          oval(-18, -70, 20, 14, patch),
+          oval(22, -52, 14, 11, patch),
+          oval(-38, -52, 10, 12, patch),
+        ],
+      },
+      oval(-18, -36, 9, 6, '#e3a79b'),
+      ...tufts(33, 46),
+    ],
+    head: [
+      tilted(44, -66, 17, 19, 20, skin),
+      tilted(68, -61, 16, 11, 28, skin),
+      tilted(80, -53, 8.5, 6.5, 28, '#e3a79b'),
+      tilted(62, -79, 3, 5, 15, '#e6dcc0'),
+      oval(69, -65, 1.9, 1.9, '#3a312b'),
+    ],
+    ear: [tilted(56, -76, 8, 3.8, -25, patch)],
+    tail: [
+      {
+        t: 'path',
+        d: 'M -50 -70 C -60 -64 -60 -42 -57 -24',
+        stroke: patch,
+        width: 4,
+        cap: 'round',
+      },
+      oval(-57, -20, 4, 7, patch),
+    ],
+  };
 }
+
+/** Where each part turns, in the animal's space, and the frame of its picture. */
+export const JOINTS = {
+  horse: { head: [32, -62], ear: [60, -103], tail: [-48, -58] },
+  cow: { head: [40, -62], ear: [51, -75], tail: [-50, -70] },
+  sheep: { head: [24, -34], ear: [30, -37], tail: null },
+};
 
 /** The key of a set of leg textures: the legs of a horse follow its coat, the others are the same for every coat. */
 export const legKey = (animal) => (animal.kind === 'horse' ? `horse-${animal.coat}` : animal.kind);
@@ -181,28 +210,55 @@ export function legPieces(kind, coat) {
 }
 
 const FRAMES = {
-  horse: { x: -74, y: -126, width: 170, height: 132 },
-  cow: { x: -66, y: -92, width: 160, height: 100 },
-  sheep: { x: -34, y: -66, width: 92, height: 72 },
+  horse: {
+    body: { x: -54, y: -76, width: 108, height: 84 },
+    head: { x: 12, y: -122, width: 82, height: 78 },
+    ear: { x: 54, y: -117, width: 12, height: 18 },
+    tail: { x: -78, y: -66, width: 38, height: 58 },
+  },
+  cow: {
+    body: { x: -56, y: -88, width: 114, height: 96 },
+    head: { x: 22, y: -90, width: 72, height: 50 },
+    ear: { x: 46, y: -86, width: 20, height: 20 },
+    tail: { x: -66, y: -74, width: 22, height: 64 },
+  },
+  sheep: {
+    body: { x: -44, y: -64, width: 92, height: 72 },
+    head: { x: 19, y: -56, width: 30, height: 42 },
+    ear: { x: 20, y: -44, width: 18, height: 12 },
+    tail: null,
+  },
 };
 
 /** The coats of the herd (game/animals.js `HERD`): `kind-coat`, the way `coatKey` names them. */
 export const coatKey = (animal) => `${animal.kind}-${animal.coat}`;
 
 /**
- * The picture of one coat.
+ * The pictures of one coat, in four parts: `body`, `head` (with the neck), `ear` and `tail` (null for a sheep), and where
+ * the head, the ear and the tail turn.
  * @param {string} kind  'horse', 'cow' or 'sheep'
  * @param {string} coat  'brown', 'beige', 'brown-white', 'tan-white' or 'white'
  */
-export function animalPicture(kind, coat) {
+export function animalParts(kind, coat) {
   const ops =
     kind === 'horse'
       ? horse(coat)
       : kind === 'sheep'
         ? sheep()
         : cow(coat === 'tan-white' ? '#b98c5a' : '#6a5444');
-  return makePicture({ ...FRAMES[kind], resolution: RESOLUTION }, ops);
+  const draw = (part) =>
+    ops[part] ? makePicture({ ...FRAMES[kind][part], resolution: RESOLUTION }, ops[part]) : null;
+  return {
+    body: draw('body'),
+    head: draw('head'),
+    ear: draw('ear'),
+    tail: draw('tail'),
+    joints: JOINTS[kind],
+  };
 }
+
+/** The picture of the body of one coat (the parts of the animal apart from the head, the ear and the tail). */
+export const animalPicture = (kind, coat) => animalParts(kind, coat).body;
 
 /** The hay that is scattered (rule R12): three low heaps with straw lines, drawn around the origin. */
 export function hayPicture(seed = 12) {

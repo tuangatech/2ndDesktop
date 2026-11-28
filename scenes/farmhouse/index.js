@@ -14,7 +14,7 @@ import { smooth } from './game/hash.js';
 const hexNumber = (hex) => parseInt(hex.slice(1), 16);
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
 import { createAnimalView } from './animalView.js';
-import { animalPicture, coatKey, hayPicture, legKey, legPieces } from './art/animals.js';
+import { animalParts, coatKey, hayPicture, legKey, legPieces } from './art/animals.js';
 import { BARN_DOOR, BARN_LANTERN, barnPicture } from './art/barn.js';
 import { blend, skyColours, skyKey, timeOfDay, fallingAt } from './game/sky.js';
 import { createWeatherView } from './weatherView.js';
@@ -264,7 +264,7 @@ export default async function create(host) {
       layers.animals.setChildIndex(box, 2 + i); // far ones first (the barn and the hay are under them)
       box.alpha = a.alpha; // 0 in the barn: faded in its door
       box.visible = a.alpha > 0.01;
-      view.update(a, x, y, dt); // the legs, the tilt of the body
+      view.update(a, x, y, dt, now() / 1000); // the legs, the head, the ear, the tail
     });
     const w = hayWeight(now(), hayStartedAt);
     if (hay.sprite) {
@@ -385,11 +385,18 @@ export default async function create(host) {
     art.builds++;
     for (const [i, spec] of HERD.entries()) {
       const key = coatKey(spec);
-      const picture = animalPicture(spec.kind, spec.coat);
       if (!animalTextures.has(key)) {
-        animalTextures.set(key, rasterize(picture, host.app.renderer));
-        art.builds++;
+        // The body, the head with the neck, the ear and the tail of a coat: four textures (three for a sheep).
+        const parts = animalParts(spec.kind, spec.coat);
+        const made = { joints: parts.joints };
+        for (const part of ['body', 'head', 'ear', 'tail']) {
+          if (!parts[part]) continue;
+          made[part] = { picture: parts[part], texture: rasterize(parts[part], host.app.renderer) };
+          art.builds++;
+        }
+        animalTextures.set(key, made);
       }
+      const coat = animalTextures.get(key);
       // The pieces of the legs: an upper and a lower piece for each side, drawn once for each set (a horse's follow its coat).
       const lk = legKey(spec);
       const pieces = legPieces(spec.kind, spec.coat);
@@ -412,9 +419,15 @@ export default async function create(host) {
         createAnimalView({
           spec,
           parent: layers.animals,
-          body: { texture: animalTextures.get(key), picture },
+          body: coat.body,
+          head: coat.head,
+          ear: coat.ear,
+          tail: coat.tail ?? null,
+          joints: coat.joints,
           legs: legTextures.get(lk),
           phase: i * 0.31,
+          seed: SEED,
+          index: i,
         }),
       );
     }
