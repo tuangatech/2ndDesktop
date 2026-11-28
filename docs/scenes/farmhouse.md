@@ -76,6 +76,7 @@ There are no game rules. The state is small and mostly derived:
 | R18 | **Weathervane:** a vane on the barn roof that turns with the wind. | Owner (DEC-64) |
 | R19 | **Shooting stars:** on clear nights, now and then a short streak across the sky at times that come from the seed (about one an hour; a few an hour on 11 to 13 August, the Perseids). | Owner (DEC-64) |
 | R20 | **Seasonal touches, on for everyone, no tray toggle:** pumpkins on the porch from 25 to 31 October and a string of lights along the porch in December (lit when it is dark, like the windows). | Owner (DEC-64) |
+| R21 | **The animals walk on four legs (DEC-65).** Each animal's legs are drawn apart from its body and swing about the hip when it walks, a diagonal pair together; the swing follows the ground covered, so the feet do not skate, and it fades in and out with the pose. | Owner (DEC-65) |
 
 ### 4.2 Season items
 

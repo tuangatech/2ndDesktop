@@ -81,7 +81,7 @@ test.describe('the farm house scene', () => {
       expect(['spring', 'summer', 'autumn', 'winter']).toContain(info.season);
       expect(info.animals).toBe(7);
       // The pictures are drawn once: sky, far ridge, drive, truck, mid ridge, hill, lawn, house, barn, field, fence (11) and eight trees.
-      expect(built).toBe(19 + 1 + 5); // and the hay and five coats (counted before the test pins a moment)
+      expect(built).toBe(19 + 1 + 5 + 8); // and the hay, five coats and four sets of legs (two textures each)
       // What is on show follows the view: each window's light, the smoke and the truck.
       for (const [id, light] of Object.entries(info.view.slow.lights)) {
         expect(info.shown.lights[id]).toBeCloseTo(light > 0.01 ? light : 0, 5);
