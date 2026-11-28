@@ -133,6 +133,10 @@ Run `npx vitest run scenes/farmhouse/tests/extras.test.js`, and look at the loft
 
 Run `npx vitest run scenes/farmhouse/tests/animals-art.test.js` and watch the field live for a minute on a retina screen (also `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T10:00 npm run shot -- legs 1600x900 window 4`): do the legs read as a walk and not a skate, and are the feet right on a cow and a sheep? Measure memory too (375 MB). Reply as `Re W-54`. PR body: `gh pr view 74`.
 
+### W-55: review PR 75 (`farmhouse-move`): the animals roam freely, stand for long and are not in step (DEC-66, R8)
+
+The owner found the animals robotic. Run `npx vitest run scenes/farmhouse/tests/roam.test.js scenes/farmhouse/tests/animals.test.js` and watch the field live for a few minutes on a retina screen: do they look less robotic (long stands, moves in all directions), is anyone pushed in a way that looks like a slide or a dart, do sheep ever look like they stand on a cow or a horse, and a narrow window? Measure memory too (375 MB). Reply as `Re W-55`. PR body: `gh pr view 75`.
+
 Also, PR 73 now has a shorter owl test (the old one timed out on the Windows runner), and PR 69 and PR 73 have new commits since your review: `Re W-49` is still open for 69.
 
 ## Closed
