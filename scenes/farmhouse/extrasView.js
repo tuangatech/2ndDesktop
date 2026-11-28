@@ -64,7 +64,7 @@ export function createExtrasView({ layers, barnBox, fieldY }) {
   }).filter(Boolean);
   layers.weather.addChild(breath);
 
-  let seen = { owl: 0, vane: 0, breath: 0 };
+  const seen = { owl: 0, vane: 0, breath: 0 };
   return {
     /** Puts the barn's small things where the barn is (design units, the barn's ground line at its left edge). */
     placeBarn(x, y) {

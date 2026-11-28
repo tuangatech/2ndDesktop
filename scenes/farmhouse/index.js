@@ -91,7 +91,6 @@ export default async function create(host) {
   }
   let width = 1;
   let fit = coverFit(1, 1);
-  let visible = true;
   let pointer = null;
   // A tray preview of a season or a kind of weather lasts for the session and is never saved.
   const preview = { season: null, kind: null };
@@ -232,8 +231,11 @@ export default async function create(host) {
     barnGlow.addChild(g);
   }
   layers.grade.addChild(barnGlow);
+  const FIELD_Y = 690; // the fence line of the field and how far down it reaches (the concept's numbers)
+  const FIELD_DEPTH = 185;
+  const fieldY = (depth) => FIELD_Y + depth * FIELD_DEPTH;
   // The owl at the loft window, the weathervane and the breath of the animals in the cold (R16 to R18).
-  const extras = createExtrasView({ layers, barnBox, fieldY: (depth) => fieldY(depth) });
+  const extras = createExtrasView({ layers, barnBox, fieldY });
   /** Puts the barn and its glow at the left edge of the screen. */
   function placeBarn() {
     const y = fieldY(BARN.depth);
@@ -249,9 +251,6 @@ export default async function create(host) {
   const hay = { sprite: null, key: 'hay' };
   const animalTextures = new Map();
   const legTextures = new Map(); // legKey -> {far, near} of {thigh, shin}, each {texture, picture}
-  const FIELD_Y = 690; // the fence line of the field and how far down it reaches (the concept's numbers)
-  const FIELD_DEPTH = 185;
-  const fieldY = (depth) => FIELD_Y + depth * FIELD_DEPTH;
   function placeAnimals(dt) {
     motion.animals.forEach((a, i) => {
       const view = herd.get(a.id);
@@ -584,9 +583,7 @@ export default async function create(host) {
       refresh();
       applyMotion(Math.min(dt, 0.1));
     },
-    setVisible(value) {
-      visible = value;
-    },
+    setVisible() {}, // the host calls it when the scene is covered or shown; the farm house catches up in `resume`
     // After a pause the scene is right at once: the view is worked out again from the clock.
     resume() {
       refresh(true);
@@ -595,7 +592,7 @@ export default async function create(host) {
     pointer(x, y) {
       pointer = x === null ? null : { x, y };
     },
-    click() {},
+    click() {}, // the page calls it on a click in window mode; the farm house has nothing to click
     status: () => {
       const season = SEASON_LABEL[slow.season.name];
       const fastNote =
@@ -660,7 +657,6 @@ export default async function create(host) {
       layers: () => LAYERS.slice(),
       fit: () => ({ ...fit }),
       hay: () => ({ startedAt: hayStartedAt, eatSeconds: HAY.eat }),
-      isVisible: () => visible,
       // For tests and measurements: draw every picture again now, and how many pictures have been drawn.
       rebuild: async () => {
         await art.building;
