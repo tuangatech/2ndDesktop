@@ -11,7 +11,6 @@ import { config } from './config.js';
  * @property {string} id
  * @property {string} species
  * @property {number} seed
- * @property {string|null} name
  * @property {number} growthPoints
  * @property {number} fullness
  * @property {number} fullnessUpdatedAt
@@ -173,22 +172,6 @@ export function hatchEgg(state, newFish, now, cfg = config) {
   };
 }
 
-const NAME_PATTERN = /^[\p{L}\p{N} ]*$/u;
-export const MAX_NAME_LENGTH = 16;
-
-/** Names a fish: trimmed, 1 to 16 letters, numbers or spaces; empty clears the name (FR-15). */
-export function renameFish(state, fishId, name) {
-  const index = state.fish.findIndex((fish) => fish.id === fishId);
-  if (index < 0) return { ok: false, reason: 'unknown_fish' };
-  const trimmed = String(name ?? '').trim();
-  if ([...trimmed].length > MAX_NAME_LENGTH || !NAME_PATTERN.test(trimmed)) {
-    return { ok: false, reason: 'bad_name' };
-  }
-  const fishList = state.fish.slice();
-  fishList[index] = { ...state.fish[index], name: trimmed === '' ? null : trimmed };
-  return { ok: true, fish: fishList[index], state: { ...state, fish: fishList } };
-}
-
 /** A random 32-character hex id. */
 export const newId = (rng) =>
   Array.from({ length: 4 }, () => rng.int(0, 0xffffffff).toString(16).padStart(8, '0')).join('');
@@ -199,7 +182,6 @@ export function newFish(now, rng, speciesIds, species = rng.pick(speciesIds)) {
     id: newId(rng),
     species,
     seed: rng.int(1, 0x7fffffff),
-    name: null,
     growthPoints: 0,
     fullness: 0,
     fullnessUpdatedAt: now,

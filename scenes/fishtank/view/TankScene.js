@@ -50,8 +50,6 @@ export class TankScene {
     this.onMessage = null;
     /** @type {{play: (name: string) => unknown}|null} The host's sounds. Only player actions call it (FR-38). */
     this.sound = null;
-    /** Called with a fish when the player touches it (window mode, FR-48). */
-    this.onFishTouched = null;
     this.layout = null;
     this.sway = [];
     this.emitters = [];
@@ -190,7 +188,6 @@ export class TankScene {
     for (const record of records) {
       const existing = this.fishes.get(record.id);
       if (existing) {
-        existing.name = record.name;
         // A meal that is still on its way is shown when the pellet is eaten (D1), not when it is dropped: the
         // fish that was just fed keeps its points until then (dropAt gives the pellet the new points).
         const justFed = event?.type === 'feed' && event.fishId === record.id;
@@ -275,7 +272,6 @@ export class TankScene {
     const fish = this.fishAt(x, y);
     if (fish) {
       fish.poke();
-      this.onFishTouched?.(fish);
       return { ok: true, touched: fish.id };
     }
     return this.dropAt(x, y);
@@ -401,11 +397,6 @@ export class TankScene {
     if (fish && spot) fish.placeAt(spot.x, spot.y);
     if (spot) this.sound?.play('chime');
     return result;
-  }
-
-  /** Renames a fish (FR-15). */
-  rename(fishId, name) {
-    return this.repository.renameFish(fishId, name);
   }
 
   /** The once-a-second tick: pellets and hunger by the clock, and the drowsy look (FR-1, FR-8, FR-10). */

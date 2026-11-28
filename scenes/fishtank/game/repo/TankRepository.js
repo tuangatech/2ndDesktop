@@ -3,7 +3,7 @@
 //
 // Every action returns the result object of scenes/fishtank/game/rules.js: `{ ok: true, state, ... }` or
 // `{ ok: false, reason }`, where reason is one of stash_full, none_available, stash_empty, fish_full,
-// unknown_fish, no_egg, tank_full, bad_name.
+// unknown_fish, no_egg, tank_full.
 
 /**
  * @typedef {import('../rules.js').TankState} TankState
@@ -17,7 +17,6 @@
  * @property {(count?: number) => object} collect
  * @property {(fishId: string) => object} feed
  * @property {() => object} hatchEgg
- * @property {(fishId: string, name: string) => object} renameFish
  * @property {(listener: (event: TankEvent) => void) => () => void} subscribe  fires once per change
  *
  * What changed, so a listener never has to guess or be told through side flags. A Phase 3 repository sends the
@@ -25,7 +24,6 @@
  * @typedef {{type: 'collect', collected: number}
  *         | {type: 'feed', fishId: string, pointsAfter: number}
  *         | {type: 'hatch', fishId: string}
- *         | {type: 'rename', fishId: string}
  *         | {type: 'tick'}
  *         | {type: 'dev'}} TankEvent
  */

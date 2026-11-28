@@ -11,8 +11,8 @@ const isObject = (v) => Boolean(v) && typeof v === 'object' && !Array.isArray(v)
 /**
  * Repairs a loaded state instead of throwing it away: losing the player's fish is the worst thing a save can do.
  * Counts are clamped into their caps (a later build or tuning.json may have lowered a cap), missing values get a
- * neutral default, and a fish of a species that no longer exists keeps its growth and name but gets a species
- * that does. Only a fish without a usable id is dropped. Returns `{ state, fixes }`, where `fixes` lists what was
+ * neutral default, and a fish of a species that no longer exists keeps its growth but gets a species
+ * that does. A `name` saved by an older build (DEC-69) is dropped without a message. Only a fish without a usable id is dropped. Returns `{ state, fixes }`, where `fixes` lists what was
  * changed (empty for a clean state), or null when there is no tank to repair.
  * @param {unknown} state
  * @param {{config: object, speciesIds: string[], now: number, rng: {int: (lo: number, hi: number) => number}}} options
@@ -64,19 +64,14 @@ export function repairState(state, { config, speciesIds, now, rng }) {
       species = speciesIds[Math.abs(Math.floor(seed)) % speciesIds.length];
       fixes.push(`fish ${i} species ${String(f.species).slice(0, 20)} -> ${species}`);
     }
-    let name = f.name ?? null;
-    if (name !== null && typeof name !== 'string') name = null;
-    if (name !== null && [...name].length > rules.MAX_NAME_LENGTH) {
-      name = [...name].slice(0, rules.MAX_NAME_LENGTH).join('');
-    }
-    if (name !== (f.name ?? null)) fixes.push(`fish ${i} name`);
+    const kept = { ...f };
+    delete kept.name;
     const lastFedAt = f.lastFedAt === null || isNumber(f.lastFedAt) ? f.lastFedAt : null;
     if (lastFedAt !== f.lastFedAt) fixes.push(`fish ${i} lastFedAt`);
     fish.push({
-      ...f,
+      ...kept,
       species,
       seed,
-      name,
       growthPoints: count(f.growthPoints, 1e9, `fish ${i} growthPoints`),
       fullness: count(f.fullness, config.fullness.max, `fish ${i} fullness`),
       fullnessUpdatedAt: time(f.fullnessUpdatedAt, `fish ${i} fullnessUpdatedAt`),
@@ -229,8 +224,6 @@ export function createLocalRepository({ storage, clock, rng, config, speciesIds 
         (r) => ({ type: 'hatch', fishId: r.fish.id }),
       );
     },
-    renameFish: (fishId, name) =>
-      apply(rules.renameFish(state, fishId, name), (r) => ({ type: 'rename', fishId: r.fish.id })),
     markHintShown() {
       if (state.tank.hintShown) return;
       state = { ...state, tank: { ...state.tank, hintShown: true } };

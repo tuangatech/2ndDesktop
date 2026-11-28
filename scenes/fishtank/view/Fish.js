@@ -30,7 +30,7 @@ const smooth = (t) => t * t * (3 - 2 * t);
 
 export class Fish {
   /**
-   * @param {{record: {id:string, seed:number, name:string|null, growthPoints:number}, species: object,
+   * @param {{record: {id:string, seed:number, growthPoints:number}, species: object,
    *          textures: Record<string, import('pixi.js').Texture>, bubbles: import('./Bubbles.js').BubbleSystem,
    *          layout: object, fadeIn?: boolean}} options
    */
@@ -38,7 +38,6 @@ export class Fish {
     this.id = record.id;
     this.species = species;
     this.seed = record.seed;
-    this.name = record.name ?? null;
     this.personality = personalityOf(record.seed, visual.pointer.curiousShare);
     this.reaction = NO_REACTION;
     this.fade = fadeIn ? 0 : 1;

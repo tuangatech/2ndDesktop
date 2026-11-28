@@ -115,8 +115,7 @@ export const visual = {
     slots: [0.42, 0.58, 0.3, 0.7], // where on the sand they rest, as fractions of the width
   },
   touch: {
-    labelSeconds: 3, // how long a fish label stays (FR-48)
-    pokeSeconds: 0.5,
+    pokeSeconds: 0.5, // a click on a fish makes it wiggle this long (FR-48; no label since DEC-69)
   },
   // Fish react to the mouse pointer (FR-49, D26). Distances are in units.
   pointer: {
