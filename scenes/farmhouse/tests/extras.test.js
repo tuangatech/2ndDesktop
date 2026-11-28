@@ -48,26 +48,31 @@ describe('R16 the owl', () => {
     }
   });
 
-  it('comes and goes by ramps: a second at a time over three nights, no step and the eyes shut only briefly', () => {
-    let last = null;
+  it('comes and goes by ramps: a second at a time round every half hour edge of three nights, no step and the eyes shut only briefly', () => {
+    // The owl can only change at the edge of a half hour (its fades are 1.5 minutes long), so a second at a time for
+    // two minutes either side of each edge shows every step there could be, in 1 % of the samples of a whole night.
     let shut = 0;
     let n = 0;
-    for (let s = 0; s < 3 * 86_400; s++) {
-      const day = 20000 + Math.floor(s / 86_400);
-      const minute = (s % 86_400) / 60;
-      const o = owl(day, minute);
-      if (last !== null) expect(Math.abs(o.amount - last)).toBeLessThan(0.02);
-      last = o.amount;
-      expect(o.blink).toBeGreaterThanOrEqual(0);
-      expect(o.blink).toBeLessThanOrEqual(1);
-      if (o.amount > 0.99) {
-        n++;
-        if (o.blink > 0.5) shut++;
+    for (let edge = 0; edge < 3 * 48; edge++) {
+      let last = null;
+      for (let s = -120; s <= 120; s++) {
+        const total = edge * OWL.blockMinutes * 60 + s;
+        if (total < 0) continue;
+        const day = 20000 + Math.floor(total / 86_400);
+        const o = owl(day, (total % 86_400) / 60);
+        if (last !== null) expect(Math.abs(o.amount - last)).toBeLessThan(0.02);
+        last = o.amount;
+        expect(o.blink).toBeGreaterThanOrEqual(0);
+        expect(o.blink).toBeLessThanOrEqual(1);
+        if (o.amount > 0.99) {
+          n++;
+          if (o.blink > 0.5) shut++;
+        }
       }
     }
     expect(n).toBeGreaterThan(1000);
     expect(shut / n).toBeLessThan(0.05);
-  }, 60_000);
+  });
 
   it('keeps going across midnight when both half hours have the owl (no fade at the seam)', () => {
     let seams = 0;
