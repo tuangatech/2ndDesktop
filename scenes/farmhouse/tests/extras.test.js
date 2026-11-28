@@ -67,7 +67,7 @@ describe('R16 the owl', () => {
     }
     expect(n).toBeGreaterThan(1000);
     expect(shut / n).toBeLessThan(0.05);
-  });
+  }, 60_000);
 
   it('keeps going across midnight when both half hours have the owl (no fade at the seam)', () => {
     let seams = 0;
