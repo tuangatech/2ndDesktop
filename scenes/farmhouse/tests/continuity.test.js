@@ -115,7 +115,7 @@ describe('nothing in the picture steps', () => {
     expect(state.worst.sky).toBeLessThan(0.01); // the sky and the grade once went from clear to storm in one frame
     expect(state.worst.grade).toBeLessThan(0.01);
     expect(state.worst.falling).toBeLessThan(0.02);
-  }, 30_000);
+  }, 90_000); // about 9 s alone, and over 30 s on a loaded CI runner
 
   it('in Fast mode the weather does not snap when the fast day changes (every 47 minutes)', () => {
     const startedAt = at(2026, 11, 27, 10, -300);
