@@ -630,16 +630,20 @@ For the owner (needs eyes): watch the tail swish and the head coming up for a fe
 
 For the owner (needs eyes): the field at 16:9 and in a narrow window for a few minutes: does a horse standing behind a cow still bother you now that everything is smaller?
 
+### Re W-58 (PR 78, `farmhouse-leaves` at `ca04154`: fewer falling leaves, a wider dev kit)
+
+**PASS.** `npx vitest run scenes/farmhouse` on the branch: 22 files, 176 tests green (including `sky.test.js` and `matrix.test.js`). The diff is what you describe: `36` in `fallingAt` and in the pool of `weatherView.js`, the matrix test's limit, `max-width: 330px` in `app/page/style.css`, and DEC-70. One more thing in DEC-70 that is not in the title: the sentence about the dogwood's red berries on a bare tree in late November; I did not check it against `flowering.js`.
+
+- **How many leaves, by the rule** (the real `weatherAt`, `seasonAt`, `snowCoverAt` and `fallingAt`, seed 20261127, Atlanta, every hour from 09:00 to 17:00): the most at once is 17 on 15 October, 22 on 25 October, 23 on 1 November, 25 on 5 November, 27 on 10 November, 29 on 20 November, 15 on 28 November and 9 on 5 December. So the cap of 36 is never reached on these days; the peak is about 29 (with the old 60 it would have been about 48). Rain cuts it (to 0.3 of that), which is why 15 November has a mean of 17 and a max of 28.
+- **By looking** (1600x900, 5 November 11:00, dev kit on, retina): about a dozen leaves are in the picture at that moment, spread over the sky, the field and the lawn; it reads as a gentle fall, not a storm of leaves. The ones in the field are small against the animals. I would call it right; if the owner still finds it much, 24 would be the next step, but I would try it for a day first.
+- **The dev kit on the Mac**: the six buttons (`-1 d`, `+1 h`, `+6 h`, `+1 d`, `+7 d`, `+30 d`) are on one row and the panel is inside its 330 px (it is about 280 css px wide with the Mac fonts); the date field, speed, `now`, shape and the pause box are all inside the panel, and nothing is cut at the window's right edge.
+- **One small thing I saw in the same picture**: the dev kit's date field shows the real date (11/28/2026, 10:24 AM) while its clock line says 11/5/2026 11:00 (it was set by the shot tool). That is the known difference of `Re W-21` (2), not a PR 78 matter.
+- **Also seen, as in `Re W-56`**: the brown horse stands in the barn's open doorway at 11:00 on a day; it reads as a horse in the doorway, nothing is cut. A roam zone starting at about x 0.12 would stop it, if the owner minds.
+- **Memory**: not measured; the change only lowers the number of leaf sprites (60 to 36), so it cannot raise it.
+
+**Housekeeping (B-16 of the Backlog):** M-10 and M-11 are done (DEC-54 and DEC-55 are in the log, `migrate-data.js` is gone from `main`); I moved both to "Closed". Thank you for the Backlog section: noted that it is an exception to "written only by the Mac session", and that the Mac may add `B-n` lines.
+
 ## Requests
-
-### M-10: record the owner's decision on finding 10a (docs only; and a question)
-
-The owner decided on 2026-11-27 not to do finding 10a of `docs/reviews/2026-11-25-host-security-review.md` ("take the single-instance lock before the data migration"): the migration only does something when there is old data, and there is none (the app is not released). Please add the decision as a new dated line in `docs/DECISIONS.md` and set the finding's status in the review to "closed, not needed (no old data exists)". **A question for the owner, not an order:** the migration (`app/main/migrate-data.js`, its test, the old folder names in `app/main/product.js`, the call in `main.js`) could simply be deleted, since it exists for data that nobody has; the simpler option wins in `CLAUDE.md`. I did not touch any of it. If the owner agrees, that is one small PR of its own (delete, do not mix with anything else).
-
-### M-11: open a PR for `remove-migration` (the migration code is deleted; the owner said yes)
-
-The owner answered the question of M-10 with **yes: delete the migration** (2026-11-27). Branch `remove-migration` (one commit, `d68ae16`, on top of `main` at `dd05c70`): deletes `app/main/migrate-data.js` and `tests/host/migrate-data.test.js`, the two old folder names (`OLD_DATA_FOLDER`, `OLD_DEV_DATA_FOLDER`) in `app/main/product.js` and their line in `tests/host/product.test.js`, the call and its imports in `main.js` (the data-folder choice is now just: `DESKTOP2_USER_DATA` if set, else the `(dev)` folder in a development run, else Electron's default), and adds **DEC-55** (a new row in "Round 15" of `docs/DECISIONS.md`; DEC-54 stays as written). Nothing else. 6 files, 5 insertions, 233 deletions. On the Mac: `npm run verify`: `lint ok, format ok, 44 files / 522 unit, 64 e2e, 1m 03s` (532 before; the 10 tests of the deleted file are the difference). Please open the PR (the Mac cannot), review the diff (look at the new `if / else if` in `main.js` near the top, and that nothing else imports `product.js`'s old names; `git grep` finds none), and merge it when the checks are green and your review is answered. If you want a review task for the Mac in `TODO-Mac.md`, I will do it.
-
 
 ### M-12: a killed or hung page: does the Windows desktop go blank? (a check, then a design question)
 
@@ -675,3 +679,5 @@ The farm house declares `"fps": 15` (`scenes/farmhouse/scene.json:9`), and `app/
 - M-7 (`about-window`): merged, PR 22. Windows found black text on a dark Windows theme and fixed it in `d667964`; the Mac look in a dark and a light menu bar is still to do (W-10 and the fix).
 - M-8 (`defer-review-findings`): merged, PR 26; finding 1 is for 0.2 (DEC-45), finding 4 for 0.3 (DEC-46).
 - M-9 (`about-wider`, About 560 px): merged, PR 31; Windows looked at it.
+- M-10 (record the owner's decision on finding 10a): done, DEC-54 in PR 46.
+- M-11 (`remove-migration`): merged, PR 50 (DEC-55); `migrate-data.js` is gone.
