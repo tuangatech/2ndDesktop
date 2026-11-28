@@ -19,7 +19,7 @@ Machines: **W1** Windows 11 Pro build 26200 (the new desktop structure), Intel C
 
 - **Mac:** the memory footprint (`phys_footprint`, from `footprint -p`) summed over the 4 Electron processes, the number Activity Monitor shows. Electron's `getAppMetrics` working set counts shared pages and reads about **190 MB higher** (the diagnostics text now says so).
 - **Windows:** private bytes summed per process type (`app.getAppMetrics()`). W1's own GPU memory is **not** counted by private bytes, so Windows numbers on an integrated-graphics laptop are probably closer to the Mac's. Not measured.
-- **Budgets (NFR-4):** 250 MB on Windows, **350 MB on macOS** (the owner's decision of 2026-11-21, because an empty WebGL page is already 245 MB there, section 4).
+- **Budgets (NFR-4):** 250 MB on Windows, **375 MB on macOS** (350 MB by the owner's decision of 2026-11-21, because an empty WebGL page is already 245 MB there, section 4; raised on 2026-11-27, DEC-63).
 - **CI runners have no real GPU**: a CI memory number is not a machine number. Compare a scene with the empty scene **in the same run** instead of using a fixed number.
 - A development run on the Mac is within about 4 MB of the packaged app (since PR 28 and the Dock-icon fix, section 4.4). **Level: stated by the Mac session, no run behind it** (the only data are the main process rows: 40 to 45 MB in development against 44 MB packaged). Treat it as expected.
 

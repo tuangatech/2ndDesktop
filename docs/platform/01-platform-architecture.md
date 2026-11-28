@@ -442,7 +442,7 @@ The power state comes from the main process: Electron's `powerMonitor.isOnBatter
 | B-1 | Drawing stopped: at most 0.5% of one core, nothing drawn, the host wakes at most once a minute (plus the scene's `background.tickMs` and data refresh). |
 | B-2 | Desktop mode with drawing on: at most 30 frames per second, at most 3% of one core, for a scene with all its effects. A scene may ask for fewer frames (`fps` in the manifest); the host uses the lower number. |
 | B-3 | Window mode, visible and active: at most 60 frames per second and 8% of one core. |
-| B-4 | Memory after one hour: at most 250 MB on Windows and 350 MB on macOS for the whole app, growth under 20 MB over 8 hours. A scene's share is the limit minus the empty host. This is the steady state with **no host window open**: each host window (settings, the store, consent) is another renderer process (an estimate of tens of MB, not measured), so host windows are destroyed when closed, never kept hidden, and one open settings window is measured once on both systems (the Mac's E-11). |
+| B-4 | Memory after one hour: at most 250 MB on Windows and 375 MB on macOS (DEC-63; it was 350) for the whole app, growth under 20 MB over 8 hours. A scene's share is the limit minus the empty host. This is the steady state with **no host window open**: each host window (settings, the store, consent) is another renderer process (an estimate of tens of MB, not measured), so host windows are destroyed when closed, never kept hidden, and one open settings window is measured once on both systems (the Mac's E-11). |
 | B-5 | The scene is visible within 3 seconds of launch. |
 | B-6 | GPU and battery are measured as well (the old project only measured the CPU): a full-screen scene redraws many more pixels than a small one. |
 
@@ -455,7 +455,7 @@ Memory numbers from the old project (private bytes on Windows, `phys_footprint` 
 | macOS, desktop mode | 258 to 264 MB | +70 MB (328 to 339 MB) | about 88 MB |
 | macOS, window mode | 242 to 249 MB | +55 MB (294 to 303 MB) | about 100 MB |
 
-An empty WebGL page on the Mac already costs about 245 MB because Chromium runs WebGL through ANGLE over Metal, which is why the Mac limit is 350 MB. Windows is what sizes a scene. CI runners have no real GPU, so a CI memory check compares a scene with an empty scene in the same run; the real numbers come from real machines.
+An empty WebGL page on the Mac already costs about 245 MB because Chromium runs WebGL through ANGLE over Metal, which is why the Mac limit is higher than the Windows one (350 MB, raised to 375 MB by DEC-63 when the finished farm house measured 345 to 347 MB). Windows is what sizes a scene. CI runners have no real GPU, so a CI memory check compares a scene with an empty scene in the same run; the real numbers come from real machines.
 
 ### 7.3 Frame rate per scene [owner]
 
