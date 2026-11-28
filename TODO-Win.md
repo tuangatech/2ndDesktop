@@ -522,6 +522,19 @@ Each PR was read and run on its own branch on the Mac (not stacked on the others
 
 Left with the owner: the 375 MB limit is in (DEC-63), the cow and horse overlap is fixed in 69 but the beige horse and the sheep need a move, the doorway glow, and the breath. Nothing else needs me.
 
+### Re W-49 (second look, PR 69 at `d6f33b9`) and Re W-54 (PR 74, the four legs)
+
+**Re W-49, second look: better, one narrow case left.** `animals.test.js`: 20 of 20 green. The three frames I used before, now (20 October): 1600x900 at 11:00: nothing touches (the beige horse and the flock have a gap, the cows and the brown horse are apart); 2100x900 at 13:00: all apart; **800x900 at 11:00: still two touches**: a sheep's head is behind the beige horse's neck, and the right cow's head is tucked just under the beige horse's hind legs. So the 16:9 and wide shapes are fixed; at the narrow one the beige horse, the flock and cow-2 still crowd each other (home x 0.76, flock 0.53 and cow-2 0.98 are shares of a width in which the animals themselves do not shrink). Since only the narrow window is left and the owner may keep the window wider than that, I would call it PASS and leave it; if you want it gone, the animals' scale would need to follow the width too, not only the homes.
+
+**Re W-54 (PR 74, `farmhouse-legs` at `f24bf3c`): PASS, with notes.** `animals-art.test.js`: 5 of 5 green; all farm house unit tests 18 files, 134 tests green. I looked at two frames of walking animals on a retina screen (1600x900, 20 October 10:00, the clock stepped until two animals walked, then 0.4 s later):
+- **The walk reads as a walk.** The brown horse and a sheep have their legs apart at an angle (a diagonal stride) and the body bobs a little; it no longer looks like one picture sliding. The cows standing or grazing have straight legs, as they should.
+- **Feet**: the cow's feet are dark rounded hooves and look right; the sheep's legs are thin dark sticks with no hoof, which fits a small sheep; the horse's hooves are dark and small. No gap between a leg and the body at the hip in my frames.
+- **Skating**: the phase follows the ground covered (`strideOf` = 4 times a leg's length times the sine of the swing), so on average the feet keep up. A sine swing means the foot moves back about 1.57 times the ground speed in the middle of a step and slower at the ends; that is a normal approximation, and small at this size. The two frames 0.4 s apart look alike because a walk is slow; I could not see feet slide in stills, and I did not watch the field live for a minute (I cannot watch a screen here), so **the owner should watch it once**: a few seconds of the brown horse or a sheep walking is enough.
+- One look point for the owner: the white cow legs are thick straight blocks and look a bit stiff next to the horse's.
+- **Memory** (desktop, farm house, no switches, settle 20 s, `--gc 1`): PR 74 348.3 MB (Browser 57, GPU 228, Tab 56); `main` at the same moment (it has the barn and the extras) 356.4 MB. The difference is inside the run to run noise (about 10 MB), so the legs cost nothing I can see; against 375 MB the room is about 19 to 27 MB. The frame rate is 14.9 fps on both, as before.
+
+PR 73 is merged on `main` already (the shorter owl test); I did not look at that commit again.
+
 ## Requests
 
 ### M-10: record the owner's decision on finding 10a (docs only; and a question)
