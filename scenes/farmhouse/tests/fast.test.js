@@ -10,7 +10,7 @@ const START = Date.UTC(2026, 10, 27, 14, 0);
 
 describe('Fast mode', () => {
   it('starts in January and runs one month in a real day', () => {
-    expect(fastDate(START, START)).toEqual({ dayOfYear: 1, dayIndex: 0 });
+    expect(fastDate(START, START)).toEqual({ dayOfYear: 1 });
     expect(monthOf(fastDate(START, START).dayOfYear)).toBe('January');
     expect(monthOf(fastDate(START + DAY + HOUR, START).dayOfYear)).toBe('February');
     expect(monthOf(fastDate(START + 6 * DAY + HOUR, START).dayOfYear)).toBe('July');
@@ -24,18 +24,19 @@ describe('Fast mode', () => {
   });
 
   it('moves forward without a jump, a day at a time, and is the same after a gap (R1)', () => {
-    let last = fastDate(START, START).dayIndex;
+    let last = fastElapsed(START, START);
     for (let h = 1; h < 24 * 14; h++) {
-      const next = fastDate(START + h * HOUR, START).dayIndex;
+      const next = fastElapsed(START + h * HOUR, START);
       expect(next - last).toBeGreaterThanOrEqual(0);
       expect(next - last).toBeLessThanOrEqual(2);
+      expect(fastDate(START + h * HOUR, START).dayOfYear).toBe(1 + (Math.floor(next) % 365));
       last = next;
     }
     expect(fastDate(START + 5 * DAY, START)).toEqual(fastDate(START + 5 * DAY, START));
   });
 
   it('does not run backwards before the switch, and the seasons follow the fast date', () => {
-    expect(fastDate(START - DAY, START)).toEqual({ dayOfYear: 1, dayIndex: 0 });
+    expect(fastDate(START - DAY, START)).toEqual({ dayOfYear: 1 });
     expect(seasonAt(fastDate(START, START).dayOfYear, 33.7).name).toBe('winter');
     expect(seasonAt(fastDate(START + 6.5 * DAY, START).dayOfYear, 33.7).name).toBe('summer');
     // In the south the same January is summer.
@@ -62,7 +63,7 @@ describe('Fast mode', () => {
     const quick = slowAt({ ...input, fast });
     expect(real.when.dayOfYear).toBe(time.parts().dayOfYear);
     expect(quick.when.dayOfYear).toBe(fast.dayOfYear);
-    expect(quick.when.dayIndex).toBe(fast.dayIndex);
+    expect(quick.when.dayIndex).toBe(real.when.dayIndex); // the weather's seed is the real day, so it changes as it does in Calendar mode
     expect(quick.season.name).not.toBe(real.season.name);
     // A preview wins over Fast, and snow never lies in a fast July.
     expect(slowAt({ ...input, fast, previewSeason: 'summer' }).season.name).toBe('summer');

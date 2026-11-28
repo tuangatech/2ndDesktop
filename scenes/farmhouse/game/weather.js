@@ -156,14 +156,15 @@ function blockWeather(seed, dayIndex, block, dayOfYear, latitude) {
  * @param {number} seed
  * @param {When} when
  * @param {number} latitude
- * @returns {{kind: string, cloud: number, precipitation: number, fog: number, wind: number, temperature: number}}
- *          `kind` is the block's; the four amounts (0 to 1) cross-fade from the block before over its first 30 minutes
+ * @returns {{kind: string, cloud: number, precipitation: number, fog: number, wind: number, snowShare: number,
+ *            temperature: number}}
+ *          `snowShare` (0 to 1) is how much of the precipitation falls as snow, cross-faded with the amounts; `kind` is the block's; the four amounts (0 to 1) cross-fade from the block before over its first 30 minutes
  */
 export function weatherAt(seed, when, latitude = HOME_LATITUDE) {
   const block = Math.floor(when.minuteOfDay / (BLOCK_HOURS * 60));
   const now = blockWeather(seed, when.dayIndex, block, when.dayOfYear, latitude);
   const into = when.minuteOfDay - block * BLOCK_HOURS * 60;
-  let mix = now;
+  let mix = { ...now, snowShare: now.kind === 'snow' ? 1 : 0 };
   if (into < FADE_MINUTES) {
     // The block before: the previous one of the same day, or the last of the day before (its own day of the year).
     const before =
@@ -179,6 +180,7 @@ export function weatherAt(seed, when, latitude = HOME_LATITUDE) {
     const t = smooth(into / FADE_MINUTES);
     mix = {
       kind: now.kind,
+      snowShare: lerp(before.kind === 'snow' ? 1 : 0, now.kind === 'snow' ? 1 : 0, t),
       cloud: lerp(before.cloud, now.cloud, t),
       precipitation: lerp(before.precipitation, now.precipitation, t),
       fog: lerp(before.fog, now.fog, t),
@@ -231,6 +233,7 @@ export function previewWeather(kind, temperature) {
     precipitation: look.rain,
     fog: look.fog,
     wind: look.wind,
+    snowShare: kind === 'snow' ? 1 : 0,
     temperature: kind === 'snow' ? Math.min(temperature, 0) : temperature,
   };
 }

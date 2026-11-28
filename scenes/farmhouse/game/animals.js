@@ -14,7 +14,7 @@ export const HERD = Object.freeze([
     id: 'horse-brown',
     kind: 'horse',
     coat: 'brown',
-    home: [0.19, 0.6],
+    home: [0.27, 0.52],
     range: [0.08, 0.15],
     period: 55,
   },

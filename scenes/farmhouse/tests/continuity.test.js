@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createTime } from '../../../app/page/time.js';
 import { floweringAt } from '../game/flowering.js';
+import { fastDate } from '../game/fast.js';
+import { fallingAt, gradeAt, skyColours, timeOfDay } from '../game/sky.js';
 import { motionAt, slowAt } from '../game/view.js';
 import { meanTemperature, stormness } from '../game/weather.js';
 
@@ -11,6 +13,9 @@ const NY = 'America/New_York';
 const ATLANTA = 33.7;
 const SEED = 20261127;
 const SECOND = 1000;
+const channels = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+/** The largest change of any channel between two colours, 0 to 1. */
+const colourStep = (a, b) => Math.max(...channels(a).map((v, i) => Math.abs(v - channels(b)[i])));
 const at = (year, month, day, hour, offsetMin) =>
   Date.UTC(year, month - 1, day, hour, 0) - offsetMin * 60_000;
 
@@ -18,7 +23,7 @@ const at = (year, month, day, hour, offsetMin) =>
 function walk(
   start,
   seconds,
-  state = { last: null, worst: { animal: 0, light: 0, still: 0 }, storm: 0 },
+  state = { worst: { animal: 0, light: 0, still: 0, sky: 0, grade: 0, falling: 0 }, storm: 0 },
 ) {
   let last = null;
   for (let s = 0; s <= seconds; s++) {
@@ -38,6 +43,12 @@ function walk(
       seed: SEED,
     });
     const motion = motionAt(ms, parts, slow, { seed: SEED });
+    const tod = timeOfDay(ms, time.sun(), time.nightness());
+    const look = {
+      sky: skyColours(tod, slow.weather),
+      grade: gradeAt(tod, slow.weather).multiply,
+      falling: fallingAt(slow.weather, slow.season, slow.snowCover, 0),
+    };
     if (slow.weather.kind === 'storm') state.storm++;
     if (last) {
       // The animals come back sorted by depth, so match them by name.
@@ -56,15 +67,29 @@ function walk(
         );
       }
       state.worst.still = Math.max(state.worst.still, Math.abs(slow.still - last.slow.still));
+      state.worst.sky = Math.max(
+        state.worst.sky,
+        colourStep(look.sky.top, last.look.sky.top),
+        colourStep(look.sky.bottom, last.look.sky.bottom),
+      );
+      state.worst.grade = Math.max(state.worst.grade, colourStep(look.grade, last.look.grade));
+      state.worst.falling = Math.max(
+        state.worst.falling,
+        Math.abs(look.falling.rain - last.look.falling.rain) / 420,
+        Math.abs(look.falling.snow - last.look.falling.snow) / 360,
+      );
     }
-    last = { motion, slow };
+    last = { motion, slow, look };
   }
   return state;
 }
 
 describe('nothing in the picture steps', () => {
   it('animals, windows and the resting weight move smoothly at the places where they used to jump', () => {
-    const state = { worst: { animal: 0, light: 0, still: 0 }, storm: 0 };
+    const state = {
+      worst: { animal: 0, light: 0, still: 0, sky: 0, grade: 0, falling: 0 },
+      storm: 0,
+    };
     // Where it happened: dusk and dawn, the start of each four-hour block of weather (a storm begins there), midnight
     // (the resting places used to change) and noon (they change now), on a winter day and on summer days with storms.
     const sunset = [-300, 17 * 60 + 15];
@@ -87,7 +112,50 @@ describe('nothing in the picture steps', () => {
     expect(state.worst.animal).toBeLessThan(0.05); // normal walking is at most about 0.023 a second
     expect(state.worst.light).toBeLessThan(0.08);
     expect(state.worst.still).toBeLessThan(0.02);
+    expect(state.worst.sky).toBeLessThan(0.01); // the sky and the grade once went from clear to storm in one frame
+    expect(state.worst.grade).toBeLessThan(0.01);
+    expect(state.worst.falling).toBeLessThan(0.02);
   }, 30_000);
+
+  it('in Fast mode the weather does not snap when the fast day changes (every 47 minutes)', () => {
+    const startedAt = at(2026, 11, 27, 10, -300);
+    let worst = { amount: 0, temperature: 0 };
+    for (let k = 1; k <= 40; k++) {
+      // The k-th change of the fast day, a second either side of it.
+      const change = startedAt + Math.ceil((k * 86_400_000) / (365 / 12));
+      let last = null;
+      for (let s = -3; s <= 3; s++) {
+        const ms = change + s * SECOND;
+        const time = createTime({
+          clock: { now: () => ms },
+          readZone: () => NY,
+          latitude: () => ATLANTA,
+        });
+        const slow = slowAt({
+          ms,
+          parts: time.parts(),
+          sun: time.sun(),
+          nightness: time.nightness(),
+          latitude: ATLANTA,
+          seed: SEED,
+          fast: fastDate(ms, startedAt),
+        });
+        const w = slow.weather;
+        if (last) {
+          for (const key of ['cloud', 'precipitation', 'fog', 'wind']) {
+            worst.amount = Math.max(worst.amount, Math.abs(w[key] - last[key]));
+          }
+          worst.temperature = Math.max(
+            worst.temperature,
+            Math.abs(w.temperature - last.temperature),
+          );
+        }
+        last = w;
+      }
+    }
+    expect(worst.amount).toBeLessThan(0.02);
+    expect(worst.temperature).toBeLessThan(0.5); // it was 7 degrees
+  });
 
   it('the storm amount rises and falls with the wind, and is nothing in rain', () => {
     expect(stormness({ kind: 'storm' })).toBeGreaterThan(0.9);

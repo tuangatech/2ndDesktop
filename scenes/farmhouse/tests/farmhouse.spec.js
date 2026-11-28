@@ -162,6 +162,49 @@ test.describe('the farm house scene', () => {
     }
   });
 
+  test('every season with every kind of weather draws without an error and shows the weather it should', async () => {
+    const dir = farmhouseDir();
+    let run;
+    try {
+      run = await launch({ dataDir: dir });
+      const errors = [];
+      run.page.on('pageerror', (error) => errors.push(error.message));
+      run.page.on(
+        'console',
+        (message) => message.type() === 'error' && errors.push(message.text()),
+      );
+      const result = await run.page.evaluate(async () => {
+        const scene = window.__scene.fishtank;
+        const rows = [];
+        for (const season of ['spring', 'summer', 'autumn', 'winter']) {
+          for (const kind of ['clear', 'cloudy', 'fog', 'rain', 'snow', 'storm']) {
+            await scene.debug.preview({ season, kind });
+            scene.update(0.05);
+            const shown = scene.debug.shown().weather;
+            rows.push({ season, kind, status: scene.status().line, shown });
+          }
+        }
+        await scene.debug.preview({});
+        return { rows, art: scene.debug.art() };
+      });
+      expect(result.rows).toHaveLength(24);
+      for (const { season, kind, status, shown } of result.rows) {
+        expect(status.toLowerCase(), `${season} ${kind}`).toContain(season);
+        expect(status, `${season} ${kind}`).toContain(kind);
+        if (kind === 'rain' || kind === 'storm') expect(shown.rain).toBeGreaterThan(50);
+        if (kind === 'snow') expect(shown.snow).toBeGreaterThan(50);
+        if (kind === 'clear' || kind === 'cloudy' || kind === 'fog') {
+          expect(shown.rain + shown.snow).toBe(0);
+        }
+        if (kind === 'fog') expect(shown.fog.every((alpha) => alpha > 0)).toBe(true);
+      }
+      expect(errors).toEqual([]);
+    } finally {
+      await run?.close().catch(() => {});
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test('the tray items switch Fast mode and the previews through a dip, and Fast mode is saved', async () => {
     const dir = farmhouseDir();
     let run;

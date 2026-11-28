@@ -6,6 +6,7 @@
 // pointer is eased with the frame time, which is cosmetic and does not touch the clock.
 import { Graphics, Sprite } from 'pixi.js';
 import { unit } from './game/hash.js';
+import { stormness } from './game/weather.js';
 import { CLOUDS, blend, cloudStrengths, fogAt, gradeAt, lightningDim } from './game/sky.js';
 import { DESIGN } from './layout.js';
 import {
@@ -192,7 +193,7 @@ export function createWeatherView({ renderer, layers, seed }) {
       const strengths = cloudStrengths(weather);
       const grey = Math.min(
         1,
-        weather.precipitation * 0.8 + (weather.kind === 'storm' ? 0.4 : 0) + cloud * 0.25,
+        weather.precipitation * 0.8 + stormness(weather) * 0.4 + cloud * 0.25,
       );
       const tint = hexNumber(blend('#ffffff', '#8f989e', grey));
       const dayLight = 1 - tod.night * 0.85;

@@ -9,9 +9,11 @@ import { DESIGN, coverFit, toDesign, visibleDesign } from './layout.js';
 import { seen, startFast, startState, stopFast } from './state.js';
 import { fastDate, monthOf } from './game/fast.js';
 import { smooth } from './game/hash.js';
+
+const hexNumber = (hex) => parseInt(hex.slice(1), 16);
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
 import { animalPicture, coatKey, hayPicture } from './art/animals.js';
-import { skyColours, skyKey, timeOfDay, fallingAt } from './game/sky.js';
+import { blend, skyColours, skyKey, timeOfDay, fallingAt } from './game/sky.js';
 import { createWeatherView } from './weatherView.js';
 import { paletteKey } from './art/palette.js';
 import {
@@ -249,11 +251,16 @@ export default async function create(host) {
     if (weatherView) {
       const ms = host.clock.now();
       const petals = Math.max(0, ...Object.values(slow.trees).map((tree) => tree.petals));
+      const tod = timeOfDay(ms, slow.sun, slow.nightness);
+      // The far ridge is almost the colour of the haze, so by night it would stay pale against the dark sky: it goes dark
+      // with the night, on top of the grade.
+      if (art.pieces.far)
+        art.pieces.far.tint = hexNumber(blend('#ffffff', '#4a5378', tod.night * 0.85));
       weatherView.update({
         ms,
         dt,
         slow,
-        tod: timeOfDay(ms, slow.sun, slow.nightness),
+        tod,
         falling: fallingAt(slow.weather, slow.season, slow.snowCover, petals),
         pointer: pointer ? toDesign(fit, pointer.x, pointer.y) : null,
       });
@@ -402,15 +409,15 @@ export default async function create(host) {
   }
 
   // A change of the season setting or of a preview is a slow dip into the colour of the fog and back, so there is no cut:
-  // the veil comes in over 1.2 seconds, the change is made under it, the pictures are drawn again, and the veil goes out
-  // over 2.5 seconds. (A cosmetic fade of the frame time; what the scene shows is still a function of the clock.)
+  // the veil comes in over 0.6 seconds, the change is made under it, the pictures are drawn again, and the veil goes out
+  // over 1.2 seconds. (A cosmetic fade of the frame time; what the scene shows is still a function of the clock.)
   const veil = new Graphics().rect(0, 0, DESIGN.width, DESIGN.height).fill(0xdcdad0);
   veil.alpha = 0;
   veil.visible = false;
   layers.grade.addChild(veil);
   const dip = { phase: 'idle', t: 0, from: 0, apply: null };
-  const VEIL_IN = 1.2;
-  const VEIL_OUT = 2.5;
+  const VEIL_IN = 0.6;
+  const VEIL_OUT = 1.2;
   function changeWithDip(apply) {
     dip.apply = apply;
     if (dip.phase !== 'out') {
