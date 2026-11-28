@@ -146,7 +146,7 @@ export function fallingAt(weather, season, snowCover, petals) {
   return {
     rain: Math.round(weather.precipitation * 420 * (1 - snowShare)),
     snow: Math.round(weather.precipitation * 360 * snowShare),
-    leaves: Math.round(60 * leafFall * calm),
+    leaves: Math.round(36 * leafFall * calm),
     petals: Math.round(50 * clamp01(petals) * calm),
   };
 }

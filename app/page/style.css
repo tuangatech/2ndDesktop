@@ -93,7 +93,7 @@ html[data-mode='desktop'] #hud {
   background: rgba(14, 47, 85, 0.72);
   color: #f4fbff;
   font-size: 11px;
-  max-width: 250px;
+  max-width: 330px;
 }
 
 #devkit .body {
