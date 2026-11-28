@@ -270,10 +270,12 @@ export default async function create(host) {
       view.tilt += (want - view.tilt) * Math.min(1, dt * 5);
       // The legs: the walk's phase advances with the ground covered (in the animal's own size), so the feet keep up with
       // the body and do not skate; how far the legs swing eases in and out with the pose.
-      const walking = a.pose === 'walk';
+      // An animal that is pushed aside by another moves its legs too, so the walk is also asked for by the ground covered.
+      let walking = a.pose === 'walk';
       if (view.last) {
         const ground = Math.hypot(x - view.last[0], y - view.last[1]) / a.scale;
         view.phase = (view.phase + (ground / strideOf(view.legs)) * Math.PI * 2) % (Math.PI * 2);
+        if (dt > 0 && ground / dt > 9) walking = true;
       }
       view.last = [x, y];
       view.swing += ((walking ? 1 : 0) - view.swing) * Math.min(1, dt * 6);

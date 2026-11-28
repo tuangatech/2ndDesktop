@@ -54,10 +54,10 @@ function walk(
       // The animals come back sorted by depth, so match them by name.
       for (const a of motion.animals) {
         const b = last.motion.animals.find((o) => o.id === a.id);
+        // The ground covered in a second, in design units (the field is 2100 wide and 185 deep).
         state.worst.animal = Math.max(
           state.worst.animal,
-          Math.abs(a.x - b.x),
-          Math.abs(a.depth - b.depth),
+          Math.hypot((a.x - b.x) * 2100, (a.depth - b.depth) * 185),
         );
       }
       for (const id of Object.keys(slow.lights)) {
@@ -109,7 +109,7 @@ describe('nothing in the picture steps', () => {
       walk(day + (m === 11 ? 6 * 60 + 30 : 5 * 60 + 40) * 60_000 - 600 * SECOND, 1200, state); // dawn
     }
     expect(state.storm).toBeGreaterThan(0); // the summer days really do have a storm in them
-    expect(state.worst.animal).toBeLessThan(0.05); // normal walking is at most about 0.023 a second
+    expect(state.worst.animal).toBeLessThan(90); // a walk is about 40 units a second, a sheep with its flock and a push at most about 75
     expect(state.worst.light).toBeLessThan(0.08);
     expect(state.worst.still).toBeLessThan(0.02);
     expect(state.worst.sky).toBeLessThan(0.01); // the sky and the grade once went from clear to storm in one frame

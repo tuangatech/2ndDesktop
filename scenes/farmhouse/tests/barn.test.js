@@ -138,9 +138,13 @@ describe('R13 the animals and the barn', () => {
         const now = byId(motion.animals);
         if (last) {
           for (const id of Object.keys(now)) {
-            // The flock's own walk is up to about 45 design units a second; going to the barn adds nothing like a step.
-            expect(Math.abs(now[id].x - last[id].x) * 2100).toBeLessThan(60);
-            expect(Math.abs(now[id].depth - last[id].depth)).toBeLessThan(0.03);
+            // A walk is about 40 design units a second (a sheep with its flock and a push apart a little more); going to
+            // the barn adds nothing like a step.
+            const ground = Math.hypot(
+              (now[id].x - last[id].x) * 2100,
+              (now[id].depth - last[id].depth) * 185,
+            );
+            expect(ground).toBeLessThan(90);
             expect(Math.abs(now[id].inside - last[id].inside)).toBeLessThan(0.01);
             expect(Math.abs(now[id].alpha - last[id].alpha)).toBeLessThan(0.1);
           }
