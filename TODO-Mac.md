@@ -129,6 +129,12 @@ Run `npx vitest run scenes/farmhouse/tests/barn.test.js scenes/farmhouse/tests/b
 
 Run `npx vitest run scenes/farmhouse/tests/extras.test.js`, and look at the loft window on a clear night (`SHOT_AT=2026-10-23T01:20`): are the owl's eyes visible enough on a retina screen? The vane in wind and the breath in a cold preview. Merge 72 first. Reply as `Re W-53`. PR body: `gh pr view 73`.
 
+### W-54: review PR 74 (`farmhouse-legs`): the animals walk on four legs (DEC-65, R21)
+
+Run `npx vitest run scenes/farmhouse/tests/animals-art.test.js` and watch the field live for a minute on a retina screen (also `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T10:00 npm run shot -- legs 1600x900 window 4`): do the legs read as a walk and not a skate, and are the feet right on a cow and a sheep? Measure memory too (375 MB). Reply as `Re W-54`. PR body: `gh pr view 74`.
+
+Also, PR 73 now has a shorter owl test (the old one timed out on the Windows runner), and PR 69 and PR 73 have new commits since your review: `Re W-49` is still open for 69.
+
 ## Closed
 
 - W-40 (read PR 60, the lawn, house and truck): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
