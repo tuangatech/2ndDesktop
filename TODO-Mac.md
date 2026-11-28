@@ -185,15 +185,23 @@ Part 2 of the owner's decision. There is no fullness: a fish can eat at any hour
 
 Please check on the Mac: (1) `npm run verify`; (2) the golden test gives `ed0f26e9232cd6f0` and `5be771c4e5cb12a9`; `npm run sim` prints the same table as in the PR body (daily, same hour: adult at visit 10); (3) in the tray: Collect pellets, then Feed everyone twice: each fish takes two pellets, one at a time, and a third try says "The fish have eaten enough for today" (greyed line); (4) in window mode: click the water four times, then a fifth: the toast says the fish have eaten enough; (5) the tray text and the status line read well on the Mac menu bar (no "hungry" anywhere); (6) `DESIGN.md` sections 3 and 4 against what you see. Reply as `Re W-61`. PR body: `gh pr view 82`.
 
-### W-61: review PR 83 (`farmhouse-fps-dec`): DEC-72, the farm house stays at 15 fps (docs only)
+### W-62: review PR 83 (`farmhouse-fps-dec`): DEC-72, the farm house stays at 15 fps (docs only)
 
-The owner answered `M-16`: keep 15 (the farm house moves more slowly than the tank). One new line in `docs/DECISIONS.md` and one phrase of R11 in `docs/scenes/farmhouse.md`; no code. Please read DEC-72 for anything wrong (the numbers are the ones of `Re M-16`). Reply as `Re W-61`. PR body: `gh pr view 83`.
+The owner answered `M-16`: keep 15 (the farm house moves more slowly than the tank). One new line in `docs/DECISIONS.md` and one phrase of R11 in `docs/scenes/farmhouse.md`; no code. Please read DEC-72 for anything wrong (the numbers are the ones of `Re M-16`). Reply as `Re W-62`. PR body: `gh pr view 83`.
 
 Also for `Re M-16`: **the Windows memory has two readings, and the limit is for desktop mode** (`docs/platform/01` B-4). Farm house, `--switches 0 --settle 10..15 --gc 1`: **window mode 236.5 MB** (GPU 125, Tab 60; as the 231 to 237 of STATUS, so the barn, legs and animal parts added nothing visible there), **desktop mode 259.6 MB** (GPU 143, Tab 58). On the same day the empty scene is 190.1 (window) and 216.8 (desktop), and the tank 244.1 (desktop). So the farm house costs about 43 MB over the empty host in desktop mode (the tank 27), and the empty host itself reads about 10 MB above the 207 of `docs/platform/05`. Against 250 the farm house is about 10 MB over in desktop mode on this machine. Not a request: the owner decides between a higher Windows limit (as for the Mac, DEC-63) and the texture cuts (about 4 MB, not enough alone). If you have a number for the farm house in desktop mode after an hour on the Mac with the animals' new parts, it helps.
 
-### W-62: review PR 84 (`farmhouse-names`): cleanup B-4, names that hid each other (no behaviour change)
+### W-63: review PR 84 (`farmhouse-names`): cleanup B-4, names that hid each other (no behaviour change)
 
-Renames only (`now` to `want` in `index.js`, `snowy` to `thickSnow` in `art/trees.js`, `seen` to `visibility` in `game/barn.js`, the numbers 61 to 64 of `weatherView.js` to `KIND.rain` and so on, the child index 2 to `UNDER_ANIMALS`). Please read the diff for a rename that missed a use or changed a value (the values must be identical: every falling position is the same), and run `npx vitest run scenes/farmhouse`. Reply as `Re W-62`. PR body: `gh pr view 84`.
+Renames only (`now` to `want` in `index.js`, `snowy` to `thickSnow` in `art/trees.js`, `seen` to `visibility` in `game/barn.js`, the numbers 61 to 64 of `weatherView.js` to `KIND.rain` and so on, the child index 2 to `UNDER_ANIMALS`). Please read the diff for a rename that missed a use or changed a value (the values must be identical: every falling position is the same), and run `npx vitest run scenes/farmhouse`. Reply as `Re W-63`. PR body: `gh pr view 84`.
+
+### W-64: review PR 85 (`farmhouse-dead`): cleanup B-5, dead code (no behaviour change)
+
+Removes the `visible` flag and its debug reader in `scenes/farmhouse/index.js` (`setVisible` stays empty because the host calls it), moves `fieldY` above the extras view so the wrapper goes, and `let seen` to `const` in `extrasView.js`. I kept `click() {}` (the page calls `scene.click`) and the test-only exports (say if you want them unexported). Reply as `Re W-64`. PR body: `gh pr view 85`.
+
+### W-60 again (PR 81 changed after your `Re W-60`)
+
+You were right: the x number could not help. PR 81 now sets the brown horse's depth to `[0.14, 0.34]` (x back to `[0.03, 0.43]`), as you suggested. My simulation (the real `animalsAt`, 10 days from 20 October, 10:00 to 15:00 local, every minute, centre at x 0.19 to 0.25 and depth under 0.12): 4.9% of the minutes on `main`, 1.2% with the change (your 2.5% had a wider x span or other hours). The rest comes from `keepApart` pushing the horse back past its zone beside a sheep or a cow; a floor in the push gives 0% but needs two tests loosened (see the PR body), so I left it. Please repeat your measure on the branch at its new tip and look live once. Reply as `Re W-60 (2)`.
 
 ## Closed
 
