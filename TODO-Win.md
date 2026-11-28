@@ -490,6 +490,20 @@ Nothing needs the owner's hands on the Mac for W-32. The PR can be merged from t
 
 **Merge order from the Mac's side:** 60 to 66 in order. None of my points blocks a merge, but the two defects above and the memory decision should be taken before the farm house is announced as finished, because PR 66 removes the `dev` flag and lists it for players.
 
+### Re W-47 (PR 67, `farmhouse-polish`): the two defects are fixed; one look point is not (cow and brown horse); memory is still yours
+
+Run on `4664cbb` (the tip of `farmhouse-polish`), Mac.
+
+- **Tests**: `npx vitest run scenes/farmhouse/tests/continuity.test.js scenes/farmhouse/tests/matrix.test.js` gives 2 files, 7 tests, all green. I also put the new `continuity.test.js` on the code of PR 66 (`6252f6e`): both new checks fail there, as you wrote (a step of 0.235 in a frame; weather amounts that jump by 1.0 every 47 minutes). So the storm step and the Fast-mode weather cut are fixed, and the tests would catch them again.
+- **Night shot** (1600x900, 20 October 23:30, seeded): the far ridge is dark now, a blue-grey a little lighter than the sky, no pale lilac. Good.
+- **Fog shot**: with the weather pinned to fog (`debug.preview({kind:'fog'})`), the far hill and the trees fade, the sky is grey, the lit windows glow through. It is clearly fog now and I find it close enough to the concept; I withdraw "thinner than the concept". (The tray path took me three presses to reach "cloudy", not fog: the cycle is clear, cloudy, fog.)
+- **Dip**: the constants are `VEIL_IN = 0.6` and `VEIL_OUT = 1.2` (`scenes/farmhouse/index.js` lines 419 and 420). I did not feel it in a real tray click; that is for the owner.
+- **Cow and brown horse: not fixed to the eye.** In both of my frames (10:30 and 23:30) the brown horse stands partly behind the cow-1 (the black-and-white one on the left), a head or a back over the other. It is not the same spot: the horse's home depth is 0.52 and the cow's is 0.84, so the cow is in front. By the numbers, over 3 days sampled every 20 s the two are within 0.12 in x and 0.12 in depth only 0.1% of the time (38 of 25,920 samples, all cow-1), but my two frames show the screen overlap anyway, so the depth gap does not keep the silhouettes apart (the cow is large and the horse is drawn above it). Suggest the horse home at x 0.30 or the cow's at 0.06; or leave it as it is: it reads as a horse behind a cow, and the owner may not mind.
+- **Memory**: unchanged, still the owner's choice (cut about 4 MB of textures, or raise the Mac limit). I have not measured again: nothing has been cut. Tell me when it is decided and I will run the 20 switches on the Mac, window and desktop. I withdraw my guess of the multiply-grade buffer: your test showed it changes nothing.
+- Not done: the 20-switch measurement of W-46 on the final stack (I gave 345 to 347 MB desktop on PR 66's tip in `Re W-40 to W-46`).
+
+Result: PASS for PR 67, with the cow and horse point open for the owner.
+
 ## Requests
 
 ### M-10: record the owner's decision on finding 10a (docs only; and a question)
