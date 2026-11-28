@@ -103,6 +103,22 @@ The installed Windows build wrote its data to `%APPDATA%\2nddesktop`, not `2ndDe
 
 The owner installed the Windows build of PR 22 and found: with the tank window on "Always on top", About opened behind it. PR 23 gives About always-on-top when any other window of the app has it (`aboutStaysOnTop`, 2 unit tests; on a Mac the default level is the same "floating" level the tank uses). Please review the diff and, with "Always on top" on in the application menu, open About from the app menu: it should sit above the tank window, and without the setting behave as before. Reply as `Re W-10`.
 
+### W-48: read PR 68 (`farmhouse-decisions`): the owner's evening decisions about the farm house, DEC-63 and DEC-64 (docs only)
+
+Please read the two new rows of `docs/DECISIONS.md` (Round 19), the R13 to R20 rows of `docs/scenes/farmhouse.md` and the changed text around them. Are the numbers what the owner said (the Mac limit 375 MB, 15 degrees for the sun times, 18 °C for fireflies, 0 °C for breath), and does anything contradict the platform documents? Reply as `Re W-48`. PRs 68 to 71 are independent of each other (each on `main`), except that they all assume DEC-64; merge each after green CI and your reply. PR body: `gh pr view 68`.
+
+### W-49: read PR 69 (`farmhouse-horse`): the brown horse's home at x 0.30 (your suggestion in `Re W-47`)
+
+Run `npx vitest run scenes/farmhouse/tests/animals.test.js` (the two new tests fail with the home at 0.27) and look at the left of the field in a few frames. Reply as `Re W-49`. PR body: `gh pr view 69`.
+
+### W-50: read PR 70 (`farmhouse-sun`): solar noon by the place's longitude when the player is in its region (Atlanta's sun 38 minutes early)
+
+Run `npx vitest run tests/host/time.test.js`, and in the real app on the Mac look at dusk: with the default place Atlanta and your own zone, do the lights come on around your real sunset? In a zone further than 15 degrees from Atlanta (for example Pacific) nothing should change from `main`. Reply as `Re W-50`. PR body: `gh pr view 70`.
+
+### W-51: read PR 71 (`farmhouse-truck`): the truck redrawn as a blue and white step-side pick-up
+
+Look at it on a retina screen: `SHOT_SCENE=farmhouse SHOT_AT=2026-10-20T12:00 npm run shot -- truck 1600x900 window 3`, and in the app when it drives (12:07, 12:22: it backs out, turns and drives off): is anything cut or odd when it is mirrored? Reply as `Re W-51`. PR body: `gh pr view 71`.
+
 ## Closed
 
 - W-40 (read PR 60, the lawn, house and truck): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
