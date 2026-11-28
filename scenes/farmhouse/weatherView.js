@@ -28,7 +28,7 @@ import { rasterize, spriteOf } from './art/raster.js';
 const W = DESIGN.width;
 const H = DESIGN.height;
 /** The most of each falling thing the scene ever has (the caps of `fallingAt`). */
-const POOL = { rain: 420, snow: 360, leaves: 60, petals: 50 };
+const POOL = { rain: 420, snow: 360, leaves: 36, petals: 50 };
 
 const mod = (v, m) => ((v % m) + m) % m;
 const hexNumber = (hex) => parseInt(hex.slice(1), 16);
