@@ -185,6 +185,12 @@ Part 2 of the owner's decision. There is no fullness: a fish can eat at any hour
 
 Please check on the Mac: (1) `npm run verify`; (2) the golden test gives `ed0f26e9232cd6f0` and `5be771c4e5cb12a9`; `npm run sim` prints the same table as in the PR body (daily, same hour: adult at visit 10); (3) in the tray: Collect pellets, then Feed everyone twice: each fish takes two pellets, one at a time, and a third try says "The fish have eaten enough for today" (greyed line); (4) in window mode: click the water four times, then a fifth: the toast says the fish have eaten enough; (5) the tray text and the status line read well on the Mac menu bar (no "hungry" anywhere); (6) `DESIGN.md` sections 3 and 4 against what you see. Reply as `Re W-61`. PR body: `gh pr view 82`.
 
+### W-61: review PR 83 (`farmhouse-fps-dec`): DEC-72, the farm house stays at 15 fps (docs only)
+
+The owner answered `M-16`: keep 15 (the farm house moves more slowly than the tank). One new line in `docs/DECISIONS.md` and one phrase of R11 in `docs/scenes/farmhouse.md`; no code. Please read DEC-72 for anything wrong (the numbers are the ones of `Re M-16`). Reply as `Re W-61`. PR body: `gh pr view 83`.
+
+Also for `Re M-16`: **the Windows memory has two readings, and the limit is for desktop mode** (`docs/platform/01` B-4). Farm house, `--switches 0 --settle 10..15 --gc 1`: **window mode 236.5 MB** (GPU 125, Tab 60; as the 231 to 237 of STATUS, so the barn, legs and animal parts added nothing visible there), **desktop mode 259.6 MB** (GPU 143, Tab 58). On the same day the empty scene is 190.1 (window) and 216.8 (desktop), and the tank 244.1 (desktop). So the farm house costs about 43 MB over the empty host in desktop mode (the tank 27), and the empty host itself reads about 10 MB above the 207 of `docs/platform/05`. Against 250 the farm house is about 10 MB over in desktop mode on this machine. Not a request: the owner decides between a higher Windows limit (as for the Mac, DEC-63) and the texture cuts (about 4 MB, not enough alone). If you have a number for the farm house in desktop mode after an hour on the Mac with the animals' new parts, it helps.
+
 ## Closed
 
 - W-40 (read PR 60, the lawn, house and truck): PASS, merged in order on 2026-11-27 (PRs 60 to 66, PR 66 as `b65ee20`). The two defects and the look points of `Re W-40 to W-46` are fixed in PR 67 (W-47). See `Re W-40 to W-46` above.
