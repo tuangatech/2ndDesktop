@@ -643,6 +643,33 @@ For the owner (needs eyes): the field at 16:9 and in a narrow window for a few m
 
 **Housekeeping (B-16 of the Backlog):** M-10 and M-11 are done (DEC-54 and DEC-55 are in the log, `migrate-data.js` is gone from `main`); I moved both to "Closed". Thank you for the Backlog section: noted that it is an exception to "written only by the Mac session", and that the Mac may add `B-n` lines.
 
+**Re W-59 (PR 80, `fishtank-names`, branch at `741f3a0`, Mac, Apple silicon, Electron 45.4.1): PASS.**
+- (1) `npm run verify`: lint ok, format ok, 68 files / 734 unit, 74 e2e, 1 m 28 s.
+- (2) The golden test passes with the new values (`7be7c96f8e2607bc` and `5be771c4e5cb12a9`; it is inside the 74 e2e).
+- (3) Pictures, two runs each: window `d6fd2e7e…` and `a7bc21be…` (the two known Mac values of this tree state, so no new value); desktop `ce587da2…` both times (a known Mac value, see `Re W-13`).
+- (4) Clicking a fish: checked by the e2e test `touching a fish only makes it wiggle: no label, no name` (it passes, no `#label` in the page), not by a real mouse click by me.
+- (5) `DESIGN.md`, read for the Mac: nothing wrong that I know. Section 7's Mac numbers are labelled as the old project, 8 fish, one hour, and are in the range I measured later (tank about 330 MB in desktop mode, `Re W-17`). I did not check the sound recipes or the pointer rules against code.
+- Not seen: a repair of a real saved record that still has names (the repository unit test covers it).
+- Next: merge when the owner says; nothing asked of you.
+
+**Re W-60 (PR 81, `farmhouse-horse-zone`, branch at `f3d81b2`): NOT FIXED by the number; I would not merge it as it is.**
+- Tests: `animals.test.js` and `roam.test.js` 28 of 28 pass.
+- The change is one number, `zone([0.12, 0.43], ...)`. But in a 16:9 window the barn door is at about x 0.206 to 0.238 of the painted width (barn left = left edge 250 + inset 30 = 280, door centre 466, 66 wide, of 2100), so a zone that starts at 0.12 still contains the door. The zone start only decides how far to the left of the barn the horse can go.
+- A simulation (the real `animalsAt`, ten days from 20 October, 10:00 to 15:00 local, every minute, default field bounds): the share of minutes with the brown horse's centre in the door span at depth under 0.12 is **2.5% on `main` and 2.4% with PR 81**. With depth under 0.2 over the day 6 hours: 3.9% on `main`, 4.5% with PR 81. So it is the same.
+- The doorway is only a problem when the horse is at the back (depth 0.04 to 0.12; the barn base is at depth 0.04). The horse zone's depth range is `[0.04, 0.34]`, so a **depth minimum of about 0.14 (not tried)** would keep it in front of the barn at any window shape; an x limit cannot, because the barn moves with the window: in a narrower window (4:3 the door is at about 0.317) the door is somewhere else. The alternative is to pass the barn's door span as a no-go area in `bounds` from `index.js`.
+- By eye: I took a retina picture at 20 October 13:46 (the moment of my first hit); the horse was not in the doorway in it (it stood at about x 0.32), so my simulation and the app did not give the same moment and I did not see the doorway case live with PR 81. The door's x in the picture matched my computed 0.22. The claim "2.4% against 2.5%" is the simulation only.
+- Next: the owner may want depth rather than x; a PR 81 change to `[0.14, 0.34]` for the depth is one number again. I can measure it the same way.
+
+**Mac figures for `Re M-16` (15 against 30 fps, desktop mode, Electron 45.4.1, same command as yours, `"fps": 30` local and rebuilt, reverted after; nothing committed):**
+
+| | 15 (as it is) | 30 |
+|---|---|---|
+| frames | 14.9 fps (297 ticks), gap 67.1 ms (95th 67.9) | 29.5 fps (590 ticks), gap 33.9 ms (95th 41.6) |
+| work per tick | 1.47 ms (95th 2.40) | 1.54 ms (95th 2.60) |
+| memory total | 350.4 MB (Browser 58, GPU 225, Tab 59, Utility 7.4) | 358.4 MB (58, 232, 61, 7.4) |
+
+30 fps costs almost no work per tick (0.07 ms) and the memory is within the noise of earlier runs (346 to 356 MB); both are under the Mac limit of 375 MB. A caution for anyone repeating it: the script runs the built page, so a change in `scene.json` needs `npm run build` first (my first 30 fps run showed 14.9 fps for that reason). I agree the 15 fps is likely part of the robotic look and 30 is cheap on the Mac; the look is the owner's. Also read: `Re M-13` and `Re M-15` (agreed, nothing for me to add; I leave M-13 to M-17 open until the owner decides what to build).
+
 ## Requests
 
 ### M-12: a killed or hung page: does the Windows desktop go blank? (a check, then a design question)
