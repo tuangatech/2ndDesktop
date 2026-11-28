@@ -4,6 +4,7 @@
 // Everything the scene shows is a function of the clock (R1), computed by the pure rules in `game/`.
 import { Container, Graphics, Sprite } from 'pixi.js';
 import { canScatter, HAY, hayWeight, HERD } from './game/animals.js';
+import { BARN } from './game/barn.js';
 import { motionAt, slowAt } from './game/view.js';
 import { DESIGN, coverFit, toDesign, visibleDesign } from './layout.js';
 import { seen, startFast, startState, stopFast } from './state.js';
@@ -13,6 +14,7 @@ import { smooth } from './game/hash.js';
 const hexNumber = (hex) => parseInt(hex.slice(1), 16);
 import { farRidgePicture, hillPicture, midRidgePicture, skyPicture } from './art/landscape.js';
 import { animalPicture, coatKey, hayPicture } from './art/animals.js';
+import { BARN_DOOR, BARN_LANTERN, barnPicture } from './art/barn.js';
 import { blend, skyColours, skyKey, timeOfDay, fallingAt } from './game/sky.js';
 import { createWeatherView } from './weatherView.js';
 import { paletteKey } from './art/palette.js';
@@ -98,7 +100,16 @@ export default async function create(host) {
   let parts = null;
   let savedAt = -Infinity;
 
+  // The scene's own "now": the host's clock, moved only by a test or a shot through `debug.setTime` (never in real use).
+  let timeShift = 0;
+  const now = () => host.clock.now() + timeShift;
+
   const latitude = () => host.place.get().latitude;
+  // The red barn stands at the back of the field, at the left edge of what is on the screen (R13); its door is where the
+  // animals go in. The screen's shape moves it, so it is placed on a resize, and the animals' door follows.
+  let edgeLeft = visibleDesign(1, 1).left;
+  const barnLeft = () => edgeLeft + BARN.inset;
+  const barnDoor = () => [(barnLeft() + BARN.doorX) / DESIGN.width, BARN.doorDepth];
   /** The part of the field's width the animals keep out of: the strip of desktop icons (rule R6), in design shares. */
   const bounds = () => {
     // The animals keep to the part of the field that is on the screen (about an animal's length in from each side), and out of the
@@ -126,7 +137,7 @@ export default async function create(host) {
 
   /** Works out the view of a moment: the slow part at most once a second of clock time, the motion every frame. */
   function refresh(force = false) {
-    const ms = host.clock.now();
+    const ms = now();
     parts = host.time.parts(ms);
     if (force || slow === null || Math.abs(ms - slowFor) >= SLOW_MS) {
       slow = slowAt({
@@ -148,7 +159,12 @@ export default async function create(host) {
         host.record.save(state);
       }
     }
-    motion = motionAt(ms, parts, slow, { seed: SEED, hayStartedAt, bounds: bounds() });
+    motion = motionAt(ms, parts, slow, {
+      seed: SEED,
+      hayStartedAt,
+      bounds: bounds(),
+      barn: { door: barnDoor() },
+    });
   }
   refresh(true);
 
@@ -188,6 +204,39 @@ export default async function create(host) {
   const truckBox = new Container(); // the truck, moved and mirrored by the scene
   layers['drive-truck'].addChild(truckBox);
 
+  // The barn: its picture (in `barnBox`, under the animals) and, over the grade, the warm glow of its open door and its
+  // lantern at night, with the light of the house's door lamp (rule R3: it stays on all night).
+  const barnBox = new Container();
+  layers.animals.addChild(barnBox);
+  const barnGlow = new Container();
+  barnGlow.visible = false;
+  {
+    const g = new Graphics();
+    // The warm light inside: faint high up, stronger near the floor and the hay.
+    g.rect(BARN_DOOR.x, BARN_DOOR.y, BARN_DOOR.w, BARN_DOOR.h * 0.55).fill({
+      color: GLASS.lit,
+      alpha: 0.08,
+    });
+    g.rect(BARN_DOOR.x, BARN_DOOR.y + BARN_DOOR.h * 0.55, BARN_DOOR.w, BARN_DOOR.h * 0.45).fill({
+      color: GLASS.lit,
+      alpha: 0.22,
+    });
+    g.roundRect(BARN_DOOR.x - 6, BARN_DOOR.y - 6, BARN_DOOR.w + 12, BARN_DOOR.h + 8, 8).fill({
+      color: GLASS.lit,
+      alpha: 0.12,
+    });
+    g.circle(BARN_LANTERN.x, BARN_LANTERN.y, 14).fill({ color: GLASS.lit, alpha: 0.09 });
+    g.circle(BARN_LANTERN.x, BARN_LANTERN.y, 3.2).fill(GLASS.lit);
+    barnGlow.addChild(g);
+  }
+  layers.grade.addChild(barnGlow);
+  /** Puts the barn and its glow at the left edge of the screen. */
+  function placeBarn() {
+    const y = fieldY(BARN.depth);
+    barnBox.position.set(barnLeft(), y);
+    barnGlow.position.set(barnLeft(), y);
+  }
+
   // The animals: one texture for each coat (five for seven animals), one box for each animal (placed, mirrored and scaled
   // by depth) holding a body that tilts to graze, and the hay under them.
   let weatherView = null; // made once the first pictures are drawn
@@ -199,21 +248,23 @@ export default async function create(host) {
   const fieldY = (depth) => FIELD_Y + depth * FIELD_DEPTH;
   const TILT = { stand: 0, walk: 0, graze: 0.2, eat: 0.32 };
   function placeAnimals(dt) {
-    const t = host.clock.now() / 1000;
+    const t = now() / 1000;
     motion.animals.forEach((a, i) => {
       const view = herd.get(a.id);
       if (!view) return;
       const { box, body } = view;
       box.position.set(a.x * DESIGN.width, fieldY(a.depth));
       box.scale.set(a.scale * (a.facing === 'right' ? 1 : -1), a.scale);
-      layers.animals.setChildIndex(box, 1 + i); // far ones first
+      layers.animals.setChildIndex(box, 2 + i); // far ones first (the barn and the hay are under them)
+      box.alpha = a.alpha; // 0 in the barn: faded in its door
+      box.visible = a.alpha > 0.01;
       const want = TILT[a.pose] ?? 0;
       view.tilt += (want - view.tilt) * Math.min(1, dt * 5);
       const walking = a.pose === 'walk';
       body.rotation = view.tilt + (walking ? Math.sin(t * 6 + i) * 0.025 : 0);
       body.position.y = (walking ? -Math.abs(Math.sin(t * 6 + i)) * 2.5 : 0) - 50;
     });
-    const w = hayWeight(host.clock.now(), hayStartedAt);
+    const w = hayWeight(now(), hayStartedAt);
     if (hay.sprite) {
       hay.sprite.visible = w > 0.01;
       hay.sprite.alpha = Math.min(1, w * 4);
@@ -228,9 +279,13 @@ export default async function create(host) {
       g.visible = light > 0.01;
       g.alpha = light;
     }
+    placeBarn();
+    const doorLamp = slow.lights.door ?? 0;
+    barnGlow.visible = doorLamp > 0.01;
+    barnGlow.alpha = doorLamp;
     smoke.visible = motion.smoke > 0.01;
     if (smoke.visible) {
-      const t = host.clock.now() / 1000;
+      const t = now() / 1000;
       puffs.forEach((puff, i) => {
         const k = (t / SMOKE_CYCLE + i / SMOKE_PUFFS) % 1;
         puff.position.set(
@@ -249,7 +304,7 @@ export default async function create(host) {
     truckBox.position.set(TRUCK.x + centre + truck.x * (edgeX - TRUCK.x), TRUCK.y);
     placeAnimals(dt);
     if (weatherView) {
-      const ms = host.clock.now();
+      const ms = now();
       const petals = Math.max(0, ...Object.values(slow.trees).map((tree) => tree.petals));
       const tod = timeOfDay(ms, slow.sun, slow.nightness);
       // The far ridge is almost the colour of the haze, so by night it would stay pale against the dark sky: it goes dark
@@ -279,6 +334,7 @@ export default async function create(host) {
     hill: layers.forest,
     lawn: layers.lawn,
     house: layers.house,
+    barn: barnBox,
     drive: layers['drive-truck'],
     truck: truckBox,
     field: layers.field,
@@ -369,6 +425,7 @@ export default async function create(host) {
       await drawPiece('hill', hillPicture(season, snowCover));
       await drawPiece('lawn', lawnGroundPicture(season, snowCover));
       await drawPiece('house', housePicture(snowCover));
+      await drawPiece('barn', barnPicture(snowCover));
       await drawPiece('field', fieldPicture(season, snowCover));
       await drawPiece('fence', fencePicture(season, snowCover));
     }
@@ -469,7 +526,8 @@ export default async function create(host) {
     return `${what}: ${current ? cap(current) : 'off'} (next: ${next ? cap(next) : 'back to the setting'})`;
   };
 
-  const hayReady = () => canScatter(host.clock.now(), hayStartedAt);
+  // Scatter hay is for the day (R12): at night and in a storm the animals are in the barn.
+  const hayReady = () => slow.hayAllowed && canScatter(now(), hayStartedAt);
 
   return {
     id: 'farmhouse',
@@ -477,6 +535,7 @@ export default async function create(host) {
     resize(w, h) {
       width = w;
       edgeX = visibleDesign(w, h).right + 200; // the truck leaves the screen to the right
+      edgeLeft = visibleDesign(w, h).left; // the barn stands at the left edge
       fit = coverFit(w, h);
       world.scale.set(fit.scale);
       world.position.set(fit.x, fit.y);
@@ -514,7 +573,11 @@ export default async function create(host) {
     menuItems: () => [
       {
         id: 'hay',
-        label: hayReady() ? 'Scatter hay' : 'Scatter hay (wait a moment)',
+        label: hayReady()
+          ? 'Scatter hay'
+          : slow.hayAllowed
+            ? 'Scatter hay (wait a moment)'
+            : 'Scatter hay (the animals are in the barn)',
         enabled: hayReady(),
       },
       { label: 'Weather: simulated' },
@@ -529,7 +592,7 @@ export default async function create(host) {
       { id: 'preview-weather', label: cycleLabel('Preview weather', KIND_CYCLE, preview.kind) },
     ],
     onMenu(id) {
-      if (id === 'hay' && hayReady()) hayStartedAt = host.clock.now();
+      if (id === 'hay' && hayReady()) hayStartedAt = now();
       else if (id === 'seasons') {
         const toFast = state.seasonMode !== 'fast';
         changeWithDip(() => {
@@ -574,6 +637,14 @@ export default async function create(host) {
         if (art.ready) checkLandscape();
         return art.building;
       },
+      // For tests and shots: show the scene as it is at another moment (epoch ms; null to let go), settled at once.
+      setTime: (ms = null) => {
+        timeShift = ms === null ? 0 : ms - host.clock.now();
+        refresh(true);
+        applyMotion();
+        if (art.ready) checkLandscape();
+        return art.building;
+      },
       dip: () => ({ phase: dip.phase, alpha: veil.alpha }),
       settle: async () => {
         await art.building;
@@ -592,7 +663,14 @@ export default async function create(host) {
           x: v.box.position.x,
           y: v.box.position.y,
           scale: v.box.scale.y,
+          alpha: v.box.visible ? v.box.alpha : 0,
         })),
+        barn: {
+          x: barnBox.position.x,
+          y: barnBox.position.y,
+          door: barnDoor(),
+          glow: barnGlow.visible ? barnGlow.alpha : 0,
+        },
         truck: {
           visible: truckBox.visible,
           x: truckBox.position.x,

@@ -6,6 +6,7 @@
 // The field is one rectangle in the scene's own units: `x` from 0 (left) to 1 (right) across the painted width, `depth`
 // from 0 at the fence to 1 at the bottom of the screen. The size follows the depth (R7): `depthScale`.
 
+import { progressOf, seen, walked } from './barn.js';
 import { lerp, smooth, unit } from './hash.js';
 
 /** Seven animals, in three kinds: two horses (brown and beige), two cows, three sheep (no names, R6). */
@@ -162,18 +163,32 @@ function haySpot(index) {
  * The seven animals at a moment, back to front.
  * @param {number} ms
  * @param {{seed: number, dayIndex: number, still?: number, hayStartedAt?: number|null,
- *          bounds?: {xMin: number, xMax: number}}} context
- *        `still` is 0 to 1: at night and in a storm they stand still (the herd goes to its resting places);
- *        `bounds` keeps them out of the icon strip
+ *          bounds?: {xMin: number, xMax: number},
+ *          barn?: {door: [number, number], shelter: number, leaving?: boolean}|null}} context
+ *        `still` is 0 to 1: without a barn, at night and in a storm they stand still (the herd goes to its resting places);
+ *        `bounds` keeps them out of the icon strip;
+ *        `barn` (R13): where the door is (x and depth in the field's units) and how much the animals want shelter
+ *        (`shelterAt`, 0 to 1): they walk to the door one by one, the sheep first, and fade in it; `leaving` is whether it
+ *        is the morning side of the change (so they face away from the door while they come out)
  * @returns {{id: string, kind: string, coat: string, x: number, depth: number, scale: number,
- *            facing: 'left'|'right', pose: 'walk'|'graze'|'stand'|'eat'}[]}
+ *            facing: 'left'|'right', pose: 'walk'|'graze'|'stand'|'eat', alpha: number, inside: number}[]}
+ *          `alpha` is how much of the animal is seen (0 in the barn) and `inside` how far in it is, 0 to 1
  */
 export function animalsAt(
   ms,
-  { seed, dayIndex, restDay = dayIndex, still = 0, hayStartedAt = null, bounds = FIELD },
+  {
+    seed,
+    dayIndex,
+    restDay = dayIndex,
+    still = 0,
+    hayStartedAt = null,
+    bounds = FIELD,
+    barn = null,
+  },
 ) {
   const seconds = ms / 1000;
-  const rest = clamp(still, 0, 1);
+  // With a barn the animals do not stand about at night: they are in it, so there are no resting places.
+  const rest = barn ? 0 : clamp(still, 0, 1);
   const hay = hayWeight(ms, hayStartedAt);
   const flock = wander(seed, FLOCK, 100, seconds);
   const flockRest = restSpot(seed, { home: FLOCK.home }, 100, FLOCK.home, restDay);
@@ -198,15 +213,28 @@ export function animalsAt(
     const toRest = smooth(rest);
     x = lerp(x, resting[0], toRest);
     depth = lerp(depth, resting[1], toRest);
+    // On its way to the barn an animal lets go of the hay.
+    const progress = barn ? progressOf(barn.shelter, spec.id) : 0;
+    const toBarn = barn ? walked(progress) : 0;
+    const hayHere = hay * (1 - toBarn);
     const spot = haySpot(index);
-    x = lerp(x, spot[0], hay);
-    depth = lerp(depth, spot[1], hay);
+    x = lerp(x, spot[0], hayHere);
+    depth = lerp(depth, spot[1], hayHere);
     x = clamp(x, xMin, xMax);
     depth = clamp(depth, FIELD.depthMin, FIELD.depthMax);
+    let facing = hayHere > 0.02 ? (x < spot[0] ? 'right' : 'left') : own.facing;
     let pose = own.pose;
-    if (hay >= 0.97) pose = 'eat';
-    else if (hay > 0.02) pose = 'walk';
+    if (hayHere >= 0.97) pose = 'eat';
+    else if (hayHere > 0.02) pose = 'walk';
     else if (rest >= 0.5) pose = 'stand';
+    if (barn && toBarn > 0) {
+      // The way to the door is a straight walk (after the clamp, so that the door is reached even at the screen's edge).
+      x = lerp(x, barn.door[0], toBarn);
+      depth = lerp(depth, barn.door[1], toBarn);
+      const toward = x < barn.door[0] ? 'right' : 'left';
+      facing = barn.leaving ? (toward === 'right' ? 'left' : 'right') : toward;
+      pose = toBarn > 0.995 ? 'stand' : 'walk';
+    }
     return {
       id: spec.id,
       kind: spec.kind,
@@ -214,8 +242,10 @@ export function animalsAt(
       x,
       depth,
       scale: depthScale(depth),
-      facing: hay > 0.02 ? (x < spot[0] ? 'right' : 'left') : own.facing,
+      facing,
       pose,
+      alpha: barn ? seen(progress) : 1,
+      inside: barn ? progress : 0,
     };
   });
   // Back to front: the far ones (small depth) are drawn first.

@@ -14,6 +14,15 @@ const modeOf = (dir) =>
   fs.existsSync(recordOf(dir))
     ? JSON.parse(fs.readFileSync(recordOf(dir), 'utf8')).seasonMode
     : null;
+// The scene is a function of the clock, so a test that needs a known moment shows it with `debug.setTime` (and a clear sky
+// with `debug.preview`), whatever the time and the weather of the day it runs: at night the animals are in the barn.
+const NOON = `(() => {
+  const scene = window.__scene.fishtank;
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  scene.debug.preview({ kind: 'clear' });
+  scene.debug.setTime(d.getTime());
+})()`;
 const farmhouseDir = () => {
   const dir = makeDataDir();
   fs.writeFileSync(path.join(dir, 'settings.json'), JSON.stringify({ activeScene: 'farmhouse' }));
@@ -26,6 +35,8 @@ test.describe('the farm house scene', () => {
     let run;
     try {
       run = await launch({ dataDir: dir });
+      const built = await run.page.evaluate(() => window.__scene.fishtank.debug.art().builds);
+      await run.page.evaluate(NOON);
       const info = await run.page.evaluate(() => {
         const scene = window.__scene.fishtank;
         const view = scene.debug.view();
@@ -69,8 +80,8 @@ test.describe('the farm house scene', () => {
       expect(info.status.line).toMatch(/\(simulated weather\)$/);
       expect(['spring', 'summer', 'autumn', 'winter']).toContain(info.season);
       expect(info.animals).toBe(7);
-      // The pictures are drawn once: sky, far ridge, drive, truck, mid ridge, hill, lawn, house, field, fence (10) and eight trees.
-      expect(info.art.builds).toBe(18 + 1 + 5); // and the hay and five coats
+      // The pictures are drawn once: sky, far ridge, drive, truck, mid ridge, hill, lawn, house, barn, field, fence (11) and eight trees.
+      expect(built).toBe(19 + 1 + 5); // and the hay and five coats (counted before the test pins a moment)
       // What is on show follows the view: each window's light, the smoke and the truck.
       for (const [id, light] of Object.entries(info.view.slow.lights)) {
         expect(info.shown.lights[id]).toBeCloseTo(light > 0.01 ? light : 0, 5);
@@ -98,6 +109,7 @@ test.describe('the farm house scene', () => {
     let run;
     try {
       run = await launch({ dataDir: dir });
+      await run.page.evaluate(NOON);
       const result = await run.page.evaluate(() => {
         const scene = window.__scene.fishtank;
         scene.onMenu('hay');
@@ -254,6 +266,55 @@ test.describe('the farm house scene', () => {
           timeout: 10_000,
         })
         .toBe('calendar');
+    } finally {
+      await run?.close().catch(() => {});
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test('at night and in a storm the animals are in the barn and Scatter hay is greyed; by day they are out (R12, R13)', async () => {
+    const dir = farmhouseDir();
+    let run;
+    try {
+      run = await launch({ dataDir: dir });
+      const look = (hour, kind) =>
+        run.page.evaluate(
+          ([h, k]) => {
+            const scene = window.__scene.fishtank;
+            const d = new Date();
+            d.setHours(h, 0, 0, 0);
+            scene.debug.preview({ kind: k });
+            scene.debug.setTime(d.getTime());
+            scene.update(0);
+            const shown = scene.debug.shown();
+            return {
+              hay: scene.menuItems()[0],
+              alphas: shown.animals.map((a) => a.alpha),
+              barn: shown.barn,
+              count: shown.animals.length,
+            };
+          },
+          [hour, kind],
+        );
+      const day = await look(12, 'clear');
+      expect(day.count).toBe(7);
+      expect(day.alphas.every((a) => a === 1)).toBe(true);
+      expect(day.hay).toEqual({ id: 'hay', label: 'Scatter hay', enabled: true });
+      expect(day.barn.glow).toBe(0);
+      const night = await look(2, 'clear');
+      expect(night.count).toBe(7); // still seven: they are in the barn
+      expect(night.alphas.every((a) => a === 0)).toBe(true);
+      expect(night.hay).toEqual({
+        id: 'hay',
+        label: 'Scatter hay (the animals are in the barn)',
+        enabled: false,
+      });
+      expect(night.barn.glow).toBeGreaterThan(0.5); // the door lamp is lit all night
+      const storm = await look(12, 'storm');
+      expect(storm.alphas.every((a) => a < 0.05)).toBe(true);
+      expect(storm.hay.enabled).toBe(false);
+      const back = await look(12, 'clear');
+      expect(back.alphas.every((a) => a === 1)).toBe(true);
     } finally {
       await run?.close().catch(() => {});
       fs.rmSync(dir, { recursive: true, force: true });
