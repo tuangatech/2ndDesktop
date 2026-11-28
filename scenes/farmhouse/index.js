@@ -17,6 +17,7 @@ import { animalPicture, coatKey, hayPicture } from './art/animals.js';
 import { BARN_DOOR, BARN_LANTERN, barnPicture } from './art/barn.js';
 import { blend, skyColours, skyKey, timeOfDay, fallingAt } from './game/sky.js';
 import { createWeatherView } from './weatherView.js';
+import { createExtrasView } from './extrasView.js';
 import { paletteKey } from './art/palette.js';
 import {
   BACK_TREES,
@@ -230,11 +231,14 @@ export default async function create(host) {
     barnGlow.addChild(g);
   }
   layers.grade.addChild(barnGlow);
+  // The owl at the loft window, the weathervane and the breath of the animals in the cold (R16 to R18).
+  const extras = createExtrasView({ layers, barnBox, fieldY: (depth) => fieldY(depth) });
   /** Puts the barn and its glow at the left edge of the screen. */
   function placeBarn() {
     const y = fieldY(BARN.depth);
     barnBox.position.set(barnLeft(), y);
     barnGlow.position.set(barnLeft(), y);
+    extras.placeBarn(barnLeft(), y);
   }
 
   // The animals: one texture for each coat (five for seven animals), one box for each animal (placed, mirrored and scaled
@@ -303,6 +307,14 @@ export default async function create(host) {
     truckBox.scale.x = truck.facing === 'right' ? -1 : 1;
     truckBox.position.set(TRUCK.x + centre + truck.x * (edgeX - TRUCK.x), TRUCK.y);
     placeAnimals(dt);
+    extras.update({
+      ms: now(),
+      slow,
+      parts,
+      dayIndex: slow.when.dayIndex,
+      seed: SEED,
+      animals: motion.animals,
+    });
     if (weatherView) {
       const ms = now();
       const petals = Math.max(0, ...Object.values(slow.trees).map((tree) => tree.petals));
@@ -665,6 +677,7 @@ export default async function create(host) {
           scale: v.box.scale.y,
           alpha: v.box.visible ? v.box.alpha : 0,
         })),
+        extras: extras.debug(),
         barn: {
           x: barnBox.position.x,
           y: barnBox.position.y,

@@ -321,6 +321,63 @@ test.describe('the farm house scene', () => {
     }
   });
 
+  test('the owl comes on clear nights, the weathervane turns and the animals breathe in the cold (R16 to R18)', async () => {
+    const dir = farmhouseDir();
+    let run;
+    try {
+      run = await launch({ dataDir: dir });
+      const result = await run.page.evaluate(async () => {
+        const scene = window.__scene.fishtank;
+        const at = (h, m, s = 0) => {
+          const d = new Date();
+          d.setHours(h, m, s, 0);
+          return d.getTime();
+        };
+        // Every half hour of the night with a clear sky: the owl is there in some and not in others.
+        scene.debug.preview({ kind: 'clear' });
+        const owls = [];
+        for (let h = 0; h < 4; h++) {
+          for (const m of [5, 35]) {
+            scene.debug.setTime(at(h, m));
+            owls.push(scene.debug.shown().extras.owl);
+          }
+        }
+        scene.debug.setTime(at(12, 0));
+        const noonOwl = scene.debug.shown().extras.owl;
+        // The vane: its arrow's width changes over time in a calm.
+        const widths = new Set();
+        for (let s = 0; s < 40; s += 4) {
+          scene.debug.setTime(at(12, 0, s));
+          widths.add(Math.round(scene.debug.shown().extras.vane * 100));
+        }
+        // Breath: in a snowfall (cold) some puffs show over half a minute; in clear mild weather none.
+        scene.debug.preview({ kind: 'snow' });
+        let cold = 0;
+        for (let s = 0; s < 30; s += 2) {
+          scene.debug.setTime(at(12, 0, s) + 500);
+          cold = Math.max(cold, scene.debug.shown().extras.breath);
+        }
+        scene.debug.preview({ kind: 'clear', season: 'summer' });
+        let mild = 0;
+        for (let s = 0; s < 30; s += 5) {
+          scene.debug.setTime(at(12, 0, s));
+          mild = Math.max(mild, scene.debug.shown().extras.breath);
+        }
+        await scene.debug.settle(); // let the pictures finish before the app closes
+        return { owls, noonOwl, widths: widths.size, cold, mild };
+      });
+      expect(Math.max(...result.owls)).toBeGreaterThan(0.9);
+      expect(Math.min(...result.owls)).toBe(0);
+      expect(result.noonOwl).toBe(0);
+      expect(result.widths).toBeGreaterThan(4);
+      expect(result.cold).toBeGreaterThan(0);
+      expect(result.mild).toBe(0);
+    } finally {
+      await run?.close().catch(() => {});
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test('a switch to the tank and back keeps the farm house record', async () => {
     const dir = farmhouseDir();
     let run;
