@@ -61,6 +61,39 @@ describe('R6 the brown horse and the left cow keep apart', () => {
   });
 });
 
+describe('R6 the horses and cows do not stand on each other on any screen shape', () => {
+  // The homes are shares of the width that is on the screen (`bounds`), so the same spacing holds on 16:9, 4:3 and 21:9.
+  // Half widths and heights of the pictures at scale 1, and how much of them may touch before it counts as an overlap.
+  const HALF = { horse: 80, cow: 75 };
+  const TALL = { horse: 120, cow: 95 };
+  const SHAPES = [
+    { xMin: 0.186, xMax: 0.814 },
+    { xMin: 0.3, xMax: 0.7 },
+    { xMin: 0.12, xMax: 0.88 },
+  ];
+  it('a horse and a cow are almost never drawn on top of each other', () => {
+    for (const bounds of SHAPES) {
+      let samples = 0;
+      let hits = 0;
+      for (let s = 0; s < 3 * 24 * 3600; s += 60) {
+        samples++;
+        const big = at(s, { bounds }).filter((a) => a.kind !== 'sheep');
+        const hit = big.some((a, i) =>
+          big.slice(i + 1).some((b) => {
+            const dx = Math.abs(a.x - b.x) * 2100;
+            const wide = (HALF[a.kind] * a.scale + HALF[b.kind] * b.scale) * 0.8;
+            const front = a.depth > b.depth ? a : b;
+            const dy = Math.abs(a.depth - b.depth) * 185;
+            return dx < wide && dy < TALL[front.kind] * front.scale * 0.6;
+          }),
+        );
+        if (hit) hits++;
+      }
+      expect(hits / samples).toBeLessThan(0.02);
+    }
+  });
+});
+
 describe('R7 near and far', () => {
   it('the size follows the depth: about half at the fence to 1.5 times at the bottom', () => {
     expect(depthScale(0)).toBe(0.5);
