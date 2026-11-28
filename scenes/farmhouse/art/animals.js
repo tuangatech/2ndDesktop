@@ -4,6 +4,7 @@
 // (rule R7), so there are five pictures for seven animals. Drawn at 1.5 times the design's resolution because an animal at
 // the bottom of the screen is shown at 1.5 times its size.
 import { makeRng } from '../../../shared/rng.js';
+import { RIGS } from '../game/gait.js';
 import { darker, mix, n } from './colour.js';
 import { gradient, makePicture } from './draw.js';
 
@@ -111,78 +112,71 @@ function cow(patch) {
   ];
 }
 
-/**
- * The four legs of each kind, drawn apart from the body so that they can swing about the hip (the walk, index.js). `far`
- * is the pair on the far side (drawn behind the body, darker) and `near` the pair on this side (in front). `x` is the
- * middle of the leg at the hip, `pair` which two legs move together (a walk moves the legs of a diagonal together: the near
- * hind with the far fore, the near fore with the far hind), `amp` how far a leg swings (radians) and `length` its length
- * from the hip (y -length) to the ground.
- */
-const LEGS = {
-  horse: {
-    length: 38,
-    amp: 0.42,
-    far: { w: 8, x: [-34, 26], pair: [1, 0] },
-    near: { w: 9, x: [-25.5, 36.5], pair: [0, 1] },
-  },
-  cow: {
-    length: 40,
-    amp: 0.38,
-    far: { w: 9, x: [-33.5, 28.5], pair: [1, 0] },
-    near: { w: 10, x: [-25, 35], pair: [0, 1] },
-  },
-  sheep: {
-    length: 22,
-    amp: 0.5,
-    far: { w: 5, x: [-15.5, 14.5], pair: [1, 0] },
-    near: { w: 5, x: [-7.5, 21.5], pair: [0, 1] },
-  },
-};
-export { LEGS };
-
 /** The key of a set of leg textures: the legs of a horse follow its coat, the others are the same for every coat. */
 export const legKey = (animal) => (animal.kind === 'horse' ? `horse-${animal.coat}` : animal.kind);
 
-/** One leg of `w` wide, drawn from the hip (0, 0) down to the ground at y `length`. */
-function legPicture(length, w, fill, hoof, hoofHeight) {
-  const ops = [rect(-w / 2, 0, w, length, fill, w > 6 ? 4 : 2.5)];
-  if (hoof) ops.push(rect(-w / 2, length - hoofHeight, w, hoofHeight, hoof, 3));
-  return makePicture(
-    { x: -w / 2 - 1, y: -1, width: w + 2, height: length + 2, resolution: RESOLUTION },
-    ops,
-  );
+/** The colours of the legs of a kind: the far pair, the near pair, and the hooves (none for a sheep). */
+function legColours(kind, coat) {
+  if (kind === 'horse') {
+    const [, c2, mane] = COATS[coat];
+    return { far: darker(c2, 0.2), near: c2, hoof: mane, hoofHeight: 6 };
+  }
+  if (kind === 'cow') return { far: '#cdc4b0', near: '#ece5d3', hoof: '#5f5148', hoofHeight: 7 };
+  return { far: '#4a4540', near: '#5c5650', hoof: null, hoofHeight: 0 };
 }
 
 /**
- * The legs of one animal: two pictures (far and near) and where the four hips are (in the animal's own space, hooves at y
- * 0 and the nose to the right).
- * @returns {{far: object, near: object, hips: {layer: 'far'|'near', x: number, y: number, pair: number}[],
- *            length: number, amp: number}}
+ * The two pieces of one leg, each drawn about its own joint (the origin of the picture is the hip for the upper leg and
+ * the knee for the lower one, and the piece hangs straight down), so that the scene can turn them (game/gait.js).
  */
-export function legPictures(kind, coat) {
-  const spec = LEGS[kind];
-  const [c1, c2] =
-    kind === 'horse'
-      ? COATS[coat]
-      : kind === 'cow'
-        ? ['#cdc4b0', '#ece5d3']
-        : ['#4a4540', '#5c5650'];
-  const farFill = kind === 'horse' ? darker(c2, 0.2) : c1;
-  const nearFill = kind === 'horse' ? c2 : kind === 'cow' ? '#ece5d3' : '#5c5650';
-  const hoof = kind === 'horse' ? COATS[coat][2] : kind === 'cow' ? '#5f5148' : null;
-  const hoofHeight = kind === 'horse' ? 6 : 7;
-  const hips = [];
-  for (const layer of ['far', 'near']) {
-    spec[layer].x.forEach((x, i) =>
-      hips.push({ layer, x, y: -spec.length, pair: spec[layer].pair[i] }),
-    );
+function legPiecePictures(rig, width, colour, colours) {
+  const lower = width * 0.82;
+  const thigh = makePicture(
+    {
+      x: -width / 2 - 1,
+      y: -width / 2 - 1,
+      width: width + 2,
+      height: rig.thigh + width + 2,
+      resolution: RESOLUTION,
+    },
+    [
+      rect(-width / 2, -width / 2, width, rig.thigh + width / 2, colour, width / 2),
+      oval(0, rig.thigh, width / 2, width / 2, colour), // the knee
+    ],
+  );
+  const ops = [
+    oval(0, 0, lower / 2, lower / 2, colour),
+    rect(-lower / 2, 0, lower, rig.shin, colour, lower / 2),
+  ];
+  if (colours.hoof) {
+    const h = colours.hoofHeight;
+    ops.push(rect(-lower / 2 - 0.5, rig.shin - h, lower + 1, h, colours.hoof, 3));
   }
+  const shin = makePicture(
+    {
+      x: -lower / 2 - 2,
+      y: -lower / 2 - 1,
+      width: lower + 4,
+      height: rig.shin + lower / 2 + 2,
+      resolution: RESOLUTION,
+    },
+    ops,
+  );
+  return { thigh, shin };
+}
+
+/**
+ * The legs of one animal as pictures: an upper and a lower piece for the far pair (behind the body, darker) and for the
+ * near pair (in front of it). Drawn with the dimensions of the rig (game/gait.js).
+ * @returns {{far: {thigh: object, shin: object}, near: {thigh: object, shin: object}}}
+ */
+export function legPieces(kind, coat) {
+  const rig = RIGS[kind];
+  const colours = legColours(kind, coat);
+  const widthOf = (layer) => rig.legs.find((leg) => leg.layer === layer).width;
   return {
-    far: legPicture(spec.length, spec.far.w, farFill, null, 0),
-    near: legPicture(spec.length, spec.near.w, nearFill, hoof, hoofHeight),
-    hips,
-    length: spec.length,
-    amp: spec.amp,
+    far: legPiecePictures(rig, widthOf('far'), colours.far, { hoof: null, hoofHeight: 0 }),
+    near: legPiecePictures(rig, widthOf('near'), colours.near, colours),
   };
 }
 

@@ -13,73 +13,81 @@
 
 import { progressOf, seen, walked } from './barn.js';
 import { lerp, smooth, unit } from './hash.js';
+import { NOMINAL, roam } from './roam.js';
 
+// Each animal roams a wide zone of the field (R6, DEC-66). The two horses have the left and right halves of the width and
+// the back of the field, the two cows the left and right halves and the front, so two of a kind never meet (a gap of 0.14
+// of the width between their zones) and a horse and a cow are kept apart in depth by `keepApart` below. `home` is where
+// the region of a cycle is drawn towards, `speed` is the pace in design units a second.
+const BIG = { cycle: 240, stops: 7, stay: 0.1, pull: 0.2, local: [0.3, 0.3], minStop: 14 };
+const zone = (x, depth, home, speed) => ({ ...BIG, x, depth, home, speed });
+/** A sheep roams a small zone round its place in the flock (shares); the flock's centre roams the field (below). */
+const SHEEP = {
+  cycle: 150,
+  stops: 6,
+  stay: 0.25,
+  minStop: 12,
+  pull: 0,
+  x: [-0.06, 0.06],
+  depth: [-0.06, 0.06],
+  home: [0, 0],
+  local: [0.04, 0.05],
+  speed: 20,
+};
 /** Seven animals, in three kinds: two horses (brown and beige), two cows, three sheep (no names, R6). */
 export const HERD = Object.freeze([
   {
     id: 'horse-brown',
     kind: 'horse',
     coat: 'brown',
-    home: [0.3, 0.42],
-    range: [0.04, 0.1],
-    period: 55,
+    home: [0.22, 0.3],
+    roam: zone([0.03, 0.43], [0.04, 0.42], [0.22, 0.26], 30),
   },
   {
     id: 'horse-beige',
     kind: 'horse',
     coat: 'beige',
-    home: [0.76, 0.5],
-    range: [0.04, 0.1],
-    period: 61,
+    home: [0.78, 0.3],
+    roam: zone([0.57, 0.97], [0.04, 0.42], [0.78, 0.26], 30),
   },
   {
     id: 'cow-1',
     kind: 'cow',
     coat: 'brown-white',
-    home: [0.05, 0.9],
-    range: [0.03, 0.1],
-    period: 70,
+    home: [0.2, 0.8],
+    roam: zone([0.03, 0.43], [0.52, 0.96], [0.2, 0.8], 26),
   },
   {
     id: 'cow-2',
     kind: 'cow',
     coat: 'tan-white',
-    home: [0.98, 0.84],
-    range: [0.02, 0.08],
-    period: 66,
+    home: [0.8, 0.8],
+    roam: zone([0.57, 0.97], [0.52, 0.96], [0.8, 0.8], 26),
   },
-  {
-    id: 'sheep-1',
-    kind: 'sheep',
-    coat: 'white',
-    flock: [-0.08, -0.06],
-    range: [0.03, 0.04],
-    period: 37,
-  },
-  {
-    id: 'sheep-2',
-    kind: 'sheep',
-    coat: 'white',
-    flock: [0, 0.16],
-    range: [0.03, 0.04],
-    period: 43,
-  },
-  {
-    id: 'sheep-3',
-    kind: 'sheep',
-    coat: 'white',
-    flock: [0.07, -0.12],
-    range: [0.03, 0.04],
-    period: 41,
-  },
+  { id: 'sheep-1', kind: 'sheep', coat: 'white', flock: [-0.08, -0.06], roam: SHEEP },
+  { id: 'sheep-2', kind: 'sheep', coat: 'white', flock: [0, 0.16], roam: SHEEP },
+  { id: 'sheep-3', kind: 'sheep', coat: 'white', flock: [0.07, -0.12], roam: SHEEP },
 ]);
-/** The sheep stay in a loose flock whose centre wanders on its own. */
-const FLOCK = Object.freeze({ id: 'flock', home: [0.53, 0.2], range: [0.02, 0.1], period: 60 });
+/** The sheep stay in a loose flock whose centre roams the field on its own, slowly. */
+const FLOCK = Object.freeze({
+  id: 'flock',
+  home: [0.5, 0.45],
+  roam: {
+    cycle: 300,
+    stops: 7,
+    stay: 0.15,
+    minStop: 15,
+    pull: 0.3,
+    x: [0.12, 0.88],
+    depth: [0.3, 0.6],
+    home: [0.5, 0.45],
+    local: [0.2, 0.22],
+    speed: 26,
+  },
+});
 
 /** The field in front of the fence: never at the fence line itself, never off the bottom. */
 export const FIELD = Object.freeze({ depthMin: 0.04, depthMax: 0.96, xMin: 0.04, xMax: 0.96 });
-/** The share of a segment an animal spends walking to its next spot; the rest is grazing or standing. */
-const WALK = 0.35;
 /** Scatter hay (R12): seconds to gather, to eat, and to wander off again; and the pause after a use. */
 export const HAY = Object.freeze({ gather: 20, eat: 60, leave: 20, pause: 30, spot: [0.5, 0.52] });
 
@@ -87,42 +95,6 @@ export const HAY = Object.freeze({ gather: 20, eat: 60, leave: 20, pause: 30, sp
 export const depthScale = (depth) => 0.5 + depth;
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-
-/** Where an animal is going in segment `k` of its walk: its home and a seeded offset. */
-function target(seed, spec, index, k) {
-  const [hx, ht] = spec.home;
-  return [
-    hx + (unit(seed, index, k, 21) * 2 - 1) * spec.range[0],
-    ht + (unit(seed, index, k, 22) * 2 - 1) * spec.range[1],
-  ];
-}
-
-/** The wandering position of one walker at `seconds`, and what it is doing. */
-function wander(seed, spec, index, seconds) {
-  const phase = unit(seed, index, 20) * spec.period;
-  const s = seconds + phase;
-  const k = Math.floor(s / spec.period);
-  const f = (s - k * spec.period) / spec.period;
-  const from = target(seed, spec, index, k - 1);
-  const to = target(seed, spec, index, k);
-  const w = f < WALK ? smooth(f / WALK) : 1;
-  const dx = to[0] - from[0];
-  const walking = f < WALK && Math.abs(dx) + Math.abs(to[1] - from[1]) > 0.01;
-  return {
-    x: lerp(from[0], to[0], w),
-    depth: lerp(from[1], to[1], w),
-    // The way the nose points: the way it last walked (a function of the segment, so no memory is needed).
-    facing:
-      Math.abs(dx) > 0.002
-        ? dx > 0
-          ? 'right'
-          : 'left'
-        : unit(seed, index, k, 23) < 0.5
-          ? 'left'
-          : 'right',
-    pose: walking ? 'walk' : unit(seed, index, k, 24) < 0.65 ? 'graze' : 'stand',
-  };
-}
 
 /** Where the animals sleep or shelter: near home, a seeded spot for the day. */
 function restSpot(seed, spec, index, centre, dayIndex) {
@@ -164,6 +136,44 @@ function haySpot(index) {
   return [HAY.spot[0] + Math.cos(angle) * 0.09, HAY.spot[1] + Math.sin(angle) * 0.1];
 }
 
+/** Which of two kinds stands behind the other when they would overlap: horses behind sheep behind cows. */
+const RANK = { horse: 0, sheep: 1, cow: 2 };
+/** Half the width and the height of each kind's picture, in design units at scale 1. */
+const HALF = { horse: 80, sheep: 36, cow: 75 };
+const TALL = { horse: 120, sheep: 62, cow: 95 };
+
+/**
+ * A horse, a cow and a sheep do not stand on each other: when two of different kinds are side by side (in x), the one that
+ * belongs behind (`RANK`) is moved back and the other forward until the one in front no longer hides most of the other's
+ * body. The push grows smoothly as they come side by side and ends as they part, and the order never changes, so nothing
+ * jumps; an animal at the edge of the field is not pushed out of it, the other takes the rest. Positions are shares.
+ * @param {{kind: string, x: number, depth: number}[]} list  moved in place
+ */
+function keepApart(list) {
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i];
+        const b = list[j];
+        if (a.kind === b.kind) continue;
+        const [back, front] = RANK[a.kind] < RANK[b.kind] ? [a, b] : [b, a];
+        const side =
+          (HALF[a.kind] * depthScale(a.depth) + HALF[b.kind] * depthScale(b.depth)) * 0.8;
+        const w = smooth((1 - (Math.abs(a.x - b.x) * NOMINAL.width) / (side * 1.7)) * 1.6);
+        if (w <= 0) continue;
+        const gap = (TALL[front.kind] * depthScale(front.depth) * 0.7) / NOMINAL.depth;
+        const deficit = Math.max(0, gap - (front.depth - back.depth)) * w;
+        if (deficit <= 0) continue;
+        let pushBack = Math.min(deficit / 2, back.depth - FIELD.depthMin);
+        const pushFront = Math.min(deficit - pushBack, FIELD.depthMax - front.depth);
+        pushBack = Math.min(deficit - pushFront, back.depth - FIELD.depthMin);
+        back.depth -= pushBack;
+        front.depth += pushFront;
+      }
+    }
+  }
+}
+
 /**
  * The seven animals at a moment, back to front.
  * @param {number} ms
@@ -195,7 +205,7 @@ export function animalsAt(
   // With a barn the animals do not stand about at night: they are in it, so there are no resting places.
   const rest = barn ? 0 : clamp(still, 0, 1);
   const hay = hayWeight(ms, hayStartedAt);
-  const flock = wander(seed, FLOCK, 100, seconds);
+  const flock = roam(seed, FLOCK.roam, 100, seconds);
   const flockRest = restSpot(seed, { home: FLOCK.home }, 100, FLOCK.home, restDay);
   const flockAt = [
     lerp(flock.x, flockRest[0], smooth(rest)),
@@ -204,20 +214,28 @@ export function animalsAt(
   const xMin = Math.max(FIELD.xMin, bounds.xMin ?? FIELD.xMin);
   const xMax = Math.min(FIELD.xMax, bounds.xMax ?? FIELD.xMax);
 
-  const animals = HERD.map((spec, index) => {
-    // A sheep wanders a little around its place in the flock; the flock's centre wanders on its own.
-    const own = wander(
-      seed,
-      spec.flock ? { home: [0, 0], range: spec.range, period: spec.period } : spec,
-      index,
-      seconds,
-    );
+  // Where each animal roams to (shares of the width and depth), then kept from standing on another of a different kind.
+  const roamed = HERD.map((spec, index) => {
+    // A sheep roams a little round its place in the flock; the flock's centre roams the field on its own, and when the
+    // flock walks every sheep walks with it.
+    const own = roam(seed, spec.roam, index, seconds);
+    if (spec.flock && flock.walking) {
+      own.pose = 'walk';
+      own.facing = flock.facing;
+    }
     let x = spec.flock ? flockAt[0] + spec.flock[0] + own.x : own.x;
     let depth = spec.flock ? flockAt[1] + spec.flock[1] + own.depth : own.depth;
     const resting = restSpot(seed, spec, index, flockRest, restDay);
     const toRest = smooth(rest);
     x = lerp(x, resting[0], toRest);
     depth = lerp(depth, resting[1], toRest);
+    return { kind: spec.kind, own, x, depth };
+  });
+  keepApart(roamed);
+
+  const animals = HERD.map((spec, index) => {
+    const { own } = roamed[index];
+    let { x, depth } = roamed[index];
     x = xMin + x * (xMax - xMin); // from a share of the width on the screen to the field's x (the hay's spot is not a share)
     // On its way to the barn an animal lets go of the hay.
     const progress = barn ? progressOf(barn.shelter, spec.id) : 0;
